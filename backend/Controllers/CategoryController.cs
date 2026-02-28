@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using backend.Models;
+using backend.Data;
 
 namespace backend.Controllers;
 
@@ -7,78 +10,157 @@ namespace backend.Controllers;
 [Route("api/[controller]")]
 public class CategoryController : ControllerBase
 {
+    private readonly AppDbContext _context;
     private readonly ILogger<CategoryController> _logger;
 
-    public CategoryController(ILogger<CategoryController> logger)
+    public CategoryController(AppDbContext context, ILogger<CategoryController> logger)
     {
+        _context = context;
         _logger = logger;
     }
 
     // GET: api/category
     [HttpGet]
-    public IActionResult GetAllCategories([FromQuery] int? topicId)
+    public async Task<IActionResult> GetAllCategories([FromQuery] int? topicId)
     {
-        var categories = new[]
+        try
         {
-            new { Id = 1, Name = "Cải tiến phương pháp giảng dạy", Description = "", TopicId = 1 },
-            new { Id = 2, Name = "Cơ sở vật chất & phòng học", Description = "", TopicId = 1 },
-            new { Id = 3, Name = "Dịch vụ hành chính & hỗ trợ sinh viên", Description = "", TopicId = 1 },
-            new { Id = 4, Name = "Hỗ trợ tâm lý & sức khỏe tinh thần", Description = "", TopicId = 1 },
-            new { Id = 5, Name = "Hạ tầng công nghệ & hệ thống học tập trực tuyến", Description = "", TopicId = 1 },
-            new { Id = 6, Name = "Hướng nghiệp & việc làm sau tốt nghiệp", Description = "", TopicId = 1 }
-        };
-        return Ok(categories);
+            var query = _context.Categories.AsQueryable();
+
+            if (topicId.HasValue)
+                query = query.Where(c => c.TopicId == topicId.Value);
+
+            var categories = await query
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.TopicId,
+                    IdeasCount = c.Ideas.Count
+                })
+                .ToListAsync();
+
+            return Ok(categories);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching categories");
+            return StatusCode(500, new { message = "Error fetching categories" });
+        }
     }
 
     // GET: api/category/{id}
     [HttpGet("{id}")]
-    public IActionResult GetCategoryById(int id)
+    public async Task<IActionResult> GetCategoryById(int id)
     {
-        var category = new 
-        { 
-            Id = id,
-            Name = "Hạ tầng công nghệ & hệ thống học tập trực tuyến",
-            Description = "Các ý tưởng liên quan đến cải thiện hạ tầng công nghệ thông tin",
-            TopicId = 1,
-            IdeasCount = 12
-        };
-        return Ok(category);
+        try
+        {
+            var category = await _context.Categories
+                .Include(c => c.Ideas)
+                .Where(c => c.Id == id)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.TopicId,
+                    IdeasCount = c.Ideas.Count
+                })
+                .FirstOrDefaultAsync();
+
+            if (category == null)
+                return NotFound(new { message = "Category not found" });
+
+            return Ok(category);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching category {CategoryId}", id);
+            return StatusCode(500, new { message = "Error fetching category" });
+        }
     }
 
     // POST: api/category
     [HttpPost]
-    public IActionResult CreateCategory([FromBody] CategoryDto categoryDto)
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> CreateCategory([FromBody] CategoryDto categoryDto)
     {
-        // Only QA Manager can create category
-        var newCategory = new 
-        { 
-            Id = 7,
-            Name = categoryDto.Name,
-            Description = categoryDto.Description,
-            TopicId = categoryDto.TopicId,
-            CreatedAt = DateTime.UtcNow
-        };
-        return Ok(newCategory);
+        try
+        {
+            var newCategory = new Category
+            {
+                Name = categoryDto.Name,
+                Description = categoryDto.Description,
+                TopicId = categoryDto.TopicId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Categories.Add(newCategory);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, newCategory);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating category");
+            return StatusCode(500, new { message = "Error creating category" });
+        }
     }
 
     // PUT: api/category/{id}
     [HttpPut("{id}")]
-    public IActionResult UpdateCategory(int id, [FromBody] CategoryDto categoryDto)
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDto categoryDto)
     {
-        var updatedCategory = new 
-        { 
-            Id = id,
-            Name = categoryDto.Name,
-            Description = categoryDto.Description
-        };
-        return Ok(updatedCategory);
+        try
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+                return NotFound(new { message = "Category not found" });
+
+            category.Name = categoryDto.Name;
+            category.Description = categoryDto.Description;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(category);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating category {CategoryId}", id);
+            return StatusCode(500, new { message = "Error updating category" });
+        }
     }
 
     // DELETE: api/category/{id}
     [HttpDelete("{id}")]
-    public IActionResult DeleteCategory(int id)
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> DeleteCategory(int id)
     {
-        return NoContent();
+        try
+        {
+            var category = await _context.Categories
+                .Include(c => c.Ideas)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound(new { message = "Category not found" });
+
+            // Cannot delete if category has ideas
+            if (category.Ideas.Any())
+                return BadRequest(new { message = "Cannot delete category that has associated ideas" });
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Category deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting category {CategoryId}", id);
+            return StatusCode(500, new { message = "Error deleting category" });
+        }
     }
 }
 

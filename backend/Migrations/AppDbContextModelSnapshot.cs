@@ -18,9 +18,9 @@ namespace backend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.2")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("backend.Models.Category", b =>
                 {
@@ -28,19 +28,19 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("TopicId")
                         .HasColumnType("int");
@@ -55,50 +55,50 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4040),
-                            Description = "Technology and innovation ideas",
-                            Name = "Technology",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6653),
+                            Description = "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập",
+                            Name = "Công nghệ & Cơ sở vật chất",
+                            TopicId = 1
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4282),
-                            Description = "Environmental sustainability",
-                            Name = "Environment",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6785),
+                            Description = "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh",
+                            Name = "Môi trường học tập",
+                            TopicId = 1
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4285),
-                            Description = "Educational improvements",
-                            Name = "Education",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6786),
+                            Description = "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa",
+                            Name = "Dịch vụ sinh viên",
+                            TopicId = 1
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4287),
-                            Description = "Health and wellness",
-                            Name = "Health",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6788),
+                            Description = "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service",
+                            Name = "Quy trình hành chính",
+                            TopicId = 1
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4290),
-                            Description = "Social initiatives",
-                            Name = "Social",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6789),
+                            Description = "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập",
+                            Name = "Giảng dạy & Học tập",
+                            TopicId = 1
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(4311),
-                            Description = "Other categories",
-                            Name = "Other",
-                            TopicId = 0
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6790),
+                            Description = "Các ý tưởng khác không thuộc các danh mục trên",
+                            Name = "Khác",
+                            TopicId = 1
                         });
                 });
 
@@ -108,7 +108,7 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
@@ -116,19 +116,19 @@ namespace backend.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("varchar(1000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("IdeaId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsAnonymous")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -145,21 +145,30 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int?>("QACoordinatorId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("QACoordinatorId");
 
                     b.ToTable("Departments");
 
@@ -167,38 +176,77 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "",
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 297, DateTimeKind.Utc).AddTicks(4618),
+                            Code = "CS",
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5608),
                             Name = "Computer Science"
                         },
                         new
                         {
                             Id = 2,
-                            Code = "",
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 297, DateTimeKind.Utc).AddTicks(5043),
+                            Code = "BA",
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5755),
                             Name = "Business Administration"
                         },
                         new
                         {
                             Id = 3,
-                            Code = "",
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 297, DateTimeKind.Utc).AddTicks(5045),
+                            Code = "ENG",
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5757),
                             Name = "Engineering"
                         },
                         new
                         {
                             Id = 4,
-                            Code = "",
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 297, DateTimeKind.Utc).AddTicks(5047),
+                            Code = "AD",
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5758),
                             Name = "Arts & Design"
                         },
                         new
                         {
                             Id = 5,
-                            Code = "",
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 297, DateTimeKind.Utc).AddTicks(5049),
+                            Code = "NS",
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5759),
                             Name = "Science"
                         });
+                });
+
+            modelBuilder.Entity("backend.Models.Document", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("IdeaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdeaId");
+
+                    b.ToTable("Documents");
                 });
 
             modelBuilder.Entity("backend.Models.Idea", b =>
@@ -207,10 +255,10 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Attachments")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
@@ -220,27 +268,27 @@ namespace backend.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsAnonymous")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("varchar(200)");
 
                     b.Property<int>("TopicId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
@@ -264,16 +312,16 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("IdeaId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsThumbsUp")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -288,19 +336,88 @@ namespace backend.Migrations
                     b.ToTable("Reactions");
                 });
 
+            modelBuilder.Entity("backend.Models.SystemSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SettingKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("SettingValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SettingKey")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.ToTable("SystemSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Current academic year",
+                            SettingKey = "CurrentAcademicYear",
+                            SettingValue = "2025-2026",
+                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7697)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Enable/disable email notifications",
+                            SettingKey = "EnableEmailNotifications",
+                            SettingValue = "true",
+                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7823)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Maximum file upload size in bytes (10MB)",
+                            SettingKey = "MaxFileUploadSize",
+                            SettingValue = "10485760",
+                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7824)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Allowed file upload types",
+                            SettingKey = "AllowedFileTypes",
+                            SettingValue = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip",
+                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7825)
+                        });
+                });
+
             modelBuilder.Entity("backend.Models.Topic", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CommentDeadline")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
@@ -308,24 +425,37 @@ namespace backend.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("varchar(1000)");
 
                     b.Property<DateTime>("IdeaSubmissionDeadline")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("varchar(200)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
                     b.ToTable("Topics");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CommentDeadline = new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(5435),
+                            CreatedById = 2,
+                            Description = "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.",
+                            IdeaSubmissionDeadline = new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Nâng cao trải nghiệm sinh viên toàn trường"
+                        });
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>
@@ -334,10 +464,16 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AgreedTerms")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("AgreedTermsDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
@@ -345,19 +481,26 @@ namespace backend.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("longtext");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -372,22 +515,41 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(8242),
+                            AgreedTerms = true,
+                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(2871),
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3176),
                             DepartmentId = 1,
                             Email = "admin@university.edu",
                             FullName = "Admin User",
+                            IsActive = true,
                             PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
-                            Role = 2
+                            Role = "Administrator"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 17, 6, 48, 59, 298, DateTimeKind.Utc).AddTicks(8494),
+                            AgreedTerms = true,
+                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334),
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334),
+                            DepartmentId = 1,
+                            Email = "qamanager@university.edu",
+                            FullName = "QA Manager",
+                            IsActive = true,
+                            PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
+                            Role = "QAManager"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AgreedTerms = true,
+                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3336),
+                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3337),
                             DepartmentId = 1,
                             Email = "john@university.edu",
                             FullName = "John Doe",
+                            IsActive = true,
                             PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
-                            Role = 0
+                            Role = "Staff"
                         });
                 });
 
@@ -417,6 +579,27 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Author");
+
+                    b.Navigation("Idea");
+                });
+
+            modelBuilder.Entity("backend.Models.Department", b =>
+                {
+                    b.HasOne("backend.Models.User", "QACoordinator")
+                        .WithMany()
+                        .HasForeignKey("QACoordinatorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("QACoordinator");
+                });
+
+            modelBuilder.Entity("backend.Models.Document", b =>
+                {
+                    b.HasOne("backend.Models.Idea", "Idea")
+                        .WithMany("Documents")
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Idea");
                 });
@@ -473,6 +656,16 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("backend.Models.SystemSettings", b =>
+                {
+                    b.HasOne("backend.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UpdatedByUser");
+                });
+
             modelBuilder.Entity("backend.Models.Topic", b =>
                 {
                     b.HasOne("backend.Models.User", "CreatedBy")
@@ -509,6 +702,8 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Idea", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Documents");
 
                     b.Navigation("Reactions");
                 });

@@ -26,6 +26,7 @@ public class Idea
     // Navigation properties
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Reaction> Reactions { get; set; } = new List<Reaction>();
+    public ICollection<Document> Documents { get; set; } = new List<Document>();
     
     // Helper properties
     public int ThumbsUpCount => Reactions.Count(r => r.IsThumbsUp);

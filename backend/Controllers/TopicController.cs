@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using backend.Models;
+using backend.Data;
 
 namespace backend.Controllers;
 
@@ -7,120 +10,171 @@ namespace backend.Controllers;
 [Route("api/[controller]")]
 public class TopicController : ControllerBase
 {
+    private readonly AppDbContext _context;
     private readonly ILogger<TopicController> _logger;
-    // TODO: Add DbContext when database is configured
 
-    public TopicController(ILogger<TopicController> logger)
+    public TopicController(AppDbContext context, ILogger<TopicController> logger)
     {
+        _context = context;
         _logger = logger;
     }
 
-    // GET: api/topic
-    [HttpGet]
-    public IActionResult GetAllTopics()
+    // GET: api/topic/all
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllTopics()
     {
-        // Mock data
-        var topics = new[]
+        try
         {
-            new 
-            { 
-                Id = 1, 
-                Name = "Nâng cao trải nghiệm sinh viên toàn trường",
-                Description = "Thu thập ý tưởng cải thiện chất lượng dịch vụ, môi trường học tập...",
-                IdeaSubmissionDeadline = new DateTime(2026, 3, 1),
-                CommentDeadline = new DateTime(2026, 3, 15),
-                IsActive = true,
-                IdeasCount = 45,
-                CommentsCount = 123
-            }
-        };
-        return Ok(topics);
+            var topics = await _context.Topics
+                .Include(t => t.CreatedBy)
+                .Include(t => t.Ideas)
+                .Include(t => t.Categories)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Name,
+                    t.Description,
+                    t.IdeaSubmissionDeadline,
+                    t.CommentDeadline,
+                    t.IsActive,
+                    t.CreatedAt,
+                    CreatedBy = t.CreatedBy!.FullName,
+                    IdeasCount = t.Ideas.Count,
+                    CommentsCount = t.Ideas.SelectMany(i => i.Comments).Count(),
+                    CategoriesCount = t.Categories.Count
+                })
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return Ok(topics);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching topics");
+            return StatusCode(500, new { message = "Error fetching topics" });
+        }
     }
 
     // GET: api/topic/{id}
     [HttpGet("{id}")]
-    public IActionResult GetTopicById(int id)
+    public async Task<IActionResult> GetTopicById(int id)
     {
-        var topic = new 
-        { 
-            Id = id, 
-            Name = "Nâng cao trải nghiệm sinh viên toàn trường",
-            Description = "Thu thập ý tưởng cải thiện chất lượng dịch vụ, môi trường học tập...",
-            IdeaSubmissionDeadline = new DateTime(2026, 3, 1),
-            CommentDeadline = new DateTime(2026, 3, 15),
-            IsActive = true,
-            CanSubmitIdea = DateTime.UtcNow <= new DateTime(2026, 3, 1),
-            CanComment = DateTime.UtcNow <= new DateTime(2026, 3, 15)
-        };
-        return Ok(topic);
+        try
+        {
+            var topic = await _context.Topics
+                .Include(t => t.CreatedBy)
+                .Include(t => t.Categories)
+                .Where(t => t.Id == id)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Name,
+                    t.Description,
+                    t.IdeaSubmissionDeadline,
+                    t.CommentDeadline,
+                    t.IsActive,
+                    t.CreatedAt,
+                    CreatedBy = t.CreatedBy!.FullName,
+                    CanSubmitIdea = DateTime.UtcNow <= t.IdeaSubmissionDeadline,
+                    CanComment = DateTime.UtcNow <= t.CommentDeadline,
+                    Categories = t.Categories.Select(c => new { c.Id, c.Name, c.Description })
+                })
+                .FirstOrDefaultAsync();
+
+            if (topic == null)
+                return NotFound(new { message = "Topic not found" });
+
+            return Ok(topic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching topic {TopicId}", id);
+            return StatusCode(500, new { message = "Error fetching topic" });
+        }
     }
 
     // POST: api/topic
     [HttpPost]
-    public IActionResult CreateTopic([FromBody] TopicDto topicDto)
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> CreateTopic([FromBody] TopicDto topicDto)
     {
-        // Only QA Manager can create topic
-        var newTopic = new 
-        { 
-            Id = 2,
-            Name = topicDto.Name,
-            Description = topicDto.Description,
-            IdeaSubmissionDeadline = topicDto.IdeaSubmissionDeadline,
-            CommentDeadline = topicDto.CommentDeadline,
-            CreatedAt = DateTime.UtcNow
-        };
-        return CreatedAtAction(nameof(GetTopicById), new { id = 2 }, newTopic);
+        try
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized(new { message = "Invalid user token" });
+
+            var newTopic = new Topic
+            {
+                Name = topicDto.Name,
+                Description = topicDto.Description,
+                IdeaSubmissionDeadline = topicDto.IdeaSubmissionDeadline,
+                CommentDeadline = topicDto.CommentDeadline,
+                CreatedById = userId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Topics.Add(newTopic);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetTopicById), new { id = newTopic.Id }, newTopic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating topic");
+            return StatusCode(500, new { message = "Error creating topic" });
+        }
     }
 
     // PUT: api/topic/{id}
     [HttpPut("{id}")]
-    public IActionResult UpdateTopic(int id, [FromBody] TopicDto topicDto)
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> UpdateTopic(int id, [FromBody] TopicDto topicDto)
     {
-        var updatedTopic = new 
-        { 
-            Id = id,
-            Name = topicDto.Name,
-            Description = topicDto.Description,
-            IdeaSubmissionDeadline = topicDto.IdeaSubmissionDeadline,
-            CommentDeadline = topicDto.CommentDeadline,
-            UpdatedAt = DateTime.UtcNow
-        };
-        return Ok(updatedTopic);
-    }
-
-    // GET: api/topic/{id}/statistics
-    [HttpGet("{id}/statistics")]
-    public IActionResult GetTopicStatistics(int id)
-    {
-        var stats = new
+        try
         {
-            TopicId = id,
-            TotalIdeas = 45,
-            TotalComments = 123,
-            TotalReactions = 234,
-            IdeasByDepartment = new[]
-            {
-                new { Department = "Công nghệ thông tin", Count = 15 },
-                new { Department = "Kinh doanh", Count = 12 },
-                new { Department = "Kế toán", Count = 10 }
-            },
-            IdeasByCategory = new[]
-            {
-                new { Category = "Cơ sở vật chất & phòng học", Count = 18 },
-                new { Category = "Hạ tầng công nghệ", Count = 12 },
-                new { Category = "Dịch vụ hành chính", Count = 8 }
-            }
-        };
-        return Ok(stats);
+            var topic = await _context.Topics.FindAsync(id);
+            if (topic == null)
+                return NotFound(new { message = "Topic not found" });
+
+            topic.Name = topicDto.Name;
+            topic.Description = topicDto.Description;
+            topic.IdeaSubmissionDeadline = topicDto.IdeaSubmissionDeadline;
+            topic.CommentDeadline = topicDto.CommentDeadline;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(topic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating topic {TopicId}", id);
+            return StatusCode(500, new { message = "Error updating topic" });
+        }
     }
 
-    // GET: api/topic/{id}/export
-    [HttpGet("{id}/export")]
-    public IActionResult ExportTopicData(int id)
+    // DELETE: api/topic/{id}
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> DeleteTopic(int id)
     {
-        // TODO: Implement CSV/ZIP export
-        // Only QA Manager can export
-        return Ok(new { Message = "Export functionality - to be implemented" });
+        try
+        {
+            var topic = await _context.Topics.FindAsync(id);
+            if (topic == null)
+                return NotFound(new { message = "Topic not found" });
+
+            _context.Topics.Remove(topic);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Topic deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting topic {TopicId}", id);
+            return StatusCode(500, new { message = "Error deleting topic" });
+        }
     }
 }
 
