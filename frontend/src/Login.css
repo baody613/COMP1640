@@ -83,6 +83,30 @@ button:disabled {
   border: 1px solid #fcc;
 }
 
+.register-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.register-link p {
+  color: #718096;
+  margin: 0;
+}
+
+.register-link a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.register-link a:hover {
+  color: #5568d3;
+  text-decoration: underline;
+}
+
 .test-accounts {
   margin-top: 2rem;
   padding-top: 1.5rem;

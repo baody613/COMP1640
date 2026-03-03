@@ -44,6 +44,70 @@ public class AuthController : ControllerBase
         });
     }
     
+    // POST: api/auth/register
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    {
+        try
+        {
+            // Validate email uniqueness
+            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+                return BadRequest(new { message = "Email đã được sử dụng" });
+
+            // Validate department exists
+            var department = await _context.Departments.FindAsync(registerDto.DepartmentId);
+            if (department == null)
+                return BadRequest(new { message = "Phòng ban không tồn tại" });
+
+            // Validate password length
+            if (string.IsNullOrEmpty(registerDto.Password) || registerDto.Password.Length < 6)
+                return BadRequest(new { message = "Mật khẩu phải có ít nhất 6 ký tự" });
+
+            // Create new user with Staff role (default for registration)
+            var user = new User
+            {
+                FullName = registerDto.FullName,
+                Email = registerDto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+                Role = "Staff", // Default role for registered users
+                DepartmentId = registerDto.DepartmentId,
+                AgreedTerms = false,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("New user registered: {Email}", user.Email);
+
+            // Generate JWT token for auto-login
+            var token = GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                message = "Đăng ký thành công!",
+                token,
+                user = new
+                {
+                    user.Id,
+                    user.FullName,
+                    user.Email,
+                    user.Role,
+                    user.DepartmentId,
+                    DepartmentName = department.Name,
+                    user.AgreedTerms,
+                    user.AgreedTermsDate
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during registration for {Email}", registerDto.Email);
+            return StatusCode(500, new { message = "Lỗi khi đăng ký. Vui lòng thử lại." });
+        }
+    }
+
     // POST: api/auth/login
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
@@ -202,4 +266,12 @@ public class LoginDto
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+}
+
+public class RegisterDto
+{
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public int DepartmentId { get; set; }
 }

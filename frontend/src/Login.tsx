@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { authService } from "./authService";
 import "./Login.css";
 
@@ -64,6 +64,12 @@ function Login() {
             {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
+
+        <div className="register-link">
+          <p>
+            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+          </p>
+        </div>
 
         <div className="test-accounts">
           <h3>Tài khoản test:</h3>

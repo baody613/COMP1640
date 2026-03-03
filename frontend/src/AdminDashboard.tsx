@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "./authService";
 import {
   statisticsService,
-  departmentService,
   categoryService,
   topicService,
   adminService,
@@ -11,7 +10,6 @@ import {
   type DepartmentStatistics,
   type CategoryStatistics,
   type TopicStatistics,
-  type Department,
 } from "./services";
 import type { Topic, Category } from "./types";
 import "./AdminDashboard.css";
@@ -43,19 +41,12 @@ function AdminDashboard() {
 
   // Users data
   const [users, setUsers] = useState<User[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   // Topics data
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [showTopicForm, setShowTopicForm] = useState(false);
-  const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
 
   // Categories data
   const [categories, setCategories] = useState<Category[]>([]);
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   // Statistics data
   const [deptStats, setDeptStats] = useState<DepartmentStatistics[]>([]);
@@ -84,7 +75,7 @@ function AdminDashboard() {
     setLoading(true);
     try {
       // Backend cần có endpoint này: GET /api/Admin/users
-      const response = await fetch("http://localhost:5001/api/Admin/users", {
+      const response = await fetch("http://localhost:5000/api/Admin/users", {
         headers: {
           Authorization: `Bearer ${authService.getToken()}`,
         },
@@ -93,8 +84,6 @@ function AdminDashboard() {
         const data = await response.json();
         setUsers(data);
       }
-      const depts = await departmentService.getAllDepartments();
-      setDepartments(depts);
     } catch (error) {
       console.error("Failed to load users:", error);
     } finally {
@@ -235,12 +224,7 @@ function AdminDashboard() {
           <OverviewTab stats={overviewStats} loading={loading} />
         )}
         {activeTab === "users" && (
-          <UsersTab
-            users={users}
-            departments={departments}
-            loading={loading}
-            onRefresh={loadUsers}
-          />
+          <UsersTab users={users} loading={loading} onRefresh={loadUsers} />
         )}
         {activeTab === "topics" && (
           <TopicsTab
@@ -254,7 +238,6 @@ function AdminDashboard() {
         {activeTab === "categories" && (
           <CategoriesTab
             categories={categories}
-            topics={topics}
             loading={loading}
             onRefresh={loadCategories}
           />
@@ -315,12 +298,10 @@ function OverviewTab({
 // Users Tab Component
 function UsersTab({
   users,
-  departments,
   loading,
   onRefresh,
 }: {
   users: User[];
-  departments: Department[];
   loading: boolean;
   onRefresh: () => void;
 }) {
@@ -447,12 +428,10 @@ function TopicsTab({
 // Categories Tab Component
 function CategoriesTab({
   categories,
-  topics,
   loading,
   onRefresh,
 }: {
   categories: Category[];
-  topics: Topic[];
   loading: boolean;
   onRefresh: () => void;
 }) {

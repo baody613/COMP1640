@@ -5,8 +5,8 @@ package-lock.json
 # Build outputs
 backend/bin/
 backend/obj/
-frontend-app/dist/
-frontend-app/build/
+frontend/dist/
+frontend/build/
 
 # IDE
 .vs/

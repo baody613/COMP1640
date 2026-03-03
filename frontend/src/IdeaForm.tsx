@@ -15,6 +15,7 @@ function IdeaForm() {
   const [topic, setTopic] = useState<Topic | null>(null);
   const [files, setFiles] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
+  const [agreeingTerms, setAgreeingTerms] = useState(false);
   const user = authService.getCurrentUser();
   const navigate = useNavigate();
 
@@ -35,6 +36,24 @@ function IdeaForm() {
     };
     loadData();
   }, [topicId]);
+
+  const handleAgreeTerms = async () => {
+    setAgreeingTerms(true);
+    try {
+      await authService.agreeToTerms();
+      // Update user in localStorage
+      const updatedUser = await authService.getCurrentUserFromApi();
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      alert("Bạn đã đồng ý với Terms & Conditions thành công!");
+      // Reload the page to refresh user state
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to agree terms:", error);
+      alert("Không thể cập nhật trạng thái. Vui lòng thử lại.");
+    } finally {
+      setAgreeingTerms(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -94,9 +113,29 @@ function IdeaForm() {
       <div className="terms-warning">
         <h2>⚠️ Chưa đồng ý Terms & Conditions</h2>
         <p>Bạn cần đồng ý với Terms & Conditions trước khi gửi ý tưởng.</p>
-        <button onClick={() => navigate("/dashboard")} className="btn-primary">
-          Quay lại Dashboard
-        </button>
+        <div className="terms-warning-content">
+          <p>
+            Vui lòng đọc và đồng ý với{" "}
+            <a href="/terms" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </a>
+          </p>
+        </div>
+        <div className="terms-warning-buttons">
+          <button
+            onClick={handleAgreeTerms}
+            className="btn-primary"
+            disabled={agreeingTerms}
+          >
+            {agreeingTerms ? "Đang xử lý..." : "✓ Tôi đồng ý"}
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="btn-secondary"
+          >
+            Quay lại Dashboard
+          </button>
+        </div>
       </div>
     );
   }

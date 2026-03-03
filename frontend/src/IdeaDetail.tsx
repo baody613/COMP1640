@@ -162,7 +162,7 @@ function IdeaDetail() {
                 {idea.documents.map((doc) => (
                   <a
                     key={doc.id}
-                    href={`http://localhost:5001/api/document/download/${doc.id}`}
+                    href={`http://localhost:5000/api/document/download/${doc.id}`}
                     className="document-item"
                     download
                   >
