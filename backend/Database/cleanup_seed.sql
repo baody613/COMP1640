@@ -1,0 +1,10 @@
+SET FOREIGN_KEY_CHECKS=0;
+DELETE FROM Reactions;
+DELETE FROM Comments;
+DELETE FROM Ideas WHERE Id >= 14;
+DELETE FROM Categories WHERE Id >= 19;
+DELETE FROM Topics WHERE Id IN (2,3);
+DELETE FROM Users WHERE Id >= 10;
+UPDATE Departments SET QACoordinatorId = NULL;
+SET FOREIGN_KEY_CHECKS=1;
+SELECT 'Cleanup done' AS status;
