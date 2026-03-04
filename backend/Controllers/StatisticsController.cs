@@ -40,18 +40,22 @@ public class StatisticsController : ControllerBase
     [Authorize(Roles = "QAManager,Administrator")]
     public async Task<ActionResult<IEnumerable<DepartmentStatistics>>> GetDepartmentStatistics()
     {
-        var stats = await _context.Departments
-            .Select(d => new DepartmentStatistics
-            {
-                DepartmentId = d.Id,
-                DepartmentName = d.Name,
-                DepartmentCode = d.Code,
-                StaffCount = d.Users.Count,
-                IdeaCount = d.Ideas.Count,
-                CommentCount = d.Ideas.SelectMany(i => i.Comments).Count(),
-                TotalViews = d.Ideas.Sum(i => i.ViewCount)
-            })
+        var departments = await _context.Departments
+            .Include(d => d.Users)
+            .Include(d => d.Ideas)
+                .ThenInclude(i => i.Comments)
             .ToListAsync();
+
+        var stats = departments.Select(d => new DepartmentStatistics
+        {
+            DepartmentId   = d.Id,
+            DepartmentName = d.Name,
+            DepartmentCode = d.Code,
+            StaffCount   = d.Users.Count,
+            IdeaCount    = d.Ideas.Count,
+            CommentCount = d.Ideas.Sum(i => i.Comments.Count),
+            TotalViews   = d.Ideas.Sum(i => i.ViewCount)
+        }).ToList();
 
         return stats;
     }
@@ -60,22 +64,27 @@ public class StatisticsController : ControllerBase
     [HttpGet("ideas-by-category")]
     public async Task<ActionResult<IEnumerable<CategoryStatistics>>> GetIdeasByCategory(int? topicId)
     {
-        var query = _context.Categories.AsQueryable();
+        var query = _context.Categories
+            .Include(c => c.Ideas)
+                .ThenInclude(i => i.Comments)
+            .Include(c => c.Ideas)
+                .ThenInclude(i => i.Reactions)
+            .AsQueryable();
 
         if (topicId.HasValue)
             query = query.Where(c => c.TopicId == topicId.Value);
 
-        var stats = await query
-            .Select(c => new CategoryStatistics
-            {
-                CategoryId = c.Id,
-                CategoryName = c.Name,
-                IdeaCount = c.Ideas.Count,
-                CommentCount = c.Ideas.SelectMany(i => i.Comments).Count(),
-                ThumbsUpCount = c.Ideas.SelectMany(i => i.Reactions.Where(r => r.IsThumbsUp)).Count(),
-                ThumbsDownCount = c.Ideas.SelectMany(i => i.Reactions.Where(r => !r.IsThumbsUp)).Count()
-            })
-            .ToListAsync();
+        var categories = await query.ToListAsync();
+
+        var stats = categories.Select(c => new CategoryStatistics
+        {
+            CategoryId   = c.Id,
+            CategoryName = c.Name,
+            IdeaCount    = c.Ideas.Count,
+            CommentCount = c.Ideas.Sum(i => i.Comments.Count),
+            ThumbsUpCount   = c.Ideas.Sum(i => i.Reactions.Count(r => r.IsThumbsUp)),
+            ThumbsDownCount = c.Ideas.Sum(i => i.Reactions.Count(r => !r.IsThumbsUp))
+        }).ToList();
 
         return stats;
     }
@@ -84,20 +93,29 @@ public class StatisticsController : ControllerBase
     [HttpGet("ideas-by-topic")]
     public async Task<ActionResult<IEnumerable<TopicStatistics>>> GetIdeasByTopic()
     {
-        var stats = await _context.Topics
-            .Select(t => new TopicStatistics
-            {
-                TopicId = t.Id,
-                TopicName = t.Name,
-                IdeaCount = t.Ideas.Count,
-                CommentCount = t.Ideas.SelectMany(i => i.Comments).Count(),
-                TotalViews = t.Ideas.Sum(i => i.ViewCount),
-                ParticipantCount = t.Ideas.Select(i => i.AuthorId).Distinct().Count(),
-                IdeaSubmissionDeadline = t.IdeaSubmissionDeadline,
-                CommentDeadline = t.CommentDeadline,
-                IsActive = t.IsActive
-            })
+        // Load topics first, then compute stats in memory to avoid EF Core / MySQL
+        // correlated-subquery translation issues (Distinct().Count(), Sum on empty set, etc.)
+        var topics = await _context.Topics
+            .Include(t => t.Ideas)
+                .ThenInclude(i => i.Comments)
             .ToListAsync();
+
+        var stats = topics.Select(t => new TopicStatistics
+        {
+            TopicId   = t.Id,
+            TopicName = t.Name,
+            IdeaCount  = t.Ideas.Count,
+            CommentCount = t.Ideas.Sum(i => i.Comments.Count),
+            TotalViews   = t.Ideas.Sum(i => i.ViewCount),
+            ParticipantCount = t.Ideas
+                .Where(i => i.AuthorId != 0)
+                .Select(i => i.AuthorId)
+                .Distinct()
+                .Count(),
+            IdeaSubmissionDeadline = t.IdeaSubmissionDeadline,
+            CommentDeadline        = t.CommentDeadline,
+            IsActive               = t.IsActive
+        }).ToList();
 
         return stats;
     }

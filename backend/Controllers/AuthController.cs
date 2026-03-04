@@ -71,7 +71,9 @@ public class AuthController : ControllerBase
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 Role = "Staff", // Default role for registered users
                 DepartmentId = registerDto.DepartmentId,
-                AgreedTerms = false,
+                StudentId = registerDto.StudentId?.Trim(),
+                AgreedTerms = registerDto.AgreedTerms,
+                AgreedTermsDate = registerDto.AgreedTerms ? DateTime.UtcNow : null,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -96,6 +98,7 @@ public class AuthController : ControllerBase
                     user.Role,
                     user.DepartmentId,
                     DepartmentName = department.Name,
+                    user.StudentId,
                     user.AgreedTerms,
                     user.AgreedTermsDate
                 }
@@ -145,6 +148,7 @@ public class AuthController : ControllerBase
                     user.Role,
                     user.DepartmentId,
                     DepartmentName = user.Department?.Name,
+                    user.StudentId,
                     user.AgreedTerms,
                     user.AgreedTermsDate
                 }
@@ -218,6 +222,7 @@ public class AuthController : ControllerBase
                 user.Role,
                 user.DepartmentId,
                 DepartmentName = user.Department?.Name,
+                user.StudentId,
                 user.AgreedTerms,
                 user.AgreedTermsDate
             });
@@ -274,4 +279,6 @@ public class RegisterDto
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public int DepartmentId { get; set; }
+    public string? StudentId { get; set; }
+    public bool AgreedTerms { get; set; } = false;
 }

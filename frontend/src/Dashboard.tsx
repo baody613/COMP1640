@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "./authService";
 import { topicService, ideaService } from "./services";
@@ -12,6 +12,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const user = authService.getCurrentUser();
   const navigate = useNavigate();
+  const isAdmin = user?.role === "Administrator";
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -33,185 +34,204 @@ function Dashboard() {
     loadDashboardData();
   }, []);
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/login");
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   if (loading) {
-    return <div className="loading">Đang tải...</div>;
+    return (
+      <div className="loading-screen">
+        <div className="loading-dot" />
+        <div className="loading-dot" />
+        <div className="loading-dot" />
+      </div>
+    );
   }
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <div className="header-left">
-          <h1>🎓 COMP1640 IdeaHub</h1>
-          <nav className="main-nav">
+      <div className="dashboard-body">
+        <div className="welcome-bar">
+          <div>
+            <h2>Chào, {user?.fullName?.split(" ").slice(-1)[0]}!</h2>
+            <p>
+              {isAdmin
+                ? "Bảng điều khiển quản trị viên"
+                : "Khám phá và đóng góp ý tưởng của bạn"}
+            </p>
+          </div>
+          {!isAdmin && (
             <button
-              onClick={() => navigate("/dashboard")}
-              className="nav-btn active"
+              className="btn-new-idea"
+              onClick={() => navigate("/topics")}
             >
-              Dashboard
+              + Gửi ý tưởng
             </button>
-            <button onClick={() => navigate("/topics")} className="nav-btn">
-              Topics
-            </button>
-            {(user?.role === "QAManager" || user?.role === "Administrator") && (
-              <button onClick={() => navigate("/admin")} className="nav-btn">
-                Admin
-              </button>
-            )}
-          </nav>
-        </div>
-        <div className="header-right">
-          <span className="user-info">
-            <strong>{user?.fullName}</strong> ({user?.role})
-          </span>
-          <button onClick={handleLogout} className="btn-logout">
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
-      <div className="dashboard-content">
-        <div className="welcome-section">
-          <h2>Chào mừng, {user?.fullName}! 👋</h2>
-          <p>Hệ thống đóng góp ý tưởng trường đại học</p>
+          )}
         </div>
 
-        <div className="stats-grid">
+        <div className="stats-row">
           <div className="stat-card">
-            <div className="stat-icon">📚</div>
-            <div className="stat-info">
-              <h3>{topics.length}</h3>
-              <p>Active Topics</p>
-            </div>
+            <span className="stat-num">{topics.length}</span>
+            <span className="stat-label">Topics đang mở</span>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">💡</div>
-            <div className="stat-info">
-              <h3>{topics.reduce((sum, t) => sum + (t.ideaCount || 0), 0)}</h3>
-              <p>Total Ideas</p>
-            </div>
+            <span className="stat-num">
+              {topics.reduce((sum, t) => sum + (t.ideaCount || 0), 0)}
+            </span>
+            <span className="stat-label">Tổng ý tưởng</span>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">🔥</div>
-            <div className="stat-info">
-              <h3>{popularIdeas.length}</h3>
-              <p>Popular Ideas</p>
-            </div>
+            <span className="stat-num">{popularIdeas.length}</span>
+            <span className="stat-label">Ý tưởng nổi bật</span>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-info">
-              <h3>{user?.department?.name || "N/A"}</h3>
-              <p>Your Department</p>
-            </div>
+            <span className="stat-num stat-dept">
+              {user?.department?.name ?? "N/A"}
+            </span>
+            <span className="stat-label">Khoa của bạn</span>
           </div>
         </div>
 
-        <div className="dashboard-grid">
-          <div className="dashboard-section">
-            <h3>🔥 Ý tưởng phổ biến</h3>
-            <div className="ideas-list">
+        <div className="content-grid">
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Ý tưởng phổ biến</h3>
+            </div>
+            <div className="idea-list">
               {popularIdeas.length > 0 ? (
                 popularIdeas.map((idea) => (
                   <div
                     key={idea.id}
-                    className="idea-card"
+                    className="idea-row"
                     onClick={() => navigate(`/idea/${idea.id}`)}
                   >
-                    <h4>{idea.title}</h4>
-                    <p className="idea-excerpt">
-                      {idea.content.substring(0, 100)}...
-                    </p>
-                    <div className="idea-meta">
-                      <span>👁️ {idea.viewCount}</span>
-                      <span>👍 {idea.thumbsUpCount}</span>
-                      <span>👎 {idea.thumbsDownCount}</span>
-                      <span>💬 {idea.commentCount || 0}</span>
+                    <div className="idea-row-main">
+                      <span className="idea-row-title">{idea.title}</span>
+                      <p className="idea-row-excerpt">
+                        {idea.content?.substring(0, 90) ?? ""}
+                      </p>
+                    </div>
+                    <div className="idea-row-stats">
+                      <span>👁 {idea.viewCount}</span>
+                      <span>↑ {idea.thumbsUpCount}</span>
+                      <span>💬 {idea.commentCount ?? 0}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="empty-message">Chưa có ý tưởng phổ biến</p>
+                <p className="empty-state">Chưa có dữ liệu</p>
               )}
             </div>
           </div>
 
-          <div className="dashboard-section">
-            <h3>🆕 Ý tưởng mới nhất</h3>
-            <div className="ideas-list">
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Mới nhất</h3>
+            </div>
+            <div className="idea-list">
               {latestIdeas.length > 0 ? (
                 latestIdeas.map((idea) => (
                   <div
                     key={idea.id}
-                    className="idea-card"
+                    className="idea-row"
                     onClick={() => navigate(`/idea/${idea.id}`)}
                   >
-                    <h4>{idea.title}</h4>
-                    <p className="idea-excerpt">
-                      {idea.content.substring(0, 100)}...
-                    </p>
-                    <div className="idea-meta">
+                    <div className="idea-row-main">
+                      <span className="idea-row-title">{idea.title}</span>
+                      <p className="idea-row-excerpt">
+                        {idea.content?.substring(0, 90) ?? ""}
+                      </p>
+                    </div>
+                    <div className="idea-row-meta">
                       <span>
-                        {idea.isAnonymous
-                          ? "👤 Anonymous"
-                          : `👤 ${idea.author?.fullName}`}
+                        {idea.isAnonymous ? "Ẩn danh" : idea.author?.fullName}
                       </span>
-                      <span>
-                        📅 {new Date(idea.createdAt).toLocaleDateString()}
-                      </span>
+                      <span>{formatDate(idea.createdAt)}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="empty-message">Chưa có ý tưởng mới</p>
+                <p className="empty-state">Chưa có dữ liệu</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="topics-section">
-          <div className="section-header">
-            <h3>📚 Active Topics</h3>
-            <button className="btn-primary" onClick={() => navigate("/topics")}>
-              Xem tất cả →
-            </button>
+        {!isAdmin && topics.length > 0 && (
+          <div className="topics-panel">
+            <div className="panel-head">
+              <h3>Topics đang mở</h3>
+              <button className="link-btn" onClick={() => navigate("/topics")}>
+                Xem tất cả →
+              </button>
+            </div>
+            <div className="topics-grid">
+              {topics.slice(0, 4).map((topic) => (
+                <div
+                  key={topic.id}
+                  className="topic-tile"
+                  onClick={() => navigate(`/topic/${topic.id}`)}
+                >
+                  <h4>{topic.name}</h4>
+                  <p>{topic.description}</p>
+                  <div className="topic-tile-footer">
+                    <span className="topic-deadline">
+                      Hạn:{" "}
+                      {formatDate(
+                        topic.ideaSubmissionDeadline ?? topic.closureDate,
+                      )}
+                    </span>
+                    <span className="topic-count">
+                      {topic.ideaCount ?? 0} ý tưởng
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="topics-grid">
-            {topics.slice(0, 4).map((topic) => (
-              <div
-                key={topic.id}
-                className="topic-card"
-                onClick={() => navigate(`/topic/${topic.id}`)}
+        )}
+
+        {isAdmin && (
+          <div className="admin-quick-panel">
+            <h3>Truy cập nhanh</h3>
+            <div className="quick-links">
+              <button
+                className="quick-link-card"
+                onClick={() => navigate("/admin")}
               >
-                <h4>{topic.name}</h4>
-                <p>{topic.description}</p>
-                <div className="topic-dates">
-                  <small>
-                    📅 Deadline:{" "}
-                    {new Date(
-                      topic.ideaSubmissionDeadline || topic.closureDate || "",
-                    ).toLocaleDateString("vi-VN")}
-                  </small>
-                  <small>
-                    💬 Final:{" "}
-                    {new Date(
-                      topic.commentDeadline || topic.finalClosureDate || "",
-                    ).toLocaleDateString("vi-VN")}
-                  </small>
-                </div>
-                <div className="topic-stats">
-                  <span className="idea-count">
-                    {topic.ideaCount || 0} ideas
-                  </span>
-                </div>
-              </div>
-            ))}
+                <span className="ql-icon">👥</span>
+                <span>Quản lý người dùng</span>
+              </button>
+              <button
+                className="quick-link-card"
+                onClick={() => navigate("/admin")}
+              >
+                <span className="ql-icon">📋</span>
+                <span>Quản lý Topics</span>
+              </button>
+              <button
+                className="quick-link-card"
+                onClick={() => navigate("/admin")}
+              >
+                <span className="ql-icon">💡</span>
+                <span>Danh sách ý tưởng</span>
+              </button>
+              <button
+                className="quick-link-card"
+                onClick={() => navigate("/admin")}
+              >
+                <span className="ql-icon">📊</span>
+                <span>Thống kê</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -129,10 +129,24 @@ function IdeaDetail() {
   return (
     <div className="idea-detail-container">
       <header className="idea-header">
-        <button onClick={() => navigate(-1)} className="btn-back">
-          ← Quay lại
-        </button>
-        <h1>💡 Chi tiết ý tưởng</h1>
+        <div className="idea-header-left">
+          <button
+            onClick={() => navigate(-1)}
+            className="btn-back-sm"
+            title="Quay lại"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="btn-home-sm"
+            title="Về trang chủ"
+          >
+            ⌂
+          </button>
+        </div>
+        <span className="idea-header-title">Chi tiết ý tưởng</span>
+        <div className="idea-header-right" />
       </header>
 
       <div className="idea-content">

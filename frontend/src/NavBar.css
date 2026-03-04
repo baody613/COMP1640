@@ -1,0 +1,166 @@
+/* NavBar.css – persistent top navigation */
+
+.navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0ec;
+  padding: 0.75rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── left side ── */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  background: var(--accent, #5c6bc0);
+  color: #fff;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink, #1a1a2e);
+}
+
+/* ── tab nav ── */
+.tab-nav {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 2px solid #e8e8f0;
+}
+
+/* sliding underline indicator */
+.tab-indicator {
+  position: absolute;
+  bottom: -2px;
+  height: 2px;
+  background: var(--accent, #5c6bc0);
+  border-radius: 2px;
+  transition:
+    left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tab-btn {
+  position: relative;
+  padding: 0.5rem 1.1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-muted, #8888aa);
+  white-space: nowrap;
+  transition: color 0.2s;
+  user-select: none;
+}
+.tab-btn:hover {
+  color: var(--ink, #1a1a2e);
+}
+.tab-btn.tab-active {
+  color: var(--accent, #5c6bc0);
+  font-weight: 600;
+}
+
+/* green accent for admin/manager tab */
+.tab-btn.tab-green:hover {
+  color: var(--green, #43a047);
+}
+.tab-btn.tab-green.tab-active {
+  color: var(--green, #43a047);
+}
+.tab-nav:has(.tab-green.tab-active) .tab-indicator {
+  background: var(--green, #43a047);
+}
+
+/* ripple on click */
+.tab-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.12s;
+  border-radius: 4px;
+}
+.tab-btn:active::after {
+  opacity: 0.06;
+}
+
+/* ── right side ── */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  background: var(--accent, #5c6bc0);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.user-info-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.user-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink, #1a1a2e);
+}
+.user-role-tag {
+  font-size: 0.73rem;
+  color: var(--ink-muted, #8888aa);
+}
+.btn-logout {
+  padding: 0.45rem 1rem;
+  background: var(--red, #e53935);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.btn-logout:hover {
+  opacity: 0.85;
+}

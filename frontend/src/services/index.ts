@@ -4,6 +4,7 @@
  */
 
 export { topicService } from "./topicService";
+export type { TopicFormData } from "./topicService";
 export { ideaService } from "./ideaService";
 export { commentService } from "./commentService";
 export { categoryService } from "./categoryService";

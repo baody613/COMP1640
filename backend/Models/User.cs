@@ -9,6 +9,7 @@ public class User
     public string Role { get; set; } = "Staff";
     public int? DepartmentId { get; set; }
     public Department? Department { get; set; }
+    public string? StudentId { get; set; }        // Mã số sinh viên
     public bool AgreedTerms { get; set; } = false;
     public DateTime? AgreedTermsDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

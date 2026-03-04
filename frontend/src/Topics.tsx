@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "./authService";
 import { topicService, ideaService } from "./services";
 import type { Topic, Idea } from "./types";
 import "./Topics.css";
@@ -11,7 +10,6 @@ function Topics() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const user = authService.getCurrentUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,42 +41,12 @@ function Topics() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/login");
-  };
-
   if (loading) {
     return <div className="loading">Đang tải...</div>;
   }
 
   return (
     <div className="topics-container">
-      <header className="header">
-        <div className="header-left">
-          <h1>🎓 COMP1640 IdeaHub</h1>
-          <nav className="main-nav">
-            <button onClick={() => navigate("/dashboard")} className="nav-btn">
-              Dashboard
-            </button>
-            <button
-              onClick={() => navigate("/topics")}
-              className="nav-btn active"
-            >
-              Topics
-            </button>
-          </nav>
-        </div>
-        <div className="user-info">
-          <span>
-            Xin chào, <strong>{user?.fullName}</strong>
-          </span>
-          <button onClick={handleLogout} className="btn-logout">
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
       <div className="content">
         <div className="topics-section">
           <h2>📚 Topics ({topics.length})</h2>

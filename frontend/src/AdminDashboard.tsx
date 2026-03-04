@@ -6,6 +6,7 @@ import {
   categoryService,
   topicService,
   adminService,
+  type TopicFormData,
   type OverviewStatistics,
   type DepartmentStatistics,
   type CategoryStatistics,
@@ -160,32 +161,8 @@ function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/login");
-  };
-
   return (
     <div className="admin-dashboard">
-      <header className="admin-header">
-        <div className="header-left">
-          <h1>🛡️ Admin Dashboard</h1>
-          <span className="admin-badge">{user?.role}</span>
-        </div>
-        <div className="header-right">
-          <span className="user-info">👤 {user?.fullName}</span>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="btn-secondary"
-          >
-            Dashboard
-          </button>
-          <button onClick={handleLogout} className="btn-logout">
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
       <div className="admin-tabs">
         <button
           className={`tab ${activeTab === "overview" ? "active" : ""}`}
@@ -367,59 +344,376 @@ function TopicsTab({
   onExportCSV: (id: number) => void;
   onExportDocs: (id: number) => void;
 }) {
+  // Helper: chuyển ISO string → giá trị cho <input type="datetime-local">
+  const toInputVal = (iso: string | undefined) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    // Format: YYYY-MM-DDTHH:mm
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const emptyForm: TopicFormData = {
+    name: "",
+    description: "",
+    ideaSubmissionDeadline: "",
+    commentDeadline: "",
+  };
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState<TopicFormData>(emptyForm);
+  const [createErr, setCreateErr] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  // editingId: id của topic đang được chỉnh sửa, null = không sửa cái nào
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<TopicFormData>(emptyForm);
+  const [editErr, setEditErr] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const openEdit = (topic: Topic) => {
+    setEditingId(topic.id);
+    setEditErr("");
+    setEditForm({
+      name: topic.name,
+      description: topic.description,
+      ideaSubmissionDeadline: toInputVal(
+        topic.ideaSubmissionDeadline || topic.closureDate,
+      ),
+      commentDeadline: toInputVal(
+        topic.commentDeadline || topic.finalClosureDate,
+      ),
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.name.trim()) {
+      setCreateErr("Vui lòng nhập tên topic");
+      return;
+    }
+    if (!createForm.ideaSubmissionDeadline) {
+      setCreateErr("Vui lòng chọn deadline gửi ý tưởng");
+      return;
+    }
+    if (!createForm.commentDeadline) {
+      setCreateErr("Vui lòng chọn deadline bình luận");
+      return;
+    }
+    if (
+      new Date(createForm.commentDeadline) <=
+      new Date(createForm.ideaSubmissionDeadline)
+    ) {
+      setCreateErr("Deadline bình luận phải sau deadline gửi ý tưởng");
+      return;
+    }
+    setCreating(true);
+    setCreateErr("");
+    try {
+      await topicService.createTopic({
+        ...createForm,
+        ideaSubmissionDeadline: new Date(
+          createForm.ideaSubmissionDeadline,
+        ).toISOString(),
+        commentDeadline: new Date(createForm.commentDeadline).toISOString(),
+      });
+      setShowCreate(false);
+      setCreateForm(emptyForm);
+      onRefresh();
+    } catch {
+      setCreateErr("Tạo topic thất bại. Vui lòng thử lại.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!editingId) return;
+    if (!editForm.name.trim()) {
+      setEditErr("Vui lòng nhập tên topic");
+      return;
+    }
+    if (!editForm.ideaSubmissionDeadline) {
+      setEditErr("Vui lòng chọn deadline gửi ý tưởng");
+      return;
+    }
+    if (!editForm.commentDeadline) {
+      setEditErr("Vui lòng chọn deadline bình luận");
+      return;
+    }
+    if (
+      new Date(editForm.commentDeadline) <=
+      new Date(editForm.ideaSubmissionDeadline)
+    ) {
+      setEditErr("Deadline bình luận phải sau deadline gửi ý tưởng");
+      return;
+    }
+    setSaving(true);
+    setEditErr("");
+    try {
+      await topicService.updateTopic(editingId, {
+        ...editForm,
+        ideaSubmissionDeadline: new Date(
+          editForm.ideaSubmissionDeadline,
+        ).toISOString(),
+        commentDeadline: new Date(editForm.commentDeadline).toISOString(),
+      });
+      setEditingId(null);
+      onRefresh();
+    } catch {
+      setEditErr("Lưu thất bại. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number, name: string) => {
+    if (
+      !window.confirm(`Xóa topic "${name}"? Hành động này không thể hoàn tác.`)
+    )
+      return;
+    try {
+      await topicService.deleteTopic(id);
+      onRefresh();
+    } catch {
+      alert("Xóa thất bại. Topic có thể đang chứa dữ liệu.");
+    }
+  };
+
   if (loading) return <div className="loading">Đang tải...</div>;
 
   return (
     <div className="topics-tab">
       <div className="tab-header">
         <h2>📚 Quản lý Topics</h2>
-        <button className="btn-primary" onClick={onRefresh}>
-          🔄 Làm mới
-        </button>
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setShowCreate(true);
+              setCreateForm(emptyForm);
+              setCreateErr("");
+            }}
+          >
+            + Tạo topic mới
+          </button>
+          <button className="btn-secondary" onClick={onRefresh}>
+            🔄 Làm mới
+          </button>
+        </div>
       </div>
-      <div className="topics-grid">
-        {topics.map((topic) => (
-          <div key={topic.id} className="topic-card-admin">
-            <h3>{topic.name}</h3>
-            <p>{topic.description}</p>
-            <div className="topic-dates">
-              <div>
-                📅 Deadline ý tưởng:{" "}
-                <strong>
-                  {new Date(
-                    topic.ideaSubmissionDeadline || topic.closureDate || "",
-                  ).toLocaleDateString("vi-VN")}
-                </strong>
-              </div>
-              <div>
-                💬 Deadline bình luận:{" "}
-                <strong>
-                  {new Date(
-                    topic.commentDeadline || topic.finalClosureDate || "",
-                  ).toLocaleDateString("vi-VN")}
-                </strong>
-              </div>
+
+      {/* ── Form tạo topic mới ── */}
+      {showCreate && (
+        <div className="topic-form-box">
+          <h3>Tạo topic mới</h3>
+          <div className="form-row">
+            <label>
+              Tên topic <span className="req">*</span>
+            </label>
+            <input
+              type="text"
+              value={createForm.name}
+              onChange={(e) =>
+                setCreateForm((f) => ({ ...f, name: e.target.value }))
+              }
+              placeholder="Nhập tên topic..."
+            />
+          </div>
+          <div className="form-row">
+            <label>Mô tả</label>
+            <textarea
+              value={createForm.description}
+              onChange={(e) =>
+                setCreateForm((f) => ({ ...f, description: e.target.value }))
+              }
+              placeholder="Mô tả ngắn về topic..."
+              rows={2}
+            />
+          </div>
+          <div className="form-row-2col">
+            <div className="form-row">
+              <label>
+                📅 Deadline gửi ý tưởng <span className="req">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={createForm.ideaSubmissionDeadline}
+                onChange={(e) =>
+                  setCreateForm((f) => ({
+                    ...f,
+                    ideaSubmissionDeadline: e.target.value,
+                  }))
+                }
+              />
             </div>
-            <div className="topic-stats-admin">
-              <span>💡 {topic.ideaCount || 0} ideas</span>
-              <span>🏷️ {topic.categories?.length || 0} categories</span>
-            </div>
-            <div className="topic-actions">
-              <button
-                className="btn-export"
-                onClick={() => onExportCSV(topic.id)}
-              >
-                📥 Export CSV
-              </button>
-              <button
-                className="btn-export"
-                onClick={() => onExportDocs(topic.id)}
-              >
-                📦 Export Docs
-              </button>
+            <div className="form-row">
+              <label>
+                💬 Deadline bình luận <span className="req">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={createForm.commentDeadline}
+                onChange={(e) =>
+                  setCreateForm((f) => ({
+                    ...f,
+                    commentDeadline: e.target.value,
+                  }))
+                }
+              />
             </div>
           </div>
-        ))}
+          {createErr && <p className="form-error">{createErr}</p>}
+          <div className="form-actions">
+            <button
+              className="btn-primary"
+              onClick={handleCreate}
+              disabled={creating}
+            >
+              {creating ? "Đang tạo..." : "✓ Tạo topic"}
+            </button>
+            <button className="btn-ghost" onClick={() => setShowCreate(false)}>
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Danh sách topics ── */}
+      <div className="topics-grid">
+        {topics.map((topic) =>
+          editingId === topic.id ? (
+            /* ── Inline edit form ── */
+            <div key={topic.id} className="topic-card-admin topic-card-edit">
+              <h3>✏️ Chỉnh sửa topic</h3>
+              <div className="form-row">
+                <label>
+                  Tên topic <span className="req">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, name: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="form-row">
+                <label>Mô tả</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm((f) => ({ ...f, description: e.target.value }))
+                  }
+                  rows={2}
+                />
+              </div>
+              <div className="form-row">
+                <label>
+                  📅 Deadline gửi ý tưởng <span className="req">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={editForm.ideaSubmissionDeadline}
+                  onChange={(e) =>
+                    setEditForm((f) => ({
+                      ...f,
+                      ideaSubmissionDeadline: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="form-row">
+                <label>
+                  💬 Deadline bình luận <span className="req">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={editForm.commentDeadline}
+                  onChange={(e) =>
+                    setEditForm((f) => ({
+                      ...f,
+                      commentDeadline: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              {editErr && <p className="form-error">{editErr}</p>}
+              <div className="form-actions">
+                <button
+                  className="btn-primary"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? "Đang lưu..." : "✓ Lưu"}
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() => setEditingId(null)}
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ── View card ── */
+            <div key={topic.id} className="topic-card-admin">
+              <div className="topic-card-title-row">
+                <h3>{topic.name}</h3>
+                <span
+                  className={`topic-status-dot ${topic.isActive ? "active" : "inactive"}`}
+                >
+                  {topic.isActive ? "Đang mở" : "Đã đóng"}
+                </span>
+              </div>
+              <p>{topic.description}</p>
+              <div className="topic-dates">
+                <div className="deadline-item">
+                  <span className="deadline-label">📅 Deadline ý tưởng</span>
+                  <strong className="deadline-val">
+                    {new Date(
+                      topic.ideaSubmissionDeadline || topic.closureDate || "",
+                    ).toLocaleString("vi-VN")}
+                  </strong>
+                </div>
+                <div className="deadline-item">
+                  <span className="deadline-label">💬 Deadline bình luận</span>
+                  <strong className="deadline-val">
+                    {new Date(
+                      topic.commentDeadline || topic.finalClosureDate || "",
+                    ).toLocaleString("vi-VN")}
+                  </strong>
+                </div>
+              </div>
+              <div className="topic-stats-admin">
+                <span>💡 {topic.ideaCount || 0} ý tưởng</span>
+                <span>🏷️ {topic.categories?.length || 0} categories</span>
+              </div>
+              <div className="topic-actions">
+                <button className="btn-edit" onClick={() => openEdit(topic)}>
+                  ✏️ Sửa deadline
+                </button>
+                <button
+                  className="btn-export"
+                  onClick={() => onExportCSV(topic.id)}
+                >
+                  📥 CSV
+                </button>
+                <button
+                  className="btn-export"
+                  onClick={() => onExportDocs(topic.id)}
+                >
+                  📦 Docs
+                </button>
+                <button
+                  className="btn-delete"
+                  onClick={() => handleDelete(topic.id, topic.name)}
+                >
+                  🗑️ Xóa
+                </button>
+              </div>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

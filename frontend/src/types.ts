@@ -5,6 +5,7 @@ export interface User {
   role: string;
   departmentId: number;
   department?: Department;
+  studentId?: string;
   agreedTerms: boolean;
 }
 
@@ -18,6 +19,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   departmentId: number;
+  studentId?: string;
+  agreedTerms: boolean;
 }
 
 export interface LoginResponse {

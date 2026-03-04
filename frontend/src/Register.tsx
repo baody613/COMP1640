@@ -11,6 +11,7 @@ function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [departmentId, setDepartmentId] = useState<number>(0);
+  const [studentId, setStudentId] = useState("");
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState("");
@@ -63,6 +64,8 @@ function Register() {
         email,
         password,
         departmentId,
+        studentId: studentId.trim() || undefined,
+        agreedTerms: true, // đã xác nhận ở validation phía trên
       });
       // Auto-login after successful registration
       navigate("/topics");
@@ -103,6 +106,17 @@ function Register() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="nguyenvana@university.edu"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Mã số sinh viên:</label>
+            <input
+              type="text"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              placeholder="VD: GCS210123 (tùy chọn)"
+              maxLength={20}
             />
           </div>
 

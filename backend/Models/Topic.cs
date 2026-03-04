@@ -17,6 +17,6 @@ public class Topic
     public ICollection<Category> Categories { get; set; } = new List<Category>();
     
     // Helper methods
-    public bool CanSubmitIdea() => DateTime.UtcNow <= IdeaSubmissionDeadline;
-    public bool CanComment() => DateTime.UtcNow <= CommentDeadline;
+    public bool CanSubmitIdea() => DateTime.Now <= IdeaSubmissionDeadline;
+    public bool CanComment() => DateTime.Now <= CommentDeadline;
 }

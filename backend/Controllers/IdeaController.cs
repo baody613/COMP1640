@@ -188,7 +188,7 @@ public class IdeaController : ControllerBase
                 TopicId = ideaDto.TopicId,
                 CategoryId = ideaDto.CategoryId,
                 DepartmentId = user.DepartmentId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now  // Use local time to match MySQL
             };
 
             _context.Ideas.Add(newIdea);

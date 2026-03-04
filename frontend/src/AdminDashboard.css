@@ -280,6 +280,158 @@
   transform: translateY(-2px);
 }
 
+/* ── Topic action buttons ── */
+.topic-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.topic-card-title-row h3 {
+  margin: 0;
+}
+
+.topic-status-dot {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+.topic-status-dot.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.topic-status-dot.inactive {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.deadline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.45rem 0;
+}
+.deadline-label {
+  font-size: 0.78rem;
+  color: #718096;
+}
+.deadline-val {
+  font-size: 0.88rem;
+  color: #2d3748;
+}
+
+.btn-edit {
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  background: #ed8936;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-edit:hover {
+  background: #dd6b20;
+}
+
+.btn-delete {
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  background: #fc8181;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-delete:hover {
+  background: #e53e3e;
+}
+
+.btn-ghost {
+  padding: 0.55rem 1rem;
+  background: transparent;
+  color: #718096;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.btn-ghost:hover {
+  background: #edf2f7;
+}
+
+/* ── Topic form box (create / inline edit) ── */
+.topic-form-box {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.topic-form-box h3 {
+  margin: 0 0 1rem;
+  color: #3730a3;
+  font-size: 1rem;
+}
+.topic-card-edit {
+  background: #fffbeb;
+  border-left-color: #f59e0b;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+.form-row label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+.form-row input[type="text"],
+.form-row input[type="datetime-local"],
+.form-row textarea {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+.form-row input:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+}
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.form-error {
+  color: #e53935;
+  font-size: 0.82rem;
+  margin: 0.25rem 0 0.5rem;
+}
+.req {
+  color: #e53935;
+}
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
 /* Categories Tab */
 .categories-grid {
   display: grid;

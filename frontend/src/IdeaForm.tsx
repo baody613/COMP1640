@@ -143,10 +143,24 @@ function IdeaForm() {
   return (
     <div className="idea-form-container">
       <header className="form-header">
-        <button onClick={() => navigate(-1)} className="btn-back">
-          ← Quay lại
-        </button>
-        <h1>💡 Gửi ý tưởng mới</h1>
+        <div className="form-header-left">
+          <button
+            onClick={() => navigate(-1)}
+            className="btn-back-sm"
+            title="Quay lại"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="btn-home-sm"
+            title="Về trang chủ"
+          >
+            ⌂
+          </button>
+        </div>
+        <span className="form-header-title">Gửi ý tưởng mới</span>
+        <div className="form-header-right" />
       </header>
 
       <div className="form-content">
