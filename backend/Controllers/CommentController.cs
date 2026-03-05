@@ -62,11 +62,11 @@ public class CommentController : ControllerBase
             var query = _context.Comments
                 .Include(c => c.Author)
                 .Include(c => c.Idea)
-                    .ThenInclude(i => i.Topic)
+                    .ThenInclude(i => i!.Topic)
                 .AsQueryable();
 
             if (topicId.HasValue)
-                query = query.Where(c => c.Idea.TopicId == topicId.Value);
+                query = query.Where(c => c.Idea!.TopicId == topicId.Value);
 
             var comments = await query
                 .OrderByDescending(c => c.CreatedAt)
@@ -78,7 +78,7 @@ public class CommentController : ControllerBase
                     c.IsAnonymous,
                     AuthorName = c.IsAnonymous ? "Anonymous" : c.Author!.FullName,
                     IdeaId = c.IdeaId,
-                    IdeaTitle = c.Idea.Title,
+                    IdeaTitle = c.Idea!.Title,
                     c.CreatedAt
                 })
                 .ToListAsync();
