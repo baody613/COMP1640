@@ -729,21 +729,113 @@ function CategoriesTab({
   loading: boolean;
   onRefresh: () => void;
 }) {
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatDesc, setNewCatDesc] = useState("");
+  const [newCatTopicId, setNewCatTopicId] = useState<number | "">("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    topicService.getAllTopics().then(setTopics).catch(console.error);
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim() || newCatTopicId === "") return;
+    setSubmitting(true);
+    try {
+      await categoryService.createCategory(newCatName.trim(), Number(newCatTopicId), newCatDesc.trim() || undefined);
+      setNewCatName("");
+      setNewCatDesc("");
+      setNewCatTopicId("");
+      setShowForm(false);
+      onRefresh();
+    } catch {
+      alert("Không thể tạo category!");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (cat: Category) => {
+    if (!window.confirm(`Xóa category "${cat.name}"?`)) return;
+    try {
+      await categoryService.deleteCategory(cat.id);
+      onRefresh();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      alert(msg || "Không thể xóa category (có thể đã được dùng)!");
+    }
+  };
+
   if (loading) return <div className="loading">Đang tải...</div>;
 
   return (
     <div className="categories-tab">
       <div className="tab-header">
         <h2>🏷️ Quản lý Categories</h2>
-        <button className="btn-primary" onClick={onRefresh}>
-          🔄 Làm mới
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+            {showForm ? "✕ Đóng" : "➕ Thêm category"}
+          </button>
+          <button className="btn-secondary" onClick={onRefresh}>
+            🔄 Làm mới
+          </button>
+        </div>
       </div>
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="create-form" style={{ marginBottom: 24, padding: 16, background: "#f8f9fa", borderRadius: 8 }}>
+          <h3>Tạo Category mới</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 480 }}>
+            <input
+              className="form-input"
+              placeholder="Tên category *"
+              value={newCatName}
+              onChange={e => setNewCatName(e.target.value)}
+              required
+            />
+            <input
+              className="form-input"
+              placeholder="Mô tả (tùy chọn)"
+              value={newCatDesc}
+              onChange={e => setNewCatDesc(e.target.value)}
+            />
+            <select
+              className="form-input"
+              value={newCatTopicId}
+              onChange={e => setNewCatTopicId(e.target.value === "" ? "" : Number(e.target.value))}
+              required
+            >
+              <option value="">-- Chọn Topic *</option>
+              {topics.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? "Đang tạo..." : "Tạo category"}
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="categories-grid">
+        {categories.length === 0 && <p>Chưa có category nào.</p>}
         {categories.map((cat) => (
           <div key={cat.id} className="category-card-admin">
-            <h3>{cat.name}</h3>
-            {cat.description && <p>{cat.description}</p>}
+            <div style={{ flex: 1 }}>
+              <h3>{cat.name}</h3>
+              {cat.description && <p>{cat.description}</p>}
+            </div>
+            <button
+              className="btn-delete"
+              onClick={() => handleDelete(cat)}
+              title="Xóa category"
+              style={{ marginTop: 8 }}
+            >
+              🗑️ Xóa
+            </button>
           </div>
         ))}
       </div>

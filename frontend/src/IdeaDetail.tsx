@@ -237,11 +237,12 @@ function IdeaDetail() {
                     <span className="comment-author">
                       {comment.isAnonymous
                         ? "👤 Anonymous"
-                        : `👤 ${comment.author?.fullName || "Unknown"}`}
+                        : `👤 ${comment.authorName || comment.author?.fullName || "Unknown"}`}
                     </span>
                     <span className="comment-date">
-                      {new Date(comment.createdAt).toLocaleDateString()}{" "}
-                      {new Date(comment.createdAt).toLocaleTimeString()}
+                      {comment.createdAt
+                        ? `${new Date(comment.createdAt).toLocaleDateString("vi-VN")} ${new Date(comment.createdAt).toLocaleTimeString("vi-VN")}`
+                        : "Vừa xong"}
                     </span>
                   </div>
                   <div className="comment-content">{comment.content}</div>

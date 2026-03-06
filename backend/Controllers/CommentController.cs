@@ -128,6 +128,9 @@ public class CommentController : ControllerBase
             _context.Comments.Add(newComment);
             await _context.SaveChangesAsync();
 
+            // Load author info
+            var author = await _context.Users.FindAsync(userId);
+
             // Send email notification to idea author
             if (idea.Author != null && idea.AuthorId != userId) // Don't send email if commenting on own idea
             {
@@ -142,7 +145,12 @@ public class CommentController : ControllerBase
             return Ok(new
             {
                 id = newComment.Id,
-                message = "Comment added successfully. Email notification sent to idea author."
+                content = newComment.Content,
+                isAnonymous = newComment.IsAnonymous,
+                authorName = newComment.IsAnonymous ? "Anonymous" : author?.FullName,
+                ideaId = newComment.IdeaId,
+                createdAt = newComment.CreatedAt,
+                updatedAt = newComment.UpdatedAt
             });
         }
         catch (Exception ex)

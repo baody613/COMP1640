@@ -70,6 +70,7 @@ export interface Comment {
   ideaId: number;
   authorId?: number;
   author?: User;
+  authorName?: string;
   isAnonymous: boolean;
   createdAt: string;
   updatedAt?: string;
