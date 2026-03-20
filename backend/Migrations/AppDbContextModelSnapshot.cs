@@ -55,7 +55,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6653),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5547),
                             Description = "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập",
                             Name = "Công nghệ & Cơ sở vật chất",
                             TopicId = 1
@@ -63,7 +63,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6785),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5787),
                             Description = "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh",
                             Name = "Môi trường học tập",
                             TopicId = 1
@@ -71,7 +71,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6786),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5789),
                             Description = "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa",
                             Name = "Dịch vụ sinh viên",
                             TopicId = 1
@@ -79,7 +79,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6788),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5790),
                             Description = "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service",
                             Name = "Quy trình hành chính",
                             TopicId = 1
@@ -87,7 +87,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6789),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5791),
                             Description = "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập",
                             Name = "Giảng dạy & Học tập",
                             TopicId = 1
@@ -95,7 +95,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6790),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5793),
                             Description = "Các ý tưởng khác không thuộc các danh mục trên",
                             Name = "Khác",
                             TopicId = 1
@@ -177,35 +177,35 @@ namespace backend.Migrations
                         {
                             Id = 1,
                             Code = "CS",
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5608),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(281),
                             Name = "Computer Science"
                         },
                         new
                         {
                             Id = 2,
                             Code = "BA",
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5755),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(556),
                             Name = "Business Administration"
                         },
                         new
                         {
                             Id = 3,
                             Code = "ENG",
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5757),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(558),
                             Name = "Engineering"
                         },
                         new
                         {
                             Id = 4,
                             Code = "AD",
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5758),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(559),
                             Name = "Arts & Design"
                         },
                         new
                         {
                             Id = 5,
                             Code = "NS",
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5759),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(560),
                             Name = "Science"
                         });
                 });
@@ -377,7 +377,7 @@ namespace backend.Migrations
                             Description = "Current academic year",
                             SettingKey = "CurrentAcademicYear",
                             SettingValue = "2025-2026",
-                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7697)
+                            UpdatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7361)
                         },
                         new
                         {
@@ -385,7 +385,7 @@ namespace backend.Migrations
                             Description = "Enable/disable email notifications",
                             SettingKey = "EnableEmailNotifications",
                             SettingValue = "true",
-                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7823)
+                            UpdatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7599)
                         },
                         new
                         {
@@ -393,7 +393,7 @@ namespace backend.Migrations
                             Description = "Maximum file upload size in bytes (10MB)",
                             SettingKey = "MaxFileUploadSize",
                             SettingValue = "10485760",
-                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7824)
+                            UpdatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7601)
                         },
                         new
                         {
@@ -401,7 +401,7 @@ namespace backend.Migrations
                             Description = "Allowed file upload types",
                             SettingKey = "AllowedFileTypes",
                             SettingValue = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip",
-                            UpdatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7825)
+                            UpdatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7602)
                         });
                 });
 
@@ -449,7 +449,7 @@ namespace backend.Migrations
                         {
                             Id = 1,
                             CommentDeadline = new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(5435),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(3512),
                             CreatedById = 2,
                             Description = "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.",
                             IdeaSubmissionDeadline = new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified),
@@ -499,6 +499,9 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("StudentId")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -516,39 +519,39 @@ namespace backend.Migrations
                         {
                             Id = 1,
                             AgreedTerms = true,
-                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(2871),
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3176),
+                            AgreedTermsDate = new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(9824),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(353),
                             DepartmentId = 1,
                             Email = "admin@university.edu",
-                            FullName = "Admin User",
+                            FullName = "System Administrator",
                             IsActive = true,
-                            PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
+                            PasswordHash = "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO",
                             Role = "Administrator"
                         },
                         new
                         {
                             Id = 2,
                             AgreedTerms = true,
-                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334),
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334),
+                            AgreedTermsDate = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(606),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(607),
                             DepartmentId = 1,
                             Email = "qamanager@university.edu",
                             FullName = "QA Manager",
                             IsActive = true,
-                            PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
+                            PasswordHash = "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO",
                             Role = "QAManager"
                         },
                         new
                         {
                             Id = 3,
                             AgreedTerms = true,
-                            AgreedTermsDate = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3336),
-                            CreatedAt = new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3337),
+                            AgreedTermsDate = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(609),
+                            CreatedAt = new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(610),
                             DepartmentId = 1,
                             Email = "john@university.edu",
                             FullName = "John Doe",
                             IsActive = true,
-                            PasswordHash = "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O",
+                            PasswordHash = "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO",
                             Role = "Staff"
                         });
                 });

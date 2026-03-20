@@ -157,13 +157,15 @@ public class AppDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
+        var seedDateTime = new DateTime(2026, 3, 20, 0, 0, 0, DateTimeKind.Utc);
+        
         // Seed Departments
         modelBuilder.Entity<Department>().HasData(
-            new Department { Id = 1, Name = "Computer Science", Code = "CS", CreatedAt = DateTime.UtcNow },
-            new Department { Id = 2, Name = "Business Administration", Code = "BA", CreatedAt = DateTime.UtcNow },
-            new Department { Id = 3, Name = "Engineering", Code = "ENG", CreatedAt = DateTime.UtcNow },
-            new Department { Id = 4, Name = "Arts & Design", Code = "AD", CreatedAt = DateTime.UtcNow },
-            new Department { Id = 5, Name = "Science", Code = "NS", CreatedAt = DateTime.UtcNow }
+            new Department { Id = 1, Name = "Computer Science", Code = "CS", CreatedAt = seedDateTime },
+            new Department { Id = 2, Name = "Business Administration", Code = "BA", CreatedAt = seedDateTime },
+            new Department { Id = 3, Name = "Engineering", Code = "ENG", CreatedAt = seedDateTime },
+            new Department { Id = 4, Name = "Arts & Design", Code = "AD", CreatedAt = seedDateTime },
+            new Department { Id = 5, Name = "Science", Code = "NS", CreatedAt = seedDateTime }
         );
 
         // Seed Users (Passwords are hashed version of "password123")
@@ -177,8 +179,8 @@ public class AppDbContext : DbContext
                 Role = "Administrator",
                 DepartmentId = 1,
                 AgreedTerms = true,
-                AgreedTermsDate = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                AgreedTermsDate = seedDateTime,
+                CreatedAt = seedDateTime
             },
             new User
             {
@@ -189,8 +191,8 @@ public class AppDbContext : DbContext
                 Role = "QAManager",
                 DepartmentId = 1,
                 AgreedTerms = true,
-                AgreedTermsDate = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                AgreedTermsDate = seedDateTime,
+                CreatedAt = seedDateTime
             },
             new User
             {
@@ -201,8 +203,8 @@ public class AppDbContext : DbContext
                 Role = "Staff",
                 DepartmentId = 1,
                 AgreedTerms = true,
-                AgreedTermsDate = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                AgreedTermsDate = seedDateTime,
+                CreatedAt = seedDateTime
             }
         );
 
@@ -217,18 +219,18 @@ public class AppDbContext : DbContext
                 CommentDeadline = new DateTime(2026, 7, 31, 23, 59, 59),         // 31/07/2026
                 CreatedById = 2,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = seedDateTime
             }
         );
 
         // Seed Categories
         modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, TopicId = 1, Name = "Công nghệ & Cơ sở vật chất", Description = "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 2, TopicId = 1, Name = "Môi trường học tập", Description = "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 3, TopicId = 1, Name = "Dịch vụ sinh viên", Description = "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 4, TopicId = 1, Name = "Quy trình hành chính", Description = "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 5, TopicId = 1, Name = "Giảng dạy & Học tập", Description = "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập", CreatedAt = DateTime.UtcNow },
-            new Category { Id = 6, TopicId = 1, Name = "Khác", Description = "Các ý tưởng khác không thuộc các danh mục trên", CreatedAt = DateTime.UtcNow }
+            new Category { Id = 1, TopicId = 1, Name = "Công nghệ & Cơ sở vật chất", Description = "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập", CreatedAt = seedDateTime },
+            new Category { Id = 2, TopicId = 1, Name = "Môi trường học tập", Description = "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh", CreatedAt = seedDateTime },
+            new Category { Id = 3, TopicId = 1, Name = "Dịch vụ sinh viên", Description = "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa", CreatedAt = seedDateTime },
+            new Category { Id = 4, TopicId = 1, Name = "Quy trình hành chính", Description = "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service", CreatedAt = seedDateTime },
+            new Category { Id = 5, TopicId = 1, Name = "Giảng dạy & Học tập", Description = "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập", CreatedAt = seedDateTime },
+            new Category { Id = 6, TopicId = 1, Name = "Khác", Description = "Các ý tưởng khác không thuộc các danh mục trên", CreatedAt = seedDateTime }
         );
 
         // Seed System Settings
@@ -239,7 +241,7 @@ public class AppDbContext : DbContext
                 SettingKey = "CurrentAcademicYear",
                 SettingValue = "2025-2026",
                 Description = "Current academic year",
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = seedDateTime
             },
             new SystemSettings
             {
@@ -247,7 +249,7 @@ public class AppDbContext : DbContext
                 SettingKey = "EnableEmailNotifications",
                 SettingValue = "true",
                 Description = "Enable/disable email notifications",
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = seedDateTime
             },
             new SystemSettings
             {
