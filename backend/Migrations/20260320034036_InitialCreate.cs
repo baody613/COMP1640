@@ -90,6 +90,8 @@ namespace backend.Migrations
                     Role = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     DepartmentId = table.Column<int>(type: "int", nullable: true),
+                    StudentId = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     AgreedTerms = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     AgreedTermsDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -275,11 +277,11 @@ namespace backend.Migrations
                 columns: new[] { "Id", "Code", "CreatedAt", "Name", "QACoordinatorId" },
                 values: new object[,]
                 {
-                    { 1, "CS", new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5608), "Computer Science", null },
-                    { 2, "BA", new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5755), "Business Administration", null },
-                    { 3, "ENG", new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5757), "Engineering", null },
-                    { 4, "AD", new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5758), "Arts & Design", null },
-                    { 5, "NS", new DateTime(2026, 2, 28, 6, 26, 57, 329, DateTimeKind.Utc).AddTicks(5759), "Science", null }
+                    { 1, "CS", new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(281), "Computer Science", null },
+                    { 2, "BA", new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(556), "Business Administration", null },
+                    { 3, "ENG", new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(558), "Engineering", null },
+                    { 4, "AD", new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(559), "Arts & Design", null },
+                    { 5, "NS", new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(560), "Science", null }
                 });
 
             migrationBuilder.InsertData(
@@ -287,38 +289,38 @@ namespace backend.Migrations
                 columns: new[] { "Id", "Description", "SettingKey", "SettingValue", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, "Current academic year", "CurrentAcademicYear", "2025-2026", new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7697), null },
-                    { 2, "Enable/disable email notifications", "EnableEmailNotifications", "true", new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7823), null },
-                    { 3, "Maximum file upload size in bytes (10MB)", "MaxFileUploadSize", "10485760", new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7824), null },
-                    { 4, "Allowed file upload types", "AllowedFileTypes", ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip", new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(7825), null }
+                    { 1, "Current academic year", "CurrentAcademicYear", "2025-2026", new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7361), null },
+                    { 2, "Enable/disable email notifications", "EnableEmailNotifications", "true", new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7599), null },
+                    { 3, "Maximum file upload size in bytes (10MB)", "MaxFileUploadSize", "10485760", new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7601), null },
+                    { 4, "Allowed file upload types", "AllowedFileTypes", ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip", new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(7602), null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "AgreedTerms", "AgreedTermsDate", "CreatedAt", "DepartmentId", "Email", "FullName", "IsActive", "PasswordHash", "Role", "UpdatedAt" },
+                columns: new[] { "Id", "AgreedTerms", "AgreedTermsDate", "CreatedAt", "DepartmentId", "Email", "FullName", "IsActive", "PasswordHash", "Role", "StudentId", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, true, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(2871), new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3176), 1, "admin@university.edu", "Admin User", true, "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O", "Administrator", null },
-                    { 2, true, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334), new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3334), 1, "qamanager@university.edu", "QA Manager", true, "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O", "QAManager", null },
-                    { 3, true, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3336), new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(3337), 1, "john@university.edu", "John Doe", true, "$2a$11$8GvBJz9VX4qYq5T1kZXLmefL.p3yKYYR9.cOLKLvZJqVvJqWXqD8O", "Staff", null }
+                    { 1, true, new DateTime(2026, 3, 20, 3, 40, 35, 680, DateTimeKind.Utc).AddTicks(9824), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(353), 1, "admin@university.edu", "System Administrator", true, "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO", "Administrator", null, null },
+                    { 2, true, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(606), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(607), 1, "qamanager@university.edu", "QA Manager", true, "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO", "QAManager", null, null },
+                    { 3, true, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(609), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(610), 1, "john@university.edu", "John Doe", true, "$2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO", "Staff", null, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Topics",
                 columns: new[] { "Id", "CommentDeadline", "CreatedAt", "CreatedById", "Description", "IdeaSubmissionDeadline", "IsActive", "Name" },
-                values: new object[] { 1, new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(5435), 2, "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.", new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified), true, "Nâng cao trải nghiệm sinh viên toàn trường" });
+                values: new object[] { 1, new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(3512), 2, "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.", new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified), true, "Nâng cao trải nghiệm sinh viên toàn trường" });
 
             migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "CreatedAt", "Description", "Name", "TopicId" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6653), "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập", "Công nghệ & Cơ sở vật chất", 1 },
-                    { 2, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6785), "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh", "Môi trường học tập", 1 },
-                    { 3, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6786), "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa", "Dịch vụ sinh viên", 1 },
-                    { 4, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6788), "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service", "Quy trình hành chính", 1 },
-                    { 5, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6789), "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập", "Giảng dạy & Học tập", 1 },
-                    { 6, new DateTime(2026, 2, 28, 6, 26, 57, 330, DateTimeKind.Utc).AddTicks(6790), "Các ý tưởng khác không thuộc các danh mục trên", "Khác", 1 }
+                    { 1, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5547), "Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập", "Công nghệ & Cơ sở vật chất", 1 },
+                    { 2, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5787), "Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh", "Môi trường học tập", 1 },
+                    { 3, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5789), "Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa", "Dịch vụ sinh viên", 1 },
+                    { 4, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5790), "Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service", "Quy trình hành chính", 1 },
+                    { 5, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5791), "Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập", "Giảng dạy & Học tập", 1 },
+                    { 6, new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(5793), "Các ý tưởng khác không thuộc các danh mục trên", "Khác", 1 }
                 });
 
             migrationBuilder.CreateIndex(

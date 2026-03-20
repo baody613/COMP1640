@@ -1,0 +1,3 @@
+-- Drop and recreate database
+DROP DATABASE IF EXISTS COMP1640_IdeaHub;
+CREATE DATABASE COMP1640_IdeaHub;
