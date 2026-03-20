@@ -257,7 +257,7 @@ public class AppDbContext : DbContext
                 SettingKey = "MaxFileUploadSize",
                 SettingValue = "10485760",
                 Description = "Maximum file upload size in bytes (10MB)",
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = seedDateTime
             },
             new SystemSettings
             {
@@ -265,7 +265,7 @@ public class AppDbContext : DbContext
                 SettingKey = "AllowedFileTypes",
                 SettingValue = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip",
                 Description = "Allowed file upload types",
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = seedDateTime
             }
         );
     }
