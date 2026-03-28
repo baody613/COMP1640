@@ -211,6 +211,66 @@ public class AdminController : ControllerBase
 
     // ==================== TOPIC MANAGEMENT ====================
 
+    // GET: api/Admin/topics/{topicId}/ideas-with-documents
+    [HttpGet("topics/{topicId}/ideas-with-documents")]
+    public async Task<IActionResult> GetIdeasWithDocumentsByTopic(int topicId)
+    {
+        try
+        {
+            var topic = await _context.Topics.FindAsync(topicId);
+            if (topic == null)
+                return NotFound("Topic not found");
+
+            var ideas = await _context.Ideas
+                .Include(i => i.Author)
+                .Include(i => i.Department)
+                .Include(i => i.Category)
+                .Include(i => i.Documents)
+                .Where(i => i.TopicId == topicId)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new
+                {
+                    i.Id,
+                    i.Title,
+                    i.Content,
+                    i.IsAnonymous,
+                    i.CreatedAt,
+                    AuthorName = i.IsAnonymous
+                        ? "Anonymous"
+                        : (i.Author != null ? i.Author.FullName : "Unknown"),
+                    AuthorEmail = i.Author != null ? i.Author.Email : null,
+                    DepartmentName = i.Department != null ? i.Department.Name : "N/A",
+                    CategoryName = i.Category != null ? i.Category.Name : "N/A",
+                    Documents = i.Documents
+                        .OrderByDescending(d => d.UploadedAt)
+                        .Select(d => new
+                        {
+                            d.Id,
+                            d.FileName,
+                            d.FilePath,
+                            d.FileSize,
+                            d.UploadedAt
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                TopicId = topic.Id,
+                TopicName = topic.Name,
+                TotalIdeas = ideas.Count,
+                TotalDocuments = ideas.Sum(i => i.Documents.Count),
+                Ideas = ideas
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting ideas and documents for topic {TopicId}", topicId);
+            return StatusCode(500, "An error occurred while retrieving topic ideas and documents");
+        }
+    }
+
     // PUT: api/Admin/topics/{id}
     [HttpPut("topics/{id}")]
     public async Task<IActionResult> UpdateTopic(int id, [FromBody] UpdateTopicDto dto)

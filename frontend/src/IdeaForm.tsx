@@ -1,7 +1,12 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
-import { ideaService, categoryService, topicService } from "./services";
+import {
+  ideaService,
+  categoryService,
+  topicService,
+  documentService,
+} from "./services";
 import type { Category, Topic } from "./types";
 import "./IdeaForm.css";
 
@@ -88,8 +93,23 @@ function IdeaForm() {
 
       // Handle file uploads if any
       if (files && files.length > 0) {
-        // Note: File upload would need to be implemented separately
-        console.log("Files to upload:", files);
+        const uploadResults = await Promise.allSettled(
+          Array.from(files).map((file) =>
+            documentService.uploadDocument(newIdea.id, file),
+          ),
+        );
+
+        const failedUploads = uploadResults.filter(
+          (result) => result.status === "rejected",
+        ).length;
+
+        if (failedUploads > 0) {
+          alert(
+            `Ý tưởng đã tạo thành công, nhưng có ${failedUploads}/${files.length} file upload thất bại. Vui lòng mở lại ý tưởng để upload lại file.`,
+          );
+          navigate(`/idea/${newIdea.id}`);
+          return;
+        }
       }
 
       alert(

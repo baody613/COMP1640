@@ -11,6 +11,7 @@ import {
   type DepartmentStatistics,
   type CategoryStatistics,
   type TopicStatistics,
+  type AdminTopicIdeasResponse,
 } from "./services";
 import type { Topic, Category } from "./types";
 import "./AdminDashboard.css";
@@ -27,7 +28,13 @@ interface User {
   createdAt: string;
 }
 
-type TabType = "overview" | "users" | "topics" | "categories" | "statistics";
+type TabType =
+  | "overview"
+  | "users"
+  | "topics"
+  | "categories"
+  | "statistics"
+  | "topicIdeas";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -53,6 +60,9 @@ function AdminDashboard() {
   const [deptStats, setDeptStats] = useState<DepartmentStatistics[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStatistics[]>([]);
   const [topicStats, setTopicStats] = useState<TopicStatistics[]>([]);
+  const [selectedTopicId, setSelectedTopicId] = useState<number | "">("");
+  const [topicIdeasData, setTopicIdeasData] =
+    useState<AdminTopicIdeasResponse | null>(null);
 
   useEffect(() => {
     if (user?.role !== "Administrator") {
@@ -134,11 +144,28 @@ function AdminDashboard() {
     }
   };
 
+  const loadTopicIdeasByTopic = async (topicId: number) => {
+    setLoading(true);
+    try {
+      const data = await adminService.getIdeasWithDocumentsByTopic(topicId);
+      setTopicIdeasData(data);
+    } catch (error) {
+      console.error("Failed to load topic ideas and documents:", error);
+      setTopicIdeasData(null);
+      alert("Không thể tải dữ liệu ý tưởng và file đính kèm của topic này");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users") loadUsers();
     else if (activeTab === "topics") loadTopics();
     else if (activeTab === "categories") loadCategories();
     else if (activeTab === "statistics") loadStatistics();
+    else if (activeTab === "topicIdeas") {
+      loadTopics();
+    }
   }, [activeTab]);
 
   const handleExportCSV = async (topicId: number) => {
@@ -194,6 +221,12 @@ function AdminDashboard() {
         >
           📈 Thống kê
         </button>
+        <button
+          className={`tab ${activeTab === "topicIdeas" ? "active" : ""}`}
+          onClick={() => setActiveTab("topicIdeas")}
+        >
+          📎 Ý tưởng & File Upload
+        </button>
       </div>
 
       <div className="admin-content">
@@ -227,6 +260,174 @@ function AdminDashboard() {
             loading={loading}
           />
         )}
+        {activeTab === "topicIdeas" && (
+          <TopicIdeasFilesTab
+            topics={topics}
+            loading={loading}
+            selectedTopicId={selectedTopicId}
+            topicIdeasData={topicIdeasData}
+            onSelectTopic={(topicId) => {
+              setSelectedTopicId(topicId);
+              setTopicIdeasData(null);
+            }}
+            onLoadTopicIdeas={loadTopicIdeasByTopic}
+            onRefreshTopics={loadTopics}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// Topic Ideas + Files Tab Component
+function TopicIdeasFilesTab({
+  topics,
+  loading,
+  selectedTopicId,
+  topicIdeasData,
+  onSelectTopic,
+  onLoadTopicIdeas,
+  onRefreshTopics,
+}: {
+  topics: Topic[];
+  loading: boolean;
+  selectedTopicId: number | "";
+  topicIdeasData: AdminTopicIdeasResponse | null;
+  onSelectTopic: (topicId: number | "") => void;
+  onLoadTopicIdeas: (topicId: number) => void;
+  onRefreshTopics: () => void;
+}) {
+  return (
+    <div className="topic-ideas-tab">
+      <div className="tab-header">
+        <h2>📎 Ý tưởng của Staff và file upload theo Topic</h2>
+        <button className="btn-secondary" onClick={onRefreshTopics}>
+          🔄 Làm mới topics
+        </button>
+      </div>
+
+      <div className="topic-ideas-controls">
+        <label htmlFor="topic-select">Chọn topic:</label>
+        <select
+          id="topic-select"
+          value={selectedTopicId}
+          onChange={(e) =>
+            onSelectTopic(e.target.value ? Number(e.target.value) : "")
+          }
+        >
+          <option value="">-- Chọn một topic --</option>
+          {topics.map((topic) => (
+            <option key={topic.id} value={topic.id}>
+              {topic.name}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn-primary"
+          disabled={selectedTopicId === "" || loading}
+          onClick={() => {
+            if (selectedTopicId !== "") onLoadTopicIdeas(selectedTopicId);
+          }}
+        >
+          {loading ? "Đang tải..." : "Xem dữ liệu"}
+        </button>
+      </div>
+
+      {topicIdeasData && (
+        <div className="topic-ideas-summary">
+          <div className="summary-card">
+            <span className="summary-label">Topic</span>
+            <strong>{topicIdeasData.topicName}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Tổng ý tưởng</span>
+            <strong>{topicIdeasData.totalIdeas}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Tổng file upload</span>
+            <strong>{topicIdeasData.totalDocuments}</strong>
+          </div>
+        </div>
+      )}
+
+      {topicIdeasData && topicIdeasData.ideas.length === 0 && (
+        <div className="empty">Topic này chưa có ý tưởng nào.</div>
+      )}
+
+      <div className="topic-ideas-list">
+        {topicIdeasData?.ideas.map((idea) => (
+          <div key={idea.id} className="idea-doc-card">
+            <div className="idea-doc-header">
+              <h3>{idea.title}</h3>
+              <span className="idea-doc-meta">
+                {new Date(idea.createdAt).toLocaleString("vi-VN")}
+              </span>
+            </div>
+
+            <div className="idea-doc-info-grid">
+              <div>
+                <span className="label">Tác giả</span>
+                <strong>{idea.authorName}</strong>
+              </div>
+              <div>
+                <span className="label">Email</span>
+                <strong>{idea.authorEmail || "Ẩn"}</strong>
+              </div>
+              <div>
+                <span className="label">Phòng ban</span>
+                <strong>{idea.departmentName}</strong>
+              </div>
+              <div>
+                <span className="label">Category</span>
+                <strong>{idea.categoryName}</strong>
+              </div>
+            </div>
+
+            <p className="idea-doc-content">{idea.content}</p>
+
+            <div className="documents-block">
+              <h4>📁 File upload ({idea.documents.length})</h4>
+              {idea.documents.length === 0 ? (
+                <p className="no-docs">Không có file đính kèm.</p>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Tên file</th>
+                      <th>Kích thước</th>
+                      <th>Ngày tải lên</th>
+                      <th>Liên kết</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {idea.documents.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.fileName}</td>
+                        <td>{formatFileSize(doc.fileSize)}</td>
+                        <td>{new Date(doc.uploadedAt).toLocaleString("vi-VN")}</td>
+                        <td>
+                          <a
+                            href={`http://localhost:5000${doc.filePath}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Mở file
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

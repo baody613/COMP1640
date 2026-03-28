@@ -4,6 +4,8 @@
 -- Hash: $2a$11$BgXFzT7ByJ9zHDu4WbZQ5eRxlk5k5Uq40UpTGey0HPn493ziNrEfO
 -- ============================================================
 
+USE comp1640_ideahub;
+
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ── 1. Assign QA Coordinator to each department ─────────────
