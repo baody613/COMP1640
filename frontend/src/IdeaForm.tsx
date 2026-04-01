@@ -1,9 +1,9 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
-import { ideaService, categoryService, topicService } from "./services";
-import type { Category, Topic } from "./types";
 import "./IdeaForm.css";
+import { categoryService, ideaService, topicService } from "./services";
+import type { Category, Topic } from "./types";
 
 function IdeaForm() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -44,12 +44,12 @@ function IdeaForm() {
       // Update user in localStorage
       const updatedUser = await authService.getCurrentUserFromApi();
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      alert("Bạn đã đồng ý với Terms & Conditions thành công!");
+      alert("You have successfully agreed to Terms & Conditions!");
       // Reload the page to refresh user state
       window.location.reload();
     } catch (error) {
       console.error("Failed to agree terms:", error);
-      alert("Không thể cập nhật trạng thái. Vui lòng thử lại.");
+      alert("Unable to update status. Please try again.");
     } finally {
       setAgreeingTerms(false);
     }
@@ -59,17 +59,17 @@ function IdeaForm() {
     e.preventDefault();
 
     if (!user?.agreedTerms) {
-      alert("Bạn cần đồng ý với Terms & Conditions trước khi gửi ý tưởng!");
+      alert("You need to agree to Terms & Conditions before submitting an idea!");
       return;
     }
 
     if (!topicId) {
-      alert("Vui lòng chọn topic!");
+      alert("Please select a topic!");
       return;
     }
 
     if (!categoryId) {
-      alert("Vui lòng chọn danh mục!");
+      alert("Please select a category!");
       return;
     }
 
@@ -93,7 +93,7 @@ function IdeaForm() {
       }
 
       alert(
-        "Đã tạo ý tưởng thành công! Email thông báo đã được gửi đến QA Coordinator.",
+        "Successfully created an idea! A notification email has been sent to the QA Coordinator.",
       );
       navigate(`/idea/${newIdea.id}`);
     } catch (error: unknown) {
@@ -101,7 +101,7 @@ function IdeaForm() {
       console.error("Failed to create idea:", error);
       alert(
         err.response?.data?.message ||
-          "Không thể tạo ý tưởng. Vui lòng kiểm tra deadline.",
+          "Unable to create idea. Please check the deadline.",
       );
     } finally {
       setLoading(false);
@@ -111,11 +111,11 @@ function IdeaForm() {
   if (!user?.agreedTerms) {
     return (
       <div className="terms-warning">
-        <h2>⚠️ Chưa đồng ý Terms & Conditions</h2>
-        <p>Bạn cần đồng ý với Terms & Conditions trước khi gửi ý tưởng.</p>
+        <h2>⚠️ Terms & Conditions Not Agreed</h2>
+        <p>You need to agree to Terms & Conditions before submitting an idea.</p>
         <div className="terms-warning-content">
           <p>
-            Vui lòng đọc và đồng ý với{" "}
+            Please read and agree to the{" "}
             <a href="/terms" target="_blank" rel="noopener noreferrer">
               Terms & Conditions
             </a>
@@ -127,13 +127,13 @@ function IdeaForm() {
             className="btn-primary"
             disabled={agreeingTerms}
           >
-            {agreeingTerms ? "Đang xử lý..." : "✓ Tôi đồng ý"}
+            {agreeingTerms ? "Processing..." : "✓ I Agree"}
           </button>
           <button
             onClick={() => navigate("/dashboard")}
             className="btn-secondary"
           >
-            Quay lại Dashboard
+            Back to Dashboard
           </button>
         </div>
       </div>
@@ -147,19 +147,19 @@ function IdeaForm() {
           <button
             onClick={() => navigate(-1)}
             className="btn-back-sm"
-            title="Quay lại"
+            title="Back"
           >
             ←
           </button>
           <button
             onClick={() => navigate("/dashboard")}
             className="btn-home-sm"
-            title="Về trang chủ"
+            title="Home"
           >
             ⌂
           </button>
         </div>
-        <span className="form-header-title">Gửi ý tưởng mới</span>
+        <span className="form-header-title">Submit New Idea</span>
         <div className="form-header-right" />
       </header>
 
@@ -171,14 +171,14 @@ function IdeaForm() {
               <p>{topic.description}</p>
               <div className="topic-deadlines">
                 <span>
-                  📅 Deadline gửi ý tưởng:{" "}
+                  📅 Idea Submission Deadline:{" "}
                   {new Date(topic.ideaSubmissionDeadline).toLocaleDateString(
-                    "vi-VN",
+                    "en-US",
                   )}
                 </span>
                 <span>
-                  💬 Deadline bình luận:{" "}
-                  {new Date(topic.commentDeadline).toLocaleDateString("vi-VN")}
+                  💬 Comment Deadline:{" "}
+                  {new Date(topic.commentDeadline).toLocaleDateString("en-US")}
                 </span>
               </div>
             </div>
@@ -186,34 +186,34 @@ function IdeaForm() {
 
           <form onSubmit={handleSubmit} className="idea-form">
             <div className="form-group">
-              <label htmlFor="title">Tiêu đề ý tưởng *</label>
+              <label htmlFor="title">Idea Title *</label>
               <input
                 id="title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Nhập tiêu đề ý tưởng..."
+                placeholder="Enter idea title..."
                 required
                 maxLength={200}
               />
-              <small>{title.length}/200 ký tự</small>
+              <small>{title.length}/200 characters</small>
             </div>
 
             <div className="form-group">
-              <label htmlFor="content">Nội dung ý tưởng *</label>
+              <label htmlFor="content">Idea Content *</label>
               <textarea
                 id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Mô tả chi tiết ý tưởng của bạn..."
+                placeholder="Describe your idea in detail..."
                 rows={10}
                 required
               />
-              <small>{content.length} ký tự</small>
+              <small>{content.length} characters</small>
             </div>
 
             <div className="form-group">
-              <label htmlFor="category">Danh mục *</label>
+              <label htmlFor="category">Category *</label>
               <select
                 id="category"
                 value={categoryId || ""}
@@ -224,7 +224,7 @@ function IdeaForm() {
                 }
                 required
               >
-                <option value="">-- Chọn danh mục --</option>
+                <option value="">-- Select Category --</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -234,7 +234,7 @@ function IdeaForm() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="files">Tệp đính kèm (tùy chọn)</label>
+              <label htmlFor="files">Attachments (Optional)</label>
               <input
                 id="files"
                 type="file"
@@ -243,8 +243,7 @@ function IdeaForm() {
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
               />
               <small>
-                Chấp nhận: PDF, Word, Excel, PowerPoint, hình ảnh. Tối đa
-                10MB/file.
+                Accepted: PDF, Word, Excel, PowerPoint, images. Max 10MB per file.
               </small>
             </div>
 
@@ -256,10 +255,10 @@ function IdeaForm() {
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
                 />
-                <span>Gửi ẩn danh</span>
+                <span>Submit Anonymously</span>
               </label>
               <small>
-                Nếu chọn ẩn danh, tên của bạn sẽ không hiển thị với người khác.
+                If selected, your name will not be displayed to others.
               </small>
             </div>
 
@@ -270,21 +269,21 @@ function IdeaForm() {
                 className="btn-cancel"
                 disabled={loading}
               >
-                Hủy
+                Cancel
               </button>
               <button type="submit" className="btn-submit" disabled={loading}>
-                {loading ? "Đang gửi..." : "Gửi ý tưởng"}
+                {loading ? "Submitting..." : "Submit Idea"}
               </button>
             </div>
           </form>
 
           <div className="form-notice">
-            <h4>📌 Lưu ý:</h4>
+            <h4>📌 Important:</h4>
             <ul>
-              <li>Ý tưởng phải được gửi trước deadline của topic</li>
-              <li>Sau khi gửi, QA Coordinator sẽ nhận được email thông báo</li>
-              <li>Ý tưởng không thể chỉnh sửa sau khi gửi</li>
-              <li>Nếu gửi ẩn danh, chỉ QA Manager/Admin biết danh tính bạn</li>
+              <li>Ideas must be submitted before the topic deadline</li>
+              <li>After submission, the QA Coordinator will receive a notification email</li>
+              <li>Ideas cannot be edited after submission</li>
+              <li>If submitted anonymously, only QA Manager/Admin will know your identity</li>
             </ul>
           </div>
         </div>

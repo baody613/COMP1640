@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { authService } from "./authService";
 import "./Login.css";
 
@@ -22,7 +22,7 @@ function Login() {
       const error = err as { response?: { data?: { message?: string } } };
       setError(
         error.response?.data?.message ||
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.",
+          "Login failed. Please check your email and password.",
       );
     } finally {
       setLoading(false);
@@ -33,7 +33,7 @@ function Login() {
     <div className="login-container">
       <div className="login-box">
         <h1>🎓 COMP1640 IdeaHub</h1>
-        <h2>Đăng nhập</h2>
+        <h2>Sign In</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -61,18 +61,18 @@ function Login() {
           {error && <div className="error">{error}</div>}
 
           <button type="submit" disabled={loading}>
-            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         <div className="register-link">
           <p>
-            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+            Don't have an account? <Link to="/register">Sign Up Now</Link>
           </p>
         </div>
 
         <div className="test-accounts">
-          <h3>Tài khoản test:</h3>
+          <h3>Test Accounts:</h3>
           <ul>
             <li>
               <strong>Admin:</strong> admin@university.edu / password123

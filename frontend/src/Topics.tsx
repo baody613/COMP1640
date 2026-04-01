@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { topicService, ideaService } from "./services";
-import type { Topic, Idea } from "./types";
+import { ideaService, topicService } from "./services";
 import "./Topics.css";
+import type { Idea, Topic } from "./types";
 
 function Topics() {
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -19,7 +19,7 @@ function Topics() {
         setTopics(data);
         setLoading(false);
       } catch {
-        setError("Không thể tải danh sách topics");
+        setError("Unable to load topics list");
         setLoading(false);
       }
     };
@@ -34,7 +34,7 @@ function Topics() {
       setIdeas(data.items || data);
       setTotalPages(data.totalPages || 1);
     } catch {
-      setError("Không thể tải danh sách ideas");
+      setError("Unable to load ideas list");
     }
   };
 
@@ -42,7 +42,7 @@ function Topics() {
   const [totalPages, setTotalPages] = useState(1);
 
   if (loading) {
-    return <div className="loading">Đang tải...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   return (
@@ -65,13 +65,13 @@ function Topics() {
                     📅 Deadline:{" "}
                     {new Date(
                       topic.ideaSubmissionDeadline || topic.closureDate || "",
-                    ).toLocaleDateString("vi-VN")}
+                    ).toLocaleDateString("en-US")}
                   </span>
                   <span>
                     💬 Comment:{" "}
                     {new Date(
                       topic.commentDeadline || topic.finalClosureDate || "",
-                    ).toLocaleDateString("vi-VN")}
+                    ).toLocaleDateString("en-US")}
                   </span>
                 </div>
                 <div className="topic-stats">
@@ -86,14 +86,14 @@ function Topics() {
           {selectedTopic ? (
             <>
               <div className="ideas-header">
-                <h2>💡 Ý tưởng trong "{selectedTopic.name}"</h2>
+                <h2>💡 Ideas in "{selectedTopic.name}"</h2>
                 <button
                   className="btn-add-idea"
                   onClick={() =>
                     navigate(`/topic/${selectedTopic.id}/new-idea`)
                   }
                 >
-                  + Thêm ý tưởng
+                  + Add Idea
                 </button>
               </div>
               <div className="ideas-list">
@@ -128,14 +128,14 @@ function Topics() {
                   ))
                 ) : (
                   <div className="empty-state">
-                    <p>Chưa có ý tưởng nào trong topic này</p>
+                    <p>No ideas yet in this topic</p>
                     <button
                       className="btn-primary"
                       onClick={() =>
                         navigate(`/topic/${selectedTopic.id}/new-idea`)
                       }
                     >
-                      Tạo ý tưởng đầu tiên →
+                      Create First Idea →
                     </button>
                   </div>
                 )}
@@ -146,23 +146,23 @@ function Topics() {
                     onClick={() => loadIdeas(selectedTopic, currentPage - 1)}
                     disabled={currentPage === 1}
                   >
-                    ← Trước
+                    ← Previous
                   </button>
                   <span>
-                    Trang {currentPage} / {totalPages}
+                    Page {currentPage} / {totalPages}
                   </span>
                   <button
                     onClick={() => loadIdeas(selectedTopic, currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
-                    Sau →
+                    Next →
                   </button>
                 </div>
               )}
             </>
           ) : (
             <div className="select-topic">
-              <h2>👈 Chọn một topic để xem ý tưởng</h2>
+              <h2>👈 Select a topic to view ideas</h2>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { authService } from "./authService";
 import "./NavBar.css";
 
@@ -18,22 +18,22 @@ export default function NavBar() {
   });
 
   const tabs = [
-    { label: "Trang chủ", path: "/dashboard", show: true },
+    { label: "Home", path: "/dashboard", show: true },
     { label: "Topics", path: "/topics", show: !isAdmin },
     {
-      label: "Quản lý",
+      label: "Management",
       path: "/admin",
       show: isManager || isAdmin,
       green: true,
     },
   ].filter((t) => t.show);
 
-  // Tính toán vị trí indicator sau mỗi lần route thay đổi
+  // Calculate indicator position when route changes
   useEffect(() => {
     const update = () => {
       const nav = navRef.current;
       if (!nav) return;
-      // Tìm tab active theo đường dẫn hiện tại
+      // Find active tab by current path
       const activeEl = nav.querySelector<HTMLElement>(".tab-btn.tab-active");
       if (activeEl) {
         setIndicator({
@@ -43,7 +43,7 @@ export default function NavBar() {
         });
       }
     };
-    // Dùng hai requestAnimationFrame để đảm bảo DOM đã render xong
+    // Use two requestAnimationFrames to ensure DOM is fully rendered
     const raf1 = requestAnimationFrame(() => {
       const raf2 = requestAnimationFrame(update);
       return () => cancelAnimationFrame(raf2);
@@ -72,7 +72,7 @@ export default function NavBar() {
             />
           )}
           {tabs.map((tab) => {
-            // Tab được coi là active nếu đường dẫn khớp hoặc bắt đầu bằng path (cho sub-routes)
+            // Tab is active if path matches or starts with path (for sub-routes)
             const isActive =
               tab.path === "/dashboard"
                 ? location.pathname === "/dashboard"
@@ -101,7 +101,7 @@ export default function NavBar() {
           </div>
         </div>
         <button onClick={handleLogout} className="btn-logout">
-          Đăng xuất
+          Sign Out
         </button>
       </div>
     </header>

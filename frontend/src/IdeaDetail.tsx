@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
-import { ideaService, commentService } from "./services";
-import type { Idea, Comment } from "./types";
 import "./IdeaDetail.css";
+import { commentService, ideaService } from "./services";
+import type { Comment, Idea } from "./types";
 
 function IdeaDetail() {
   const { id } = useParams<{ id: string }>();
@@ -77,7 +77,7 @@ function IdeaDetail() {
       }
     } catch (error) {
       console.error("Failed to react:", error);
-      alert("Không thể thực hiện reaction. Vui lòng thử lại.");
+      alert("Unable to perform reaction. Please try again.");
     }
   };
 
@@ -93,10 +93,10 @@ function IdeaDetail() {
       setComments([...comments, comment]);
       setNewComment("");
       setIsAnonymous(false);
-      alert("Đã thêm comment thành công!");
+      alert("Successfully added comment!");
     } catch (error) {
       console.error("Failed to add comment:", error);
-      alert("Không thể thêm comment. Vui lòng kiểm tra deadline.");
+      alert("Unable to add comment. Please check the deadline.");
     }
   };
 
@@ -106,22 +106,22 @@ function IdeaDetail() {
     try {
       await commentService.deleteComment(commentId);
       setComments(comments.filter((c) => c.id !== commentId));
-      alert("Đã xóa comment thành công!");
+      alert("Successfully deleted comment!");
     } catch (error) {
       console.error("Failed to delete comment:", error);
-      alert("Không thể xóa comment.");
+      alert("Unable to delete comment.");
     }
   };
 
   if (loading) {
-    return <div className="loading">Đang tải...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   if (!idea) {
     return (
       <div className="error-container">
-        <h2>Không tìm thấy ý tưởng</h2>
-        <button onClick={() => navigate("/topics")}>Quay lại</button>
+        <h2>Idea not found</h2>
+        <button onClick={() => navigate("/topics")}>Back</button>
       </div>
     );
   }
@@ -133,19 +133,19 @@ function IdeaDetail() {
           <button
             onClick={() => navigate(-1)}
             className="btn-back-sm"
-            title="Quay lại"
+            title="Back"
           >
             ←
           </button>
           <button
             onClick={() => navigate("/dashboard")}
             className="btn-home-sm"
-            title="Về trang chủ"
+            title="Home"
           >
-            ⌂
+            ⌄
           </button>
         </div>
-        <span className="idea-header-title">Chi tiết ý tưởng</span>
+        <span className="idea-header-title">Idea Details</span>
         <div className="idea-header-right" />
       </header>
 
@@ -160,7 +160,7 @@ function IdeaDetail() {
                   : `👤 ${idea.author?.fullName || "Unknown"}`}
               </span>
               <span>📅 {new Date(idea.createdAt).toLocaleDateString()}</span>
-              <span>👁️ {idea.viewCount} lượt xem</span>
+              <span>👁️ {idea.viewCount} views</span>
               {idea.category && <span>🏷️ {idea.category.name}</span>}
             </div>
           </div>
@@ -171,7 +171,7 @@ function IdeaDetail() {
 
           {idea.documents && idea.documents.length > 0 && (
             <div className="idea-documents">
-              <h3>📎 Tệp đính kèm</h3>
+              <h3>📎 Attachments</h3>
               <div className="documents-list">
                 {idea.documents.map((doc) => (
                   <a
@@ -210,7 +210,7 @@ function IdeaDetail() {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Viết comment của bạn..."
+              placeholder="Write your comment..."
               rows={4}
               required
             />
@@ -221,10 +221,10 @@ function IdeaDetail() {
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
                 />
-                Gửi ẩn danh
+                Submit Anonymously
               </label>
               <button type="submit" className="btn-submit">
-                Gửi comment
+                Submit Comment
               </button>
             </div>
           </form>
@@ -241,8 +241,8 @@ function IdeaDetail() {
                     </span>
                     <span className="comment-date">
                       {comment.createdAt
-                        ? `${new Date(comment.createdAt).toLocaleDateString("vi-VN")} ${new Date(comment.createdAt).toLocaleTimeString("vi-VN")}`
-                        : "Vừa xong"}
+                        ? `${new Date(comment.createdAt).toLocaleDateString("en-US")} ${new Date(comment.createdAt).toLocaleTimeString("en-US")}`
+                        : "Just now"}
                     </span>
                   </div>
                   <div className="comment-content">{comment.content}</div>
@@ -254,7 +254,7 @@ function IdeaDetail() {
                         onClick={() => handleDeleteComment(comment.id)}
                         className="btn-delete"
                       >
-                        🗑️ Xóa
+                        🗑️ Delete
                       </button>
                     </div>
                   )}
@@ -262,7 +262,7 @@ function IdeaDetail() {
               ))
             ) : (
               <p className="empty-comments">
-                Chưa có comment nào. Hãy là người đầu tiên!
+                No comments yet. Be the first!
               </p>
             )}
           </div>
