@@ -236,34 +236,49 @@ public class AuthController : ControllerBase
 
     private string GenerateJwtToken(User user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"];
-        var issuer = jwtSettings["Issuer"];
-        var audience = jwtSettings["Audience"];
-        var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");
+        var (signingKey, issuer, audience, expiryMinutes) = LoadJwtConfig();
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
+        var descriptor = new SecurityTokenDescriptor
         {
-            new Claim("userId", user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim("role", user.Role.ToString()),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("departmentId", user.DepartmentId?.ToString() ?? "")
+            Subject            = new ClaimsIdentity(BuildClaimsForUser(user)),
+            Issuer             = issuer,
+            Audience           = audience,
+            NotBefore          = DateTime.UtcNow,
+            IssuedAt           = DateTime.UtcNow,
+            Expires            = DateTime.UtcNow.AddMinutes(expiryMinutes),
+            SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
         };
 
-        var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
-            signingCredentials: credentials
-        );
+        var handler = new JwtSecurityTokenHandler();
+        return handler.WriteToken(handler.CreateToken(descriptor));
+    }
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+    private (SymmetricSecurityKey Key, string Issuer, string Audience, int ExpiryMinutes) LoadJwtConfig()
+    {
+        var cfg = _configuration.GetSection("JwtSettings");
+        var rawSecret = cfg["SecretKey"]
+            ?? throw new InvalidOperationException("JwtSettings:SecretKey is not configured.");
+
+        return (
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(rawSecret)),
+            cfg["Issuer"]   ?? "comp1640-ideahub",
+            cfg["Audience"] ?? "comp1640-client",
+            int.TryParse(cfg["ExpiryMinutes"], out var mins) ? mins : 60
+        );
+    }
+
+    private static IEnumerable<Claim> BuildClaimsForUser(User user)
+    {
+        yield return new Claim("userId",         user.Id.ToString());
+        yield return new Claim("jti",            Guid.NewGuid().ToString("N"));
+        yield return new Claim(ClaimTypes.Email, user.Email);
+        yield return new Claim(ClaimTypes.Name,  user.FullName);
+        yield return new Claim(ClaimTypes.Role,  user.Role);
+        yield return new Claim("role",           user.Role);
+        yield return new Claim("deptId",         user.DepartmentId?.ToString() ?? "0");
+        yield return new Claim("termsAgreed",    user.AgreedTerms ? "1" : "0");
+        if (!string.IsNullOrWhiteSpace(user.StudentId))
+            yield return new Claim("studentId", user.StudentId);
     }
 }
 

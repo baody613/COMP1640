@@ -262,9 +262,7 @@ function IdeaDetail() {
                 </div>
               ))
             ) : (
-              <p className="empty-comments">
-                No comments yet. Be the first!
-              </p>
+              <p className="empty-comments">No comments yet. Be the first!</p>
             )}
           </div>
         </div>

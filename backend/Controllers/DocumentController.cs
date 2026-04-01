@@ -61,24 +61,25 @@ public class DocumentController : ControllerBase
             var uploadDir = Path.Combine(_environment.WebRootPath ?? "wwwroot", "uploads", ideaId.ToString());
             Directory.CreateDirectory(uploadDir);
 
-            // Generate unique filename
-            var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var filePath = Path.Combine(uploadDir, uniqueFileName);
+            // Store file under a UUID-based name to prevent collisions and path-traversal;
+            // the original filename is preserved in the database record.
+            var safeExtension  = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var storedFileName = $"{Guid.NewGuid():N}{safeExtension}";
+            var diskPath       = Path.Combine(uploadDir, storedFileName);
 
-            // Save file
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+            await using var writeStream = new FileStream(
+                diskPath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                bufferSize: 81_920, useAsync: true);
+            await file.CopyToAsync(writeStream);
 
             // Create document record
             var document = new Document
             {
-                IdeaId = ideaId,
-                FileName = file.FileName,
-                FilePath = $"/uploads/{ideaId}/{uniqueFileName}",
-                FileSize = file.Length,
-                MimeType = file.ContentType,
+                IdeaId     = ideaId,
+                FileName   = file.FileName,
+                FilePath   = $"/uploads/{ideaId}/{storedFileName}",
+                FileSize   = file.Length,
+                MimeType   = file.ContentType,
                 UploadedAt = DateTime.UtcNow
             };
 

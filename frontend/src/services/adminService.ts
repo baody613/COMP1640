@@ -1,5 +1,16 @@
 import apiClient from "../api";
 
+function triggerBlobDownload(blobData: BlobPart, filename: string): void {
+  const objectUrl = window.URL.createObjectURL(new Blob([blobData]));
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.setAttribute("download", filename);
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(objectUrl);
+}
+
 export interface AdminIdeaDocument {
   id: number;
   fileName: string;
@@ -35,15 +46,7 @@ export const adminService = {
     const response = await apiClient.get(`/Admin/export-csv/${topicId}`, {
       responseType: "blob",
     });
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `ideas_export_${topicId}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    triggerBlobDownload(response.data, `ideas_export_${topicId}.csv`);
   },
 
   // Export documents to ZIP
@@ -51,15 +54,7 @@ export const adminService = {
     const response = await apiClient.get(`/Admin/export-documents/${topicId}`, {
       responseType: "blob",
     });
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `documents_export_${topicId}.zip`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    triggerBlobDownload(response.data, `documents_export_${topicId}.zip`);
   },
 
   // Export all data (CSV + Documents)
@@ -67,15 +62,7 @@ export const adminService = {
     const response = await apiClient.get(`/Admin/export-all-data/${topicId}`, {
       responseType: "blob",
     });
-
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `all_data_export_${topicId}.zip`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    triggerBlobDownload(response.data, `all_data_export_${topicId}.zip`);
   },
 
   // Get topic ideas with uploaded documents for admin review
