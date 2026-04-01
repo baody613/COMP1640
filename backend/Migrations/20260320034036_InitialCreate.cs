@@ -308,7 +308,7 @@ namespace backend.Migrations
             migrationBuilder.InsertData(
                 table: "Topics",
                 columns: new[] { "Id", "CommentDeadline", "CreatedAt", "CreatedById", "Description", "IdeaSubmissionDeadline", "IsActive", "Name" },
-                values: new object[] { 1, new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(3512), 2, "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.", new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified), true, "Nâng cao trải nghiệm sinh viên toàn trường" });
+                values: new object[] { 1, new DateTime(2026, 7, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new DateTime(2026, 3, 20, 3, 40, 35, 681, DateTimeKind.Utc).AddTicks(3512), 2, "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.", new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified), true, "Enhancing the student experience across the entire campus." });
 
             migrationBuilder.InsertData(
                 table: "Categories",

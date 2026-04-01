@@ -101,7 +101,8 @@ function IdeaDetail() {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!window.confirm("Bạn có chắc muốn xóa comment này?")) return;
+    if (!window.confirm("Are you sure you want to delete this comment?"))
+      return;
 
     try {
       await commentService.deleteComment(commentId);

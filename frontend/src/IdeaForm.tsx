@@ -64,7 +64,9 @@ function IdeaForm() {
     e.preventDefault();
 
     if (!user?.agreedTerms) {
-      alert("You need to agree to Terms & Conditions before submitting an idea!");
+      alert(
+        "You need to agree to Terms & Conditions before submitting an idea!",
+      );
       return;
     }
 
@@ -105,7 +107,7 @@ function IdeaForm() {
 
         if (failedUploads > 0) {
           alert(
-            `Ý tưởng đã tạo thành công, nhưng có ${failedUploads}/${files.length} file upload thất bại. Vui lòng mở lại ý tưởng để upload lại file.`,
+            `Idea created successfully, but ${failedUploads}/${files.length} file uploads failed. Please reopen the idea and upload those files again.`,
           );
           navigate(`/idea/${newIdea.id}`);
           return;
@@ -132,7 +134,9 @@ function IdeaForm() {
     return (
       <div className="terms-warning">
         <h2>⚠️ Terms & Conditions Not Agreed</h2>
-        <p>You need to agree to Terms & Conditions before submitting an idea.</p>
+        <p>
+          You need to agree to Terms & Conditions before submitting an idea.
+        </p>
         <div className="terms-warning-content">
           <p>
             Please read and agree to the{" "}
@@ -263,7 +267,8 @@ function IdeaForm() {
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
               />
               <small>
-                Accepted: PDF, Word, Excel, PowerPoint, images. Max 10MB per file.
+                Accepted: PDF, Word, Excel, PowerPoint, images. Max 10MB per
+                file.
               </small>
             </div>
 
@@ -301,9 +306,15 @@ function IdeaForm() {
             <h4>📌 Important:</h4>
             <ul>
               <li>Ideas must be submitted before the topic deadline</li>
-              <li>After submission, the QA Coordinator will receive a notification email</li>
+              <li>
+                After submission, the QA Coordinator will receive a notification
+                email
+              </li>
               <li>Ideas cannot be edited after submission</li>
-              <li>If submitted anonymously, only QA Manager/Admin will know your identity</li>
+              <li>
+                If submitted anonymously, only QA Manager/Admin will know your
+                identity
+              </li>
             </ul>
           </div>
         </div>

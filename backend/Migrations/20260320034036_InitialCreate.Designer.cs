@@ -457,7 +457,7 @@ namespace backend.Migrations
                             Description = "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.",
                             IdeaSubmissionDeadline = new DateTime(2026, 6, 30, 23, 59, 59, 0, DateTimeKind.Unspecified),
                             IsActive = true,
-                            Name = "Nâng cao trải nghiệm sinh viên toàn trường"
+                            Name = "Enhancing the student experience across the entire campus."
                         });
                 });
 

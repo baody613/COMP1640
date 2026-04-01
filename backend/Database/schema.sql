@@ -394,8 +394,8 @@ INSERT INTO Users (FullName, Email, PasswordHash, Role, DepartmentId, AgreedTerm
 
 -- Insert Topic
 INSERT INTO Topics (Name, Description, IdeaSubmissionDeadline, CommentDeadline, CreatedById, IsActive, CreatedAt) VALUES
-('Nâng cao trải nghiệm sinh viên toàn trường', 
- 'Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.',
+('Enhancing the student experience across the entire campus.', 
+ 'Collect ideas from staff members (lecturers and support staff) to improve service quality, learning environment, facilities, administrative workflows, and academic support for students.',
  '2026-06-30 23:59:59',
  '2026-07-31 23:59:59',
  2,
@@ -404,12 +404,12 @@ INSERT INTO Topics (Name, Description, IdeaSubmissionDeadline, CommentDeadline, 
 
 -- Insert Categories for Topic 1
 INSERT INTO Categories (Name, Description, TopicId, CreatedAt) VALUES
-('Công nghệ & Cơ sở vật chất', 'Ý tưởng về cải thiện trang thiết bị, phòng lab, wifi, thiết bị học tập', 1, NOW()),
-('Môi trường học tập', 'Ý tưởng về không gian học tập, thư viện, khu tự học, không gian xanh', 1, NOW()),
-('Dịch vụ sinh viên', 'Ý tưởng về hỗ trợ sinh viên, tư vấn học tập, câu lạc bộ, hoạt động ngoại khóa', 1, NOW()),
-('Quy trình hành chính', 'Ý tưởng về đơn giản hóa thủ tục, online services, one-stop service', 1, NOW()),
-('Giảng dạy & Học tập', 'Ý tưởng về phương pháp giảng dạy, tài liệu học tập, công cụ hỗ trợ học tập', 1, NOW()),
-('Khác', 'Các ý tưởng khác không thuộc các danh mục trên', 1, NOW());
+('Technology & Facilities', 'Ideas to improve equipment, labs, Wi-Fi, and learning tools', 1, NOW()),
+('Learning Environment', 'Ideas for study spaces, library, self-study areas, and green zones', 1, NOW()),
+('Student Services', 'Ideas for student support, academic advising, clubs, and extracurricular activities', 1, NOW()),
+('Administrative Processes', 'Ideas for simplifying procedures, online services, and one-stop support', 1, NOW()),
+('Teaching & Learning', 'Ideas for teaching methods, learning materials, and academic support tools', 1, NOW()),
+('Other', 'Ideas that do not belong to the categories above', 1, NOW());
 
 -- ============================================
 -- End of Schema

@@ -52,16 +52,16 @@ public class AuthController : ControllerBase
         {
             // Validate email uniqueness
             if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
-                return BadRequest(new { message = "Email đã được sử dụng" });
+                return BadRequest(new { message = "Email is already in use" });
 
             // Validate department exists
             var department = await _context.Departments.FindAsync(registerDto.DepartmentId);
             if (department == null)
-                return BadRequest(new { message = "Phòng ban không tồn tại" });
+                return BadRequest(new { message = "Department does not exist" });
 
             // Validate password length
             if (string.IsNullOrEmpty(registerDto.Password) || registerDto.Password.Length < 6)
-                return BadRequest(new { message = "Mật khẩu phải có ít nhất 6 ký tự" });
+                return BadRequest(new { message = "Password must be at least 6 characters" });
 
             // Create new user with Staff role (default for registration)
             var user = new User
@@ -88,7 +88,7 @@ public class AuthController : ControllerBase
 
             return Ok(new
             {
-                message = "Đăng ký thành công!",
+                message = "Registration successful!",
                 token,
                 user = new
                 {
@@ -107,7 +107,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during registration for {Email}", registerDto.Email);
-            return StatusCode(500, new { message = "Lỗi khi đăng ký. Vui lòng thử lại." });
+            return StatusCode(500, new { message = "Registration failed. Please try again." });
         }
     }
 

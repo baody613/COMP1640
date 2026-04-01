@@ -213,7 +213,7 @@ public class AppDbContext : DbContext
             new Topic 
             { 
                 Id = 1, 
-                Name = "Nâng cao trải nghiệm sinh viên toàn trường", 
+                Name = "Enhancing the student experience across the entire campus.", 
                 Description = "Thu thập các ý tưởng từ nhân viên (giảng viên và nhân viên hỗ trợ) nhằm cải thiện chất lượng dịch vụ, môi trường học tập, cơ sở vật chất, quy trình hành chính và hỗ trợ học tập cho sinh viên.",
                 IdeaSubmissionDeadline = new DateTime(2026, 6, 30, 23, 59, 59),  // 30/06/2026
                 CommentDeadline = new DateTime(2026, 7, 31, 23, 59, 59),         // 31/07/2026

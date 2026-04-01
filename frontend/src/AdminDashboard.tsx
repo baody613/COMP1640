@@ -153,7 +153,7 @@ function AdminDashboard() {
     } catch (error) {
       console.error("Failed to load topic ideas and documents:", error);
       setTopicIdeasData(null);
-      alert("Không thể tải dữ liệu ý tưởng và file đính kèm của topic này");
+      alert("Unable to load topic ideas and attached files for this topic");
     } finally {
       setLoading(false);
     }
@@ -226,7 +226,7 @@ function AdminDashboard() {
           className={`tab ${activeTab === "topicIdeas" ? "active" : ""}`}
           onClick={() => setActiveTab("topicIdeas")}
         >
-          📎 Ý tưởng & File Upload
+          📎 Ideas & File Upload
         </button>
       </div>
 
@@ -307,14 +307,14 @@ function TopicIdeasFilesTab({
   return (
     <div className="topic-ideas-tab">
       <div className="tab-header">
-        <h2>📎 Ý tưởng của Staff và file upload theo Topic</h2>
+        <h2>📎 Staff Ideas and Uploaded Files by Topic</h2>
         <button className="btn-secondary" onClick={onRefreshTopics}>
-          🔄 Làm mới topics
+          🔄 Refresh Topics
         </button>
       </div>
 
       <div className="topic-ideas-controls">
-        <label htmlFor="topic-select">Chọn topic:</label>
+        <label htmlFor="topic-select">Select topic:</label>
         <select
           id="topic-select"
           value={selectedTopicId}
@@ -322,7 +322,7 @@ function TopicIdeasFilesTab({
             onSelectTopic(e.target.value ? Number(e.target.value) : "")
           }
         >
-          <option value="">-- Chọn một topic --</option>
+          <option value="">-- Select a topic --</option>
           {topics.map((topic) => (
             <option key={topic.id} value={topic.id}>
               {topic.name}
@@ -336,7 +336,7 @@ function TopicIdeasFilesTab({
             if (selectedTopicId !== "") onLoadTopicIdeas(selectedTopicId);
           }}
         >
-          {loading ? "Đang tải..." : "Xem dữ liệu"}
+          {loading ? "Loading..." : "View Data"}
         </button>
       </div>
 
@@ -347,18 +347,18 @@ function TopicIdeasFilesTab({
             <strong>{topicIdeasData.topicName}</strong>
           </div>
           <div className="summary-card">
-            <span className="summary-label">Tổng ý tưởng</span>
+            <span className="summary-label">Total Ideas</span>
             <strong>{topicIdeasData.totalIdeas}</strong>
           </div>
           <div className="summary-card">
-            <span className="summary-label">Tổng file upload</span>
+            <span className="summary-label">Total Uploaded Files</span>
             <strong>{topicIdeasData.totalDocuments}</strong>
           </div>
         </div>
       )}
 
       {topicIdeasData && topicIdeasData.ideas.length === 0 && (
-        <div className="empty">Topic này chưa có ý tưởng nào.</div>
+        <div className="empty">No ideas in this topic yet.</div>
       )}
 
       <div className="topic-ideas-list">
@@ -367,21 +367,21 @@ function TopicIdeasFilesTab({
             <div className="idea-doc-header">
               <h3>{idea.title}</h3>
               <span className="idea-doc-meta">
-                {new Date(idea.createdAt).toLocaleString("vi-VN")}
+                {new Date(idea.createdAt).toLocaleString("en-US")}
               </span>
             </div>
 
             <div className="idea-doc-info-grid">
               <div>
-                <span className="label">Tác giả</span>
+                <span className="label">Author</span>
                 <strong>{idea.authorName}</strong>
               </div>
               <div>
                 <span className="label">Email</span>
-                <strong>{idea.authorEmail || "Ẩn"}</strong>
+                <strong>{idea.authorEmail || "Hidden"}</strong>
               </div>
               <div>
-                <span className="label">Phòng ban</span>
+                <span className="label">Department</span>
                 <strong>{idea.departmentName}</strong>
               </div>
               <div>
@@ -393,17 +393,17 @@ function TopicIdeasFilesTab({
             <p className="idea-doc-content">{idea.content}</p>
 
             <div className="documents-block">
-              <h4>📁 File upload ({idea.documents.length})</h4>
+              <h4>📁 Uploaded Files ({idea.documents.length})</h4>
               {idea.documents.length === 0 ? (
-                <p className="no-docs">Không có file đính kèm.</p>
+                <p className="no-docs">No attached files.</p>
               ) : (
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Tên file</th>
-                      <th>Kích thước</th>
-                      <th>Ngày tải lên</th>
-                      <th>Liên kết</th>
+                      <th>File Name</th>
+                      <th>Size</th>
+                      <th>Uploaded At</th>
+                      <th>Link</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -411,14 +411,16 @@ function TopicIdeasFilesTab({
                       <tr key={doc.id}>
                         <td>{doc.fileName}</td>
                         <td>{formatFileSize(doc.fileSize)}</td>
-                        <td>{new Date(doc.uploadedAt).toLocaleString("vi-VN")}</td>
+                        <td>
+                          {new Date(doc.uploadedAt).toLocaleString("en-US")}
+                        </td>
                         <td>
                           <a
                             href={`http://localhost:5000${doc.filePath}`}
                             target="_blank"
                             rel="noreferrer"
                           >
-                            Mở file
+                            Open file
                           </a>
                         </td>
                       </tr>
@@ -547,7 +549,7 @@ function TopicsTab({
   onExportDocs: (id: number) => void;
 }) {
   const navigate = useNavigate();
-  
+
   // Helper: convert ISO string → value for <input type="datetime-local">
   const toInputVal = (iso: string | undefined) => {
     if (!iso) return "";
@@ -729,9 +731,8 @@ function TopicsTab({
             🔄 Refresh
           </button>
         </div>
-        
       </div>
-      
+
       {/* Popular and Latest Ideas Sections */}
       {!ideasLoading && (
         <div className="content-grid" style={{ marginBottom: "2rem" }}>
@@ -790,7 +791,9 @@ function TopicsTab({
                       <span>
                         {idea.isAnonymous ? "Anonymous" : idea.author?.fullName}
                       </span>
-                      <span>{new Date(idea.createdAt).toLocaleDateString("en-US")}</span>
+                      <span>
+                        {new Date(idea.createdAt).toLocaleDateString("en-US")}
+                      </span>
                     </div>
                   </div>
                 ))
@@ -802,7 +805,6 @@ function TopicsTab({
         </div>
       )}
 
-      
       {showCreate && (
         <div className="topic-form-box">
           <h3>Create New Topic</h3>
@@ -968,7 +970,9 @@ function TopicsTab({
               <p>{topic.description}</p>
               <div className="topic-dates">
                 <div className="deadline-item">
-                  <span className="deadline-label">📅 Idea Submission Deadline</span>
+                  <span className="deadline-label">
+                    📅 Idea Submission Deadline
+                  </span>
                   <strong className="deadline-val">
                     {new Date(
                       topic.ideaSubmissionDeadline || topic.closureDate || "",
@@ -1045,7 +1049,11 @@ function CategoriesTab({
     if (!newCatName.trim() || newCatTopicId === "") return;
     setSubmitting(true);
     try {
-      await categoryService.createCategory(newCatName.trim(), Number(newCatTopicId), newCatDesc.trim() || undefined);
+      await categoryService.createCategory(
+        newCatName.trim(),
+        Number(newCatTopicId),
+        newCatDesc.trim() || undefined,
+      );
       setNewCatName("");
       setNewCatDesc("");
       setNewCatTopicId("");
@@ -1064,7 +1072,8 @@ function CategoriesTab({
       await categoryService.deleteCategory(cat.id);
       onRefresh();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       alert(msg || "Failed to delete category (may already be in use)!");
     }
   };
@@ -1076,7 +1085,10 @@ function CategoriesTab({
       <div className="tab-header">
         <h2>🏷️ Manage Categories</h2>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+          <button
+            className="btn-primary"
+            onClick={() => setShowForm(!showForm)}
+          >
             {showForm ? "✕ Close" : "➕ Add Category"}
           </button>
           <button className="btn-secondary" onClick={onRefresh}>
@@ -1086,31 +1098,53 @@ function CategoriesTab({
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="create-form" style={{ marginBottom: 24, padding: 16, background: "#f8f9fa", borderRadius: 8 }}>
+        <form
+          onSubmit={handleCreate}
+          className="create-form"
+          style={{
+            marginBottom: 24,
+            padding: 16,
+            background: "#f8f9fa",
+            borderRadius: 8,
+          }}
+        >
           <h3>Create New Category</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 480 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              maxWidth: 480,
+            }}
+          >
             <input
               className="form-input"
               placeholder="Category name *"
               value={newCatName}
-              onChange={e => setNewCatName(e.target.value)}
+              onChange={(e) => setNewCatName(e.target.value)}
               required
             />
             <input
               className="form-input"
               placeholder="Description (optional)"
               value={newCatDesc}
-              onChange={e => setNewCatDesc(e.target.value)}
+              onChange={(e) => setNewCatDesc(e.target.value)}
             />
             <select
               className="form-input"
               value={newCatTopicId}
-              onChange={e => setNewCatTopicId(e.target.value === "" ? "" : Number(e.target.value))}
+              onChange={(e) =>
+                setNewCatTopicId(
+                  e.target.value === "" ? "" : Number(e.target.value),
+                )
+              }
               required
             >
               <option value="">-- Select Topic *</option>
-              {topics.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
+              {topics.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
               ))}
             </select>
             <button type="submit" className="btn-primary" disabled={submitting}>

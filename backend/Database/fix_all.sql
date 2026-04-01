@@ -6,6 +6,8 @@ USE comp1640_ideahub;
 -- 1. Update Topic deadline (còn 30 ngày)
 UPDATE Topics 
 SET 
+  Name = 'Enhancing the student experience across the entire campus.',
+  Description = 'Collect ideas from staff members (lecturers and support staff) to improve service quality, learning environment, facilities, administrative workflows, and academic support for students.',
   IdeaSubmissionDeadline = DATE_ADD(NOW(), INTERVAL 30 DAY),
   CommentDeadline = DATE_ADD(NOW(), INTERVAL 60 DAY),
   IsActive = TRUE
