@@ -13,6 +13,11 @@ export { documentService } from "./documentService";
 export { systemSettingsService } from "./systemSettingsService";
 export { statisticsService } from "./statisticsService";
 export { adminService } from "./adminService";
+export type {
+  AdminIdeaDocument,
+  AdminIdeaWithDocuments,
+  AdminTopicIdeasResponse,
+} from "./adminService";
 
 // Re-export types
 export type { Document } from "./documentService";

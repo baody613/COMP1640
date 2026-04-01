@@ -1,5 +1,34 @@
 import apiClient from "../api";
 
+export interface AdminIdeaDocument {
+  id: number;
+  fileName: string;
+  filePath: string;
+  fileSize: number;
+  uploadedAt: string;
+}
+
+export interface AdminIdeaWithDocuments {
+  id: number;
+  title: string;
+  content: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  authorName: string;
+  authorEmail?: string;
+  departmentName: string;
+  categoryName: string;
+  documents: AdminIdeaDocument[];
+}
+
+export interface AdminTopicIdeasResponse {
+  topicId: number;
+  topicName: string;
+  totalIdeas: number;
+  totalDocuments: number;
+  ideas: AdminIdeaWithDocuments[];
+}
+
 export const adminService = {
   // Export ideas to CSV
   async exportIdeasToCSV(topicId: number): Promise<void> {
@@ -47,5 +76,15 @@ export const adminService = {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
+  },
+
+  // Get topic ideas with uploaded documents for admin review
+  async getIdeasWithDocumentsByTopic(
+    topicId: number,
+  ): Promise<AdminTopicIdeasResponse> {
+    const response = await apiClient.get(
+      `/Admin/topics/${topicId}/ideas-with-documents`,
+    );
+    return response.data;
   },
 };
