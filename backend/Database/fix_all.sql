@@ -1,7 +1,7 @@
 -- =============================================
 -- FIX ALL - Chạy file này để sửa tất cả vấn đề
 -- =============================================
-USE COMP1640_IdeaHub;
+USE comp1640_ideahub;
 
 -- 1. Update Topic deadline (còn 30 ngày)
 UPDATE Topics 

@@ -1,9 +1,6 @@
 
 -- Create a new Topic with long deadline for testing
-USE COMP1640_IdeaHub;
-
--- Delete old topic if exists
-DELETE FROM Topics WHERE Id = 1;
+USE comp1640_ideahub;
 
 -- Insert new topic with 60 days deadline (using correct column names!)
 INSERT INTO Topics (Id, Name, Description, IdeaSubmissionDeadline, CommentDeadline, CreatedById, CreatedAt) VALUES
@@ -14,7 +11,13 @@ INSERT INTO Topics (Id, Name, Description, IdeaSubmissionDeadline, CommentDeadli
  DATE_ADD(NOW(), INTERVAL 60 DAY),   -- CommentDeadline: 60 days from now
  1,                                    -- CreatedById: admin user
  NOW()
-);
+)
+ON DUPLICATE KEY UPDATE
+  Name = VALUES(Name),
+  Description = VALUES(Description),
+  IdeaSubmissionDeadline = VALUES(IdeaSubmissionDeadline),
+  CommentDeadline = VALUES(CommentDeadline),
+  CreatedById = VALUES(CreatedById);
 
 -- Verify
 SELECT 

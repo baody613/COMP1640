@@ -1,4 +1,4 @@
-USE COMP1640_IdeaHub;
+USE comp1640_ideahub;
 
 -- Update existing users OR insert if not exist
 INSERT INTO Users (FullName, Email, PasswordHash, Role, DepartmentId, AgreedTerms, AgreedTermsDate, CreatedAt, IsActive) VALUES

@@ -3,9 +3,9 @@
 -- MySQL Database Schema
 -- ============================================
 
-DROP DATABASE IF EXISTS COMP1640_IdeaHub;
-CREATE DATABASE COMP1640_IdeaHub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE COMP1640_IdeaHub;
+DROP DATABASE IF EXISTS comp1640_ideahub;
+CREATE DATABASE comp1640_ideahub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE comp1640_ideahub;
 
 -- ============================================
 -- Table: Departments

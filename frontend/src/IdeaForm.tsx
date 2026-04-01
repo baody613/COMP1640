@@ -1,8 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
-<<<<<<< HEAD
-=======
 import {
   ideaService,
   categoryService,
@@ -10,10 +8,7 @@ import {
   documentService,
 } from "./services";
 import type { Category, Topic } from "./types";
->>>>>>> ae0878b1b369f52f69ff3feaef749c477c6caaf5
 import "./IdeaForm.css";
-import { categoryService, ideaService, topicService } from "./services";
-import type { Category, Topic } from "./types";
 
 function IdeaForm() {
   const { topicId } = useParams<{ topicId: string }>();

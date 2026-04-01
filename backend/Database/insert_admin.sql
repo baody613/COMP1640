@@ -1,5 +1,5 @@
 -- Insert admin user if not exists
-USE COMP1640_IdeaHub;
+USE comp1640_ideahub;
 
 -- Check and insert departments if not exist
 INSERT INTO Departments (Id, Name, Code, CreatedAt) VALUES

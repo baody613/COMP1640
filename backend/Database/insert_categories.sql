@@ -1,5 +1,5 @@
 -- Insert sample Categories for testing
-USE COMP1640_IdeaHub;
+USE comp1640_ideahub;
 
 -- Insert categories linked to Topic 1
 INSERT INTO Categories (Name, Description, TopicId, CreatedAt) VALUES
