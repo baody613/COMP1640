@@ -548,3 +548,99 @@
     gap: 0.75rem;
   }
 }
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .tab-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+
+  .btn-logout {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .dashboard-body {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .welcome-bar h2 {
+    font-size: 1.1rem;
+  }
+
+  .btn-new-idea {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-num {
+    font-size: 1.5rem;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .quick-links {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .quick-link-card {
+    padding: 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .ql-icon {
+    font-size: 1.2rem;
+  }
+
+  .topics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .idea-row-main {
+    min-width: 100px;
+  }
+
+  .idea-row-title {
+    font-size: 0.85rem;
+  }
+
+  .idea-row-excerpt {
+    font-size: 0.75rem;
+    -webkit-line-clamp: 1;
+  }
+}

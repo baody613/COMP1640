@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./AdminDashboard.css";
 import { authService } from "./authService";
 import {
-  statisticsService,
-  categoryService,
-  topicService,
   adminService,
-  type TopicFormData,
-  type OverviewStatistics,
-  type DepartmentStatistics,
+  categoryService,
+  ideaService,
+  statisticsService,
+  topicService,
+  type AdminTopicIdeasResponse,
   type CategoryStatistics,
+  type DepartmentStatistics,
+  type OverviewStatistics,
+  type TopicFormData,
   type TopicStatistics,
 } from "./services";
-import type { Topic, Category } from "./types";
-import "./AdminDashboard.css";
+import type { Category, Idea, Topic } from "./types";
 
 interface User {
   id: number;
@@ -27,7 +29,13 @@ interface User {
   createdAt: string;
 }
 
-type TabType = "overview" | "users" | "topics" | "categories" | "statistics";
+type TabType =
+  | "overview"
+  | "users"
+  | "topics"
+  | "categories"
+  | "statistics"
+  | "topicIdeas";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -53,10 +61,13 @@ function AdminDashboard() {
   const [deptStats, setDeptStats] = useState<DepartmentStatistics[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStatistics[]>([]);
   const [topicStats, setTopicStats] = useState<TopicStatistics[]>([]);
+  const [selectedTopicId, setSelectedTopicId] = useState<number | "">("");
+  const [topicIdeasData, setTopicIdeasData] =
+    useState<AdminTopicIdeasResponse | null>(null);
 
   useEffect(() => {
     if (user?.role !== "Administrator") {
-      alert("Bạn không có quyền truy cập trang này!");
+      alert("You don't have permission to access this page!");
       navigate("/dashboard");
       return;
     }
@@ -75,8 +86,8 @@ function AdminDashboard() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      // Backend cần có endpoint này: GET /api/Admin/users
-      const response = await fetch("http://localhost:5000/api/Admin/users", {
+      // Backend needs this endpoint: GET /api/Admin/users
+      const response = await fetch(`http://${window.location.hostname}:5000/api/Admin/users`, {
         headers: {
           Authorization: `Bearer ${authService.getToken()}`,
         },
@@ -134,30 +145,47 @@ function AdminDashboard() {
     }
   };
 
+  const loadTopicIdeasByTopic = async (topicId: number) => {
+    setLoading(true);
+    try {
+      const data = await adminService.getIdeasWithDocumentsByTopic(topicId);
+      setTopicIdeasData(data);
+    } catch (error) {
+      console.error("Failed to load topic ideas and documents:", error);
+      setTopicIdeasData(null);
+      alert("Không thể tải dữ liệu ý tưởng và file đính kèm của topic này");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users") loadUsers();
     else if (activeTab === "topics") loadTopics();
     else if (activeTab === "categories") loadCategories();
     else if (activeTab === "statistics") loadStatistics();
+    else if (activeTab === "topicIdeas") {
+      loadTopics();
+    }
   }, [activeTab]);
 
   const handleExportCSV = async (topicId: number) => {
     try {
       await adminService.exportIdeasToCSV(topicId);
-      alert("Đã export CSV thành công!");
+      alert("CSV export successful!");
     } catch (error) {
       console.error("Export failed:", error);
-      alert("Export thất bại!");
+      alert("Export failed!");
     }
   };
 
   const handleExportDocuments = async (topicId: number) => {
     try {
       await adminService.exportDocumentsZIP(topicId);
-      alert("Đã export documents thành công!");
+      alert("Documents export successful!");
     } catch (error) {
       console.error("Export failed:", error);
-      alert("Export thất bại!");
+      alert("Export failed!");
     }
   };
 
@@ -168,31 +196,37 @@ function AdminDashboard() {
           className={`tab ${activeTab === "overview" ? "active" : ""}`}
           onClick={() => setActiveTab("overview")}
         >
-          📊 Tổng quan
+          📊 Overview
         </button>
         <button
           className={`tab ${activeTab === "users" ? "active" : ""}`}
           onClick={() => setActiveTab("users")}
         >
-          👥 Quản lý User
+          👥 Manage Users
         </button>
         <button
           className={`tab ${activeTab === "topics" ? "active" : ""}`}
           onClick={() => setActiveTab("topics")}
         >
-          📚 Quản lý Topic
+          📚 Manage Topics
         </button>
         <button
           className={`tab ${activeTab === "categories" ? "active" : ""}`}
           onClick={() => setActiveTab("categories")}
         >
-          🏷️ Quản lý Category
+          🏷️ Manage Categories
         </button>
         <button
           className={`tab ${activeTab === "statistics" ? "active" : ""}`}
           onClick={() => setActiveTab("statistics")}
         >
-          📈 Thống kê
+          📈 Statistics
+        </button>
+        <button
+          className={`tab ${activeTab === "topicIdeas" ? "active" : ""}`}
+          onClick={() => setActiveTab("topicIdeas")}
+        >
+          📎 Ý tưởng & File Upload
         </button>
       </div>
 
@@ -227,6 +261,174 @@ function AdminDashboard() {
             loading={loading}
           />
         )}
+        {activeTab === "topicIdeas" && (
+          <TopicIdeasFilesTab
+            topics={topics}
+            loading={loading}
+            selectedTopicId={selectedTopicId}
+            topicIdeasData={topicIdeasData}
+            onSelectTopic={(topicId) => {
+              setSelectedTopicId(topicId);
+              setTopicIdeasData(null);
+            }}
+            onLoadTopicIdeas={loadTopicIdeasByTopic}
+            onRefreshTopics={loadTopics}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// Topic Ideas + Files Tab Component
+function TopicIdeasFilesTab({
+  topics,
+  loading,
+  selectedTopicId,
+  topicIdeasData,
+  onSelectTopic,
+  onLoadTopicIdeas,
+  onRefreshTopics,
+}: {
+  topics: Topic[];
+  loading: boolean;
+  selectedTopicId: number | "";
+  topicIdeasData: AdminTopicIdeasResponse | null;
+  onSelectTopic: (topicId: number | "") => void;
+  onLoadTopicIdeas: (topicId: number) => void;
+  onRefreshTopics: () => void;
+}) {
+  return (
+    <div className="topic-ideas-tab">
+      <div className="tab-header">
+        <h2>📎 Ý tưởng của Staff và file upload theo Topic</h2>
+        <button className="btn-secondary" onClick={onRefreshTopics}>
+          🔄 Làm mới topics
+        </button>
+      </div>
+
+      <div className="topic-ideas-controls">
+        <label htmlFor="topic-select">Chọn topic:</label>
+        <select
+          id="topic-select"
+          value={selectedTopicId}
+          onChange={(e) =>
+            onSelectTopic(e.target.value ? Number(e.target.value) : "")
+          }
+        >
+          <option value="">-- Chọn một topic --</option>
+          {topics.map((topic) => (
+            <option key={topic.id} value={topic.id}>
+              {topic.name}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn-primary"
+          disabled={selectedTopicId === "" || loading}
+          onClick={() => {
+            if (selectedTopicId !== "") onLoadTopicIdeas(selectedTopicId);
+          }}
+        >
+          {loading ? "Đang tải..." : "Xem dữ liệu"}
+        </button>
+      </div>
+
+      {topicIdeasData && (
+        <div className="topic-ideas-summary">
+          <div className="summary-card">
+            <span className="summary-label">Topic</span>
+            <strong>{topicIdeasData.topicName}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Tổng ý tưởng</span>
+            <strong>{topicIdeasData.totalIdeas}</strong>
+          </div>
+          <div className="summary-card">
+            <span className="summary-label">Tổng file upload</span>
+            <strong>{topicIdeasData.totalDocuments}</strong>
+          </div>
+        </div>
+      )}
+
+      {topicIdeasData && topicIdeasData.ideas.length === 0 && (
+        <div className="empty">Topic này chưa có ý tưởng nào.</div>
+      )}
+
+      <div className="topic-ideas-list">
+        {topicIdeasData?.ideas.map((idea) => (
+          <div key={idea.id} className="idea-doc-card">
+            <div className="idea-doc-header">
+              <h3>{idea.title}</h3>
+              <span className="idea-doc-meta">
+                {new Date(idea.createdAt).toLocaleString("vi-VN")}
+              </span>
+            </div>
+
+            <div className="idea-doc-info-grid">
+              <div>
+                <span className="label">Tác giả</span>
+                <strong>{idea.authorName}</strong>
+              </div>
+              <div>
+                <span className="label">Email</span>
+                <strong>{idea.authorEmail || "Ẩn"}</strong>
+              </div>
+              <div>
+                <span className="label">Phòng ban</span>
+                <strong>{idea.departmentName}</strong>
+              </div>
+              <div>
+                <span className="label">Category</span>
+                <strong>{idea.categoryName}</strong>
+              </div>
+            </div>
+
+            <p className="idea-doc-content">{idea.content}</p>
+
+            <div className="documents-block">
+              <h4>📁 File upload ({idea.documents.length})</h4>
+              {idea.documents.length === 0 ? (
+                <p className="no-docs">Không có file đính kèm.</p>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Tên file</th>
+                      <th>Kích thước</th>
+                      <th>Ngày tải lên</th>
+                      <th>Liên kết</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {idea.documents.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.fileName}</td>
+                        <td>{formatFileSize(doc.fileSize)}</td>
+                        <td>{new Date(doc.uploadedAt).toLocaleString("vi-VN")}</td>
+                        <td>
+                          <a
+                            href={`http://${window.location.hostname}:5000${doc.filePath}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Mở file
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -240,32 +442,32 @@ function OverviewTab({
   stats: OverviewStatistics | null;
   loading: boolean;
 }) {
-  if (loading) return <div className="loading">Đang tải...</div>;
-  if (!stats) return <div className="empty">Không có dữ liệu</div>;
+  if (loading) return <div className="loading">Loading...</div>;
+  if (!stats) return <div className="empty">No data available</div>;
 
   return (
     <div className="overview-tab">
-      <h2>📊 Tổng quan hệ thống</h2>
+      <h2>📊 System Overview</h2>
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">💡</div>
           <div className="stat-value">{stats.totalIdeas}</div>
-          <div className="stat-label">Tổng số ý tưởng</div>
+          <div className="stat-label">Total Ideas</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">💬</div>
           <div className="stat-value">{stats.totalComments}</div>
-          <div className="stat-label">Tổng số bình luận</div>
+          <div className="stat-label">Total Comments</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">👥</div>
           <div className="stat-value">{stats.totalUsers}</div>
-          <div className="stat-label">Tổng số người dùng</div>
+          <div className="stat-label">Total Users</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">🏢</div>
           <div className="stat-value">{stats.totalDepartments}</div>
-          <div className="stat-label">Tổng số phòng ban</div>
+          <div className="stat-label">Total Departments</div>
         </div>
       </div>
     </div>
@@ -282,14 +484,14 @@ function UsersTab({
   loading: boolean;
   onRefresh: () => void;
 }) {
-  if (loading) return <div className="loading">Đang tải...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="users-tab">
       <div className="tab-header">
-        <h2>👥 Quản lý người dùng</h2>
+        <h2>👥 Manage Users</h2>
         <button className="btn-primary" onClick={onRefresh}>
-          🔄 Làm mới
+          🔄 Refresh
         </button>
       </div>
       <div className="table-container">
@@ -297,13 +499,13 @@ function UsersTab({
           <thead>
             <tr>
               <th>ID</th>
-              <th>Họ tên</th>
+              <th>Full Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Phòng ban</th>
-              <th>Đồng ý T&C</th>
-              <th>Trạng thái</th>
-              <th>Ngày tạo</th>
+              <th>Department</th>
+              <th>Agreed T&C</th>
+              <th>Status</th>
+              <th>Created Date</th>
             </tr>
           </thead>
           <tbody>
@@ -320,7 +522,7 @@ function UsersTab({
                 <td>{user.departmentName || "N/A"}</td>
                 <td>{user.agreedTerms ? "✅" : "❌"}</td>
                 <td>{user.isActive ? "🟢 Active" : "🔴 Inactive"}</td>
-                <td>{new Date(user.createdAt).toLocaleDateString("vi-VN")}</td>
+                <td>{new Date(user.createdAt).toLocaleDateString("en-US")}</td>
               </tr>
             ))}
           </tbody>
@@ -344,7 +546,9 @@ function TopicsTab({
   onExportCSV: (id: number) => void;
   onExportDocs: (id: number) => void;
 }) {
-  // Helper: chuyển ISO string → giá trị cho <input type="datetime-local">
+  const navigate = useNavigate();
+  
+  // Helper: convert ISO string → value for <input type="datetime-local">
   const toInputVal = (iso: string | undefined) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -365,11 +569,36 @@ function TopicsTab({
   const [createErr, setCreateErr] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // editingId: id của topic đang được chỉnh sửa, null = không sửa cái nào
+  // editingId: id of topic being edited, null = not editing any
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<TopicFormData>(emptyForm);
   const [editErr, setEditErr] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Popular and Latest Ideas
+  const [popularIdeas, setPopularIdeas] = useState<Idea[]>([]);
+  const [latestIdeas, setLatestIdeas] = useState<Idea[]>([]);
+  const [ideasLoading, setIdeasLoading] = useState(false);
+
+  // Load popular and latest ideas
+  useEffect(() => {
+    const loadIdeas = async () => {
+      setIdeasLoading(true);
+      try {
+        const [popular, latest] = await Promise.all([
+          ideaService.getPopularIdeas(5),
+          ideaService.getLatestIdeas(5),
+        ]);
+        setPopularIdeas(popular);
+        setLatestIdeas(latest);
+      } catch (error) {
+        console.error("Failed to load ideas:", error);
+      } finally {
+        setIdeasLoading(false);
+      }
+    };
+    loadIdeas();
+  }, []);
 
   const openEdit = (topic: Topic) => {
     setEditingId(topic.id);
@@ -388,22 +617,22 @@ function TopicsTab({
 
   const handleCreate = async () => {
     if (!createForm.name.trim()) {
-      setCreateErr("Vui lòng nhập tên topic");
+      setCreateErr("Please enter topic name");
       return;
     }
     if (!createForm.ideaSubmissionDeadline) {
-      setCreateErr("Vui lòng chọn deadline gửi ý tưởng");
+      setCreateErr("Please select idea submission deadline");
       return;
     }
     if (!createForm.commentDeadline) {
-      setCreateErr("Vui lòng chọn deadline bình luận");
+      setCreateErr("Please select comment deadline");
       return;
     }
     if (
       new Date(createForm.commentDeadline) <=
       new Date(createForm.ideaSubmissionDeadline)
     ) {
-      setCreateErr("Deadline bình luận phải sau deadline gửi ý tưởng");
+      setCreateErr("Comment deadline must be after idea submission deadline");
       return;
     }
     setCreating(true);
@@ -420,7 +649,7 @@ function TopicsTab({
       setCreateForm(emptyForm);
       onRefresh();
     } catch {
-      setCreateErr("Tạo topic thất bại. Vui lòng thử lại.");
+      setCreateErr("Failed to create topic. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -429,22 +658,22 @@ function TopicsTab({
   const handleSave = async () => {
     if (!editingId) return;
     if (!editForm.name.trim()) {
-      setEditErr("Vui lòng nhập tên topic");
+      setEditErr("Please enter topic name");
       return;
     }
     if (!editForm.ideaSubmissionDeadline) {
-      setEditErr("Vui lòng chọn deadline gửi ý tưởng");
+      setEditErr("Please select idea submission deadline");
       return;
     }
     if (!editForm.commentDeadline) {
-      setEditErr("Vui lòng chọn deadline bình luận");
+      setEditErr("Please select comment deadline");
       return;
     }
     if (
       new Date(editForm.commentDeadline) <=
       new Date(editForm.ideaSubmissionDeadline)
     ) {
-      setEditErr("Deadline bình luận phải sau deadline gửi ý tưởng");
+      setEditErr("Comment deadline must be after idea submission deadline");
       return;
     }
     setSaving(true);
@@ -460,7 +689,7 @@ function TopicsTab({
       setEditingId(null);
       onRefresh();
     } catch {
-      setEditErr("Lưu thất bại. Vui lòng thử lại.");
+      setEditErr("Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -468,23 +697,23 @@ function TopicsTab({
 
   const handleDelete = async (id: number, name: string) => {
     if (
-      !window.confirm(`Xóa topic "${name}"? Hành động này không thể hoàn tác.`)
+      !window.confirm(`Delete topic "${name}"? This action cannot be undone.`)
     )
       return;
     try {
       await topicService.deleteTopic(id);
       onRefresh();
     } catch {
-      alert("Xóa thất bại. Topic có thể đang chứa dữ liệu.");
+      alert("Delete failed. Topic may contain data.");
     }
   };
 
-  if (loading) return <div className="loading">Đang tải...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="topics-tab">
       <div className="tab-header">
-        <h2>📚 Quản lý Topics</h2>
+        <h2>📚 Manage Topics</h2>
         <div style={{ display: "flex", gap: ".5rem" }}>
           <button
             className="btn-primary"
@@ -494,21 +723,92 @@ function TopicsTab({
               setCreateErr("");
             }}
           >
-            + Tạo topic mới
+            + Create New Topic
           </button>
           <button className="btn-secondary" onClick={onRefresh}>
-            🔄 Làm mới
+            🔄 Refresh
           </button>
         </div>
+        
       </div>
+      
+      {/* Popular and Latest Ideas Sections */}
+      {!ideasLoading && (
+        <div className="content-grid" style={{ marginBottom: "2rem" }}>
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Popular Ideas</h3>
+            </div>
+            <div className="idea-list">
+              {popularIdeas.length > 0 ? (
+                popularIdeas.map((idea) => (
+                  <div
+                    key={idea.id}
+                    className="idea-row"
+                    onClick={() => navigate(`/idea/${idea.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="idea-row-main">
+                      <span className="idea-row-title">{idea.title}</span>
+                      <p className="idea-row-excerpt">
+                        {idea.content?.substring(0, 90) ?? ""}
+                      </p>
+                    </div>
+                    <div className="idea-row-stats">
+                      <span>👁 {idea.viewCount}</span>
+                      <span>↑ {idea.thumbsUpCount}</span>
+                      <span>💬 {idea.commentCount ?? 0}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="empty-state">No data</p>
+              )}
+            </div>
+          </div>
 
-      {/* ── Form tạo topic mới ── */}
+          <div className="panel">
+            <div className="panel-head">
+              <h3>Latest</h3>
+            </div>
+            <div className="idea-list">
+              {latestIdeas.length > 0 ? (
+                latestIdeas.map((idea) => (
+                  <div
+                    key={idea.id}
+                    className="idea-row"
+                    onClick={() => navigate(`/idea/${idea.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="idea-row-main">
+                      <span className="idea-row-title">{idea.title}</span>
+                      <p className="idea-row-excerpt">
+                        {idea.content?.substring(0, 90) ?? ""}
+                      </p>
+                    </div>
+                    <div className="idea-row-meta">
+                      <span>
+                        {idea.isAnonymous ? "Anonymous" : idea.author?.fullName}
+                      </span>
+                      <span>{new Date(idea.createdAt).toLocaleDateString("en-US")}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="empty-state">No data</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      
       {showCreate && (
         <div className="topic-form-box">
-          <h3>Tạo topic mới</h3>
+          <h3>Create New Topic</h3>
           <div className="form-row">
             <label>
-              Tên topic <span className="req">*</span>
+              Topic Name <span className="req">*</span>
             </label>
             <input
               type="text"
@@ -516,24 +816,24 @@ function TopicsTab({
               onChange={(e) =>
                 setCreateForm((f) => ({ ...f, name: e.target.value }))
               }
-              placeholder="Nhập tên topic..."
+              placeholder="Enter topic name..."
             />
           </div>
           <div className="form-row">
-            <label>Mô tả</label>
+            <label>Description</label>
             <textarea
               value={createForm.description}
               onChange={(e) =>
                 setCreateForm((f) => ({ ...f, description: e.target.value }))
               }
-              placeholder="Mô tả ngắn về topic..."
+              placeholder="Brief description of topic..."
               rows={2}
             />
           </div>
           <div className="form-row-2col">
             <div className="form-row">
               <label>
-                📅 Deadline gửi ý tưởng <span className="req">*</span>
+                📅 Idea Submission Deadline <span className="req">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -548,7 +848,7 @@ function TopicsTab({
             </div>
             <div className="form-row">
               <label>
-                💬 Deadline bình luận <span className="req">*</span>
+                💬 Comment Deadline <span className="req">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -569,25 +869,25 @@ function TopicsTab({
               onClick={handleCreate}
               disabled={creating}
             >
-              {creating ? "Đang tạo..." : "✓ Tạo topic"}
+              {creating ? "Creating..." : "✓ Create Topic"}
             </button>
             <button className="btn-ghost" onClick={() => setShowCreate(false)}>
-              Hủy
+              Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Danh sách topics ── */}
+      {/* ── List of topics ── */}
       <div className="topics-grid">
         {topics.map((topic) =>
           editingId === topic.id ? (
             /* ── Inline edit form ── */
             <div key={topic.id} className="topic-card-admin topic-card-edit">
-              <h3>✏️ Chỉnh sửa topic</h3>
+              <h3>✏️ Edit Topic</h3>
               <div className="form-row">
                 <label>
-                  Tên topic <span className="req">*</span>
+                  Topic Name <span className="req">*</span>
                 </label>
                 <input
                   type="text"
@@ -598,7 +898,7 @@ function TopicsTab({
                 />
               </div>
               <div className="form-row">
-                <label>Mô tả</label>
+                <label>Description</label>
                 <textarea
                   value={editForm.description}
                   onChange={(e) =>
@@ -609,7 +909,7 @@ function TopicsTab({
               </div>
               <div className="form-row">
                 <label>
-                  📅 Deadline gửi ý tưởng <span className="req">*</span>
+                  📅 Idea Submission Deadline <span className="req">*</span>
                 </label>
                 <input
                   type="datetime-local"
@@ -624,7 +924,7 @@ function TopicsTab({
               </div>
               <div className="form-row">
                 <label>
-                  💬 Deadline bình luận <span className="req">*</span>
+                  💬 Comment Deadline <span className="req">*</span>
                 </label>
                 <input
                   type="datetime-local"
@@ -644,13 +944,13 @@ function TopicsTab({
                   onClick={handleSave}
                   disabled={saving}
                 >
-                  {saving ? "Đang lưu..." : "✓ Lưu"}
+                  {saving ? "Saving..." : "✓ Save"}
                 </button>
                 <button
                   className="btn-ghost"
                   onClick={() => setEditingId(null)}
                 >
-                  Hủy
+                  Cancel
                 </button>
               </div>
             </div>
@@ -662,35 +962,35 @@ function TopicsTab({
                 <span
                   className={`topic-status-dot ${topic.isActive ? "active" : "inactive"}`}
                 >
-                  {topic.isActive ? "Đang mở" : "Đã đóng"}
+                  {topic.isActive ? "Active" : "Closed"}
                 </span>
               </div>
               <p>{topic.description}</p>
               <div className="topic-dates">
                 <div className="deadline-item">
-                  <span className="deadline-label">📅 Deadline ý tưởng</span>
+                  <span className="deadline-label">📅 Idea Submission Deadline</span>
                   <strong className="deadline-val">
                     {new Date(
                       topic.ideaSubmissionDeadline || topic.closureDate || "",
-                    ).toLocaleString("vi-VN")}
+                    ).toLocaleString("en-US")}
                   </strong>
                 </div>
                 <div className="deadline-item">
-                  <span className="deadline-label">💬 Deadline bình luận</span>
+                  <span className="deadline-label">💬 Comment Deadline</span>
                   <strong className="deadline-val">
                     {new Date(
                       topic.commentDeadline || topic.finalClosureDate || "",
-                    ).toLocaleString("vi-VN")}
+                    ).toLocaleString("en-US")}
                   </strong>
                 </div>
               </div>
               <div className="topic-stats-admin">
-                <span>💡 {topic.ideaCount || 0} ý tưởng</span>
+                <span>💡 {topic.ideaCount || 0} ideas</span>
                 <span>🏷️ {topic.categories?.length || 0} categories</span>
               </div>
               <div className="topic-actions">
                 <button className="btn-edit" onClick={() => openEdit(topic)}>
-                  ✏️ Sửa deadline
+                  ✏️ Edit Deadline
                 </button>
                 <button
                   className="btn-export"
@@ -708,7 +1008,7 @@ function TopicsTab({
                   className="btn-delete"
                   onClick={() => handleDelete(topic.id, topic.name)}
                 >
-                  🗑️ Xóa
+                  🗑️ Delete
                 </button>
               </div>
             </div>
@@ -752,53 +1052,53 @@ function CategoriesTab({
       setShowForm(false);
       onRefresh();
     } catch {
-      alert("Không thể tạo category!");
+      alert("Failed to create category!");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (cat: Category) => {
-    if (!window.confirm(`Xóa category "${cat.name}"?`)) return;
+    if (!window.confirm(`Delete category "${cat.name}"?`)) return;
     try {
       await categoryService.deleteCategory(cat.id);
       onRefresh();
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      alert(msg || "Không thể xóa category (có thể đã được dùng)!");
+      alert(msg || "Failed to delete category (may already be in use)!");
     }
   };
 
-  if (loading) return <div className="loading">Đang tải...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="categories-tab">
       <div className="tab-header">
-        <h2>🏷️ Quản lý Categories</h2>
+        <h2>🏷️ Manage Categories</h2>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? "✕ Đóng" : "➕ Thêm category"}
+            {showForm ? "✕ Close" : "➕ Add Category"}
           </button>
           <button className="btn-secondary" onClick={onRefresh}>
-            🔄 Làm mới
+            🔄 Refresh
           </button>
         </div>
       </div>
 
       {showForm && (
         <form onSubmit={handleCreate} className="create-form" style={{ marginBottom: 24, padding: 16, background: "#f8f9fa", borderRadius: 8 }}>
-          <h3>Tạo Category mới</h3>
+          <h3>Create New Category</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 480 }}>
             <input
               className="form-input"
-              placeholder="Tên category *"
+              placeholder="Category name *"
               value={newCatName}
               onChange={e => setNewCatName(e.target.value)}
               required
             />
             <input
               className="form-input"
-              placeholder="Mô tả (tùy chọn)"
+              placeholder="Description (optional)"
               value={newCatDesc}
               onChange={e => setNewCatDesc(e.target.value)}
             />
@@ -808,20 +1108,20 @@ function CategoriesTab({
               onChange={e => setNewCatTopicId(e.target.value === "" ? "" : Number(e.target.value))}
               required
             >
-              <option value="">-- Chọn Topic *</option>
+              <option value="">-- Select Topic *</option>
               {topics.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
             <button type="submit" className="btn-primary" disabled={submitting}>
-              {submitting ? "Đang tạo..." : "Tạo category"}
+              {submitting ? "Creating..." : "Create Category"}
             </button>
           </div>
         </form>
       )}
 
       <div className="categories-grid">
-        {categories.length === 0 && <p>Chưa có category nào.</p>}
+        {categories.length === 0 && <p>No categories available.</p>}
         {categories.map((cat) => (
           <div key={cat.id} className="category-card-admin">
             <div style={{ flex: 1 }}>
@@ -831,10 +1131,10 @@ function CategoriesTab({
             <button
               className="btn-delete"
               onClick={() => handleDelete(cat)}
-              title="Xóa category"
+              title="Delete category"
               style={{ marginTop: 8 }}
             >
-              🗑️ Xóa
+              🗑️ Delete
             </button>
           </div>
         ))}
@@ -855,22 +1155,22 @@ function StatisticsTab({
   topicStats: TopicStatistics[];
   loading: boolean;
 }) {
-  if (loading) return <div className="loading">Đang tải...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="statistics-tab">
-      <h2>📈 Thống kê chi tiết</h2>
+      <h2>📈 Detailed Statistics</h2>
 
       <div className="stats-section">
-        <h3>🏢 Thống kê theo phòng ban</h3>
+        <h3>🏢 Statistics by Department</h3>
         <table className="data-table">
           <thead>
             <tr>
-              <th>Phòng ban</th>
-              <th>Số nhân viên</th>
-              <th>Số ý tưởng</th>
-              <th>Số bình luận</th>
-              <th>Lượt xem</th>
+              <th>Department</th>
+              <th>Staff Count</th>
+              <th>Idea Count</th>
+              <th>Comment Count</th>
+              <th>Views</th>
             </tr>
           </thead>
           <tbody>
@@ -890,13 +1190,13 @@ function StatisticsTab({
       </div>
 
       <div className="stats-section">
-        <h3>🏷️ Thống kê theo danh mục</h3>
+        <h3>🏷️ Statistics by Category</h3>
         <table className="data-table">
           <thead>
             <tr>
-              <th>Danh mục</th>
-              <th>Số ý tưởng</th>
-              <th>Số bình luận</th>
+              <th>Category</th>
+              <th>Idea Count</th>
+              <th>Comment Count</th>
               <th>👍 Thumbs Up</th>
               <th>👎 Thumbs Down</th>
             </tr>
@@ -918,16 +1218,16 @@ function StatisticsTab({
       </div>
 
       <div className="stats-section">
-        <h3>📚 Thống kê theo topic</h3>
+        <h3>📚 Statistics by Topic</h3>
         <table className="data-table">
           <thead>
             <tr>
               <th>Topic</th>
-              <th>Số ý tưởng</th>
-              <th>Số bình luận</th>
-              <th>Lượt xem</th>
-              <th>Người tham gia</th>
-              <th>Trạng thái</th>
+              <th>Idea Count</th>
+              <th>Comment Count</th>
+              <th>Views</th>
+              <th>Participants</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>

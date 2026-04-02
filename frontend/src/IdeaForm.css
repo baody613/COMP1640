@@ -327,3 +327,93 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 0.75rem 0;
+  }
+
+  .form-content {
+    padding: 0.75rem;
+    max-width: 100%;
+  }
+
+  .form-card {
+    padding: 1rem;
+  }
+
+  .form-card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .topic-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .topic-deadlines {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .deadline-item {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .file-input-wrapper {
+    max-height: 200px;
+  }
+
+  .file-list {
+    gap: 0.4rem;
+  }
+
+  .file-item {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .form-actions {
+    gap: 0.5rem;
+  }
+
+  .btn-cancel,
+  .btn-submit {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .terms-warning {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .terms-warning-buttons {
+    gap: 0.5rem;
+  }
+
+  .terms-warning-buttons button {
+    min-width: 100px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}

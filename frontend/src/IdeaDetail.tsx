@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
-import { ideaService, commentService } from "./services";
-import type { Idea, Comment } from "./types";
 import "./IdeaDetail.css";
+import { commentService, ideaService } from "./services";
+import type { Comment, Idea } from "./types";
 
 function IdeaDetail() {
   const { id } = useParams<{ id: string }>();
@@ -176,7 +176,7 @@ function IdeaDetail() {
                 {idea.documents.map((doc) => (
                   <a
                     key={doc.id}
-                    href={`http://localhost:5000/api/document/download/${doc.id}`}
+                    href={`http://${window.location.hostname}:5000/api/document/download/${doc.id}`}
                     className="document-item"
                     download
                   >

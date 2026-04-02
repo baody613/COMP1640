@@ -164,3 +164,60 @@
 .btn-logout:hover {
   opacity: 0.85;
 }
+
+/* ── mobile responsive ── */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-left {
+    gap: 1rem;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .tab-nav {
+    overflow-x: auto;
+    gap: 0;
+    flex-wrap: nowrap;
+  }
+
+  .tab-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .user-info-block {
+    display: none;
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+
+  .btn-logout {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tab-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .btn-logout {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
