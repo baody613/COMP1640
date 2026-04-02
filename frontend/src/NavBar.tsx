@@ -16,6 +16,7 @@ export default function NavBar() {
     width: 0,
     ready: false,
   });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const tabs = [
     { label: "Home", path: "/dashboard", show: true },
@@ -51,9 +52,19 @@ export default function NavBar() {
     return () => cancelAnimationFrame(raf1);
   }, [location.pathname]);
 
+  // Close menu when route changes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const handleLogout = () => {
     authService.logout();
     navigate("/login");
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setMenuOpen(false);
   };
 
   return (
@@ -88,6 +99,17 @@ export default function NavBar() {
             );
           })}
         </nav>
+
+        {/* Mobile Menu Button */}
+        <button
+          className={`hamburger-menu${menuOpen ? " active" : ""}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+        </button>
       </div>
 
       <div className="navbar-right">
@@ -103,6 +125,25 @@ export default function NavBar() {
         <button onClick={handleLogout} className="btn-logout">
           Sign Out
         </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`mobile-menu${menuOpen ? " active" : ""}`}>
+        {tabs.map((tab) => {
+          const isActive =
+            tab.path === "/dashboard"
+              ? location.pathname === "/dashboard"
+              : location.pathname.startsWith(tab.path);
+          return (
+            <button
+              key={tab.path}
+              className={`tab-btn${isActive ? " tab-active" : ""}${tab.green ? " tab-green" : ""}`}
+              onClick={() => handleNavigation(tab.path)}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
     </header>
   );

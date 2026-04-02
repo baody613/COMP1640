@@ -40,3 +40,22 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #root {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  #root {
+    padding: 0.75rem;
+  }
+}

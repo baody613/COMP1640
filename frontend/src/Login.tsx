@@ -70,22 +70,6 @@ function Login() {
             Don't have an account? <Link to="/register">Sign Up Now</Link>
           </p>
         </div>
-
-        <div className="test-accounts">
-          <h3>Test Accounts:</h3>
-          <ul>
-            <li>
-              <strong>Admin:</strong> admin@university.edu / password123
-            </li>
-            <li>
-              <strong>QA Manager:</strong> qamanager@university.edu /
-              password123
-            </li>
-            <li>
-              <strong>Staff:</strong> john@university.edu / password123
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   );

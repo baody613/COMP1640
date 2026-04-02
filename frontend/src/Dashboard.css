@@ -398,6 +398,219 @@
   font-size: 0.88rem;
 }
 
+/* ──── RESPONSIVE DESIGN ──── */
+
+/* Tablet - up to 768px */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .header-left {
+    gap: 1.5rem;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+  }
+
+  .nav-btn {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .dashboard-body {
+    padding: 1.5rem 1.5rem;
+    max-width: 100%;
+  }
+
+  .welcome-bar h2 {
+    font-size: 1.2rem;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .stat-card {
+    padding: 1rem 1.2rem;
+  }
+
+  .stat-num {
+    font-size: 1.5rem;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile - up to 600px */
+@media (max-width: 600px) {
+  .dashboard-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-left {
+    gap: 1rem;
+  }
+
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    font-size: 0.85rem;
+  }
+
+  .brand-name {
+    font-size: 0.9rem;
+  }
+
+  .dashboard-body {
+    padding: 1rem 1rem;
+  }
+
+  .welcome-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .welcome-bar h2 {
+    font-size: 1.1rem;
+  }
+
+  .welcome-bar p {
+    font-size: 0.85rem;
+  }
+
+  .btn-new-idea {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .stat-card {
+    padding: 0.9rem 1rem;
+  }
+
+  .stat-num {
+    font-size: 1.3rem;
+  }
+
+  .stat-dept {
+    font-size: 0.9rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .panel-head {
+    padding: 0.85rem 1rem;
+  }
+
+  .panel-head h3 {
+    font-size: 0.9rem;
+  }
+
+  .idea-row {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .idea-row-title {
+    font-size: 0.85rem;
+  }
+
+  .idea-row-excerpt {
+    font-size: 0.75rem;
+  }
+
+  .idea-row-stats,
+  .idea-row-meta {
+    font-size: 0.7rem;
+  }
+
+  .empty-state {
+    padding: 1.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Very Small Mobile - below 360px */
+@media (max-width: 360px) {
+  .dashboard-header {
+    padding: 0.65rem 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .header-left {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .header-right {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+
+  .brand-name {
+    font-size: 0.8rem;
+  }
+
+  .dashboard-body {
+    padding: 0.75rem 0.75rem;
+  }
+
+  .welcome-bar h2 {
+    font-size: 1rem;
+  }
+
+  .welcome-bar p {
+    font-size: 0.8rem;
+  }
+
+  .btn-new-idea {
+    font-size: 0.85rem;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .stat-num {
+    font-size: 1.2rem;
+  }
+}
+
 /* ── topics panel ────────────────────────── */
 .topics-panel {
   background: var(--surface);

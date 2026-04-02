@@ -332,8 +332,18 @@
 }
 
 @media (max-width: 768px) {
+  .idea-header {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .idea-header-title {
+    font-size: 0.9rem;
+  }
+
   .idea-content {
-    padding: 0 1rem;
+    padding: 1.5rem 1rem;
+    margin: 1.5rem auto;
+    gap: 1.5rem;
   }
 
   .idea-main,
@@ -347,10 +357,20 @@
 
   .idea-metadata {
     gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .idea-body {
+    padding: 1.2rem;
+    margin: 1.5rem 0;
   }
 
   .reaction-section {
-    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .reaction-btn {
+    padding: 0.9rem;
   }
 
   .comment-form-footer {
@@ -361,5 +381,211 @@
 
   .btn-submit {
     width: 100%;
+  }
+}
+
+/* Mobile - up to 600px */
+@media (max-width: 600px) {
+  .idea-header {
+    padding: 0.5rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .idea-header-left {
+    width: 100%;
+  }
+
+  .idea-header-right {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .idea-header-title {
+    font-size: 0.85rem;
+  }
+
+  .btn-back-sm,
+  .btn-home-sm {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .idea-content {
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 100%;
+  }
+
+  .idea-main {
+    padding: 1.2rem;
+  }
+
+  .idea-title-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .idea-metadata {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .idea-documents {
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+  }
+
+  .idea-documents h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .document-item {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .reaction-section {
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-top: 1rem;
+  }
+
+  .reaction-btn {
+    padding: 0.8rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .comments-section {
+    padding: 1.2rem;
+  }
+
+  .comments-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .comment-form {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .comment-form textarea {
+    padding: 0.8rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 100px;
+    margin-bottom: 0.8rem;
+  }
+
+  .comment-form-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .anonymous-checkbox {
+    font-size: 0.85rem;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+  }
+
+  .comments-list {
+    gap: 0.8rem;
+  }
+
+  .comment-item {
+    padding: 1rem;
+  }
+
+  .comment-author {
+    font-size: 0.9rem;
+  }
+
+  .comment-date {
+    font-size: 0.8rem;
+  }
+
+  .comment-content {
+    font-size: 0.9rem;
+  }
+
+  .btn-delete {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .empty-comments {
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .loading,
+  .error-container {
+    height: auto;
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+
+  .error-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .error-container button {
+    width: 100%;
+    padding: 0.8rem;
+  }
+}
+
+/* Very Small Mobile - below 360px */
+@media (max-width: 360px) {
+  .idea-header {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .idea-header-title {
+    font-size: 0.8rem;
+  }
+
+  .idea-content {
+    padding: 0.75rem;
+  }
+
+  .idea-main {
+    padding: 1rem;
+  }
+
+  .idea-title-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .reaction-btn {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .comments-section {
+    padding: 1rem;
+  }
+
+  .comment-form {
+    padding: 0.9rem;
+  }
+
+  .btn-submit {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
   }
 }

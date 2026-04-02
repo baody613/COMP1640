@@ -8,12 +8,12 @@ import {
   ideaService,
   statisticsService,
   topicService,
+  type AdminTopicIdeasResponse,
   type CategoryStatistics,
   type DepartmentStatistics,
   type OverviewStatistics,
   type TopicFormData,
   type TopicStatistics,
-  type AdminTopicIdeasResponse,
 } from "./services";
 import type { Category, Idea, Topic } from "./types";
 
@@ -87,7 +87,8 @@ function AdminDashboard() {
     setLoading(true);
     try {
       // Backend needs this endpoint: GET /api/Admin/users
-      const response = await fetch("http://localhost:5000/api/Admin/users", {
+      const apiUrl = `http://${window.location.hostname}:5000/api/Admin/users`;
+      const response = await fetch(apiUrl, {
         headers: {
           Authorization: `Bearer ${authService.getToken()}`,
         },
@@ -416,7 +417,7 @@ function TopicIdeasFilesTab({
                         </td>
                         <td>
                           <a
-                            href={`http://localhost:5000${doc.filePath}`}
+                             href={`http://${window.location.hostname}:5000${doc.filePath}`}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -513,18 +514,22 @@ function UsersTab({
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.fullName}</td>
-                <td>{user.email}</td>
-                <td>
+                <td data-label="ID">{user.id}</td>
+                <td data-label="Full Name">{user.fullName}</td>
+                <td data-label="Email">{user.email}</td>
+                <td data-label="Role">
                   <span className={`role-badge ${user.role.toLowerCase()}`}>
                     {user.role}
                   </span>
                 </td>
-                <td>{user.departmentName || "N/A"}</td>
-                <td>{user.agreedTerms ? "✅" : "❌"}</td>
-                <td>{user.isActive ? "🟢 Active" : "🔴 Inactive"}</td>
-                <td>{new Date(user.createdAt).toLocaleDateString("en-US")}</td>
+                <td data-label="Department">{user.departmentName || "N/A"}</td>
+                <td data-label="Agreed T&C">{user.agreedTerms ? "✅" : "❌"}</td>
+                <td data-label="Status">
+                  {user.isActive ? "🟢 Active" : "🔴 Inactive"}
+                </td>
+                <td data-label="Created Date">
+                  {new Date(user.createdAt).toLocaleDateString("en-US")}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -1210,13 +1215,13 @@ function StatisticsTab({
           <tbody>
             {deptStats.map((dept) => (
               <tr key={dept.departmentId}>
-                <td>
+                <td data-label="Department">
                   <strong>{dept.departmentName}</strong>
                 </td>
-                <td>{dept.staffCount}</td>
-                <td>{dept.ideaCount}</td>
-                <td>{dept.commentCount}</td>
-                <td>{dept.totalViews}</td>
+                <td data-label="Staff Count">{dept.staffCount}</td>
+                <td data-label="Idea Count">{dept.ideaCount}</td>
+                <td data-label="Comment Count">{dept.commentCount}</td>
+                <td data-label="Views">{dept.totalViews}</td>
               </tr>
             ))}
           </tbody>
@@ -1238,13 +1243,17 @@ function StatisticsTab({
           <tbody>
             {categoryStats.map((cat) => (
               <tr key={cat.categoryId}>
-                <td>
+                <td data-label="Category">
                   <strong>{cat.categoryName}</strong>
                 </td>
-                <td>{cat.ideaCount}</td>
-                <td>{cat.commentCount}</td>
-                <td className="thumbs-up">{cat.thumbsUpCount}</td>
-                <td className="thumbs-down">{cat.thumbsDownCount}</td>
+                <td data-label="Idea Count">{cat.ideaCount}</td>
+                <td data-label="Comment Count">{cat.commentCount}</td>
+                <td className="thumbs-up" data-label="👍 Thumbs Up">
+                  {cat.thumbsUpCount}
+                </td>
+                <td className="thumbs-down" data-label="👎 Thumbs Down">
+                  {cat.thumbsDownCount}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -1267,14 +1276,14 @@ function StatisticsTab({
           <tbody>
             {topicStats.map((topic) => (
               <tr key={topic.topicId}>
-                <td>
+                <td data-label="Topic">
                   <strong>{topic.topicName}</strong>
                 </td>
-                <td>{topic.ideaCount}</td>
-                <td>{topic.commentCount}</td>
-                <td>{topic.totalViews}</td>
-                <td>{topic.participantCount}</td>
-                <td>
+                <td data-label="Idea Count">{topic.ideaCount}</td>
+                <td data-label="Comment Count">{topic.commentCount}</td>
+                <td data-label="Views">{topic.totalViews}</td>
+                <td data-label="Participants">{topic.participantCount}</td>
+                <td data-label="Status">
                   {topic.isActive ? (
                     <span className="status-active">🟢 Active</span>
                   ) : (

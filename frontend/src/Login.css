@@ -4,6 +4,7 @@
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
 }
 
 .login-box {
@@ -19,12 +20,14 @@
   text-align: center;
   color: #667eea;
   margin-bottom: 0.5rem;
+  font-size: 2rem;
 }
 
 .login-box h2 {
   text-align: center;
   color: #333;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .form-group {
@@ -36,6 +39,7 @@
   margin-bottom: 0.5rem;
   color: #555;
   font-weight: 500;
+  font-size: 0.95rem;
 }
 
 .form-group input {
@@ -45,6 +49,7 @@
   border-radius: 5px;
   font-size: 1rem;
   box-sizing: border-box;
+  transition: border-color 0.3s;
 }
 
 .form-group input:focus {
@@ -63,15 +68,20 @@ button {
   font-weight: 600;
   cursor: pointer;
   margin-top: 1rem;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background: #5568d3;
+  transform: translateY(-2px);
 }
 
 button:disabled {
   background: #ccc;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .error {
@@ -81,6 +91,7 @@ button:disabled {
   border-radius: 5px;
   margin-top: 1rem;
   border: 1px solid #fcc;
+  font-size: 0.9rem;
 }
 
 .register-link {
@@ -93,6 +104,7 @@ button:disabled {
 .register-link p {
   color: #718096;
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .register-link a {
@@ -135,4 +147,143 @@ button:disabled {
 
 .test-accounts strong {
   color: #667eea;
+}
+
+/* ──── RESPONSIVE DESIGN ──── */
+
+/* Tablet - up to 768px */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem;
+  }
+
+  .login-box {
+    padding: 2rem;
+  }
+
+  .login-box h1 {
+    font-size: 1.75rem;
+  }
+
+  .login-box h2 {
+    font-size: 1.3rem;
+  }
+
+  .form-group input,
+  button {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 1rem;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile - up to 480px */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 0.75rem;
+  }
+
+  .login-box {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .login-box h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .login-box h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.88rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input {
+    padding: 0.9rem;
+    font-size: 16px;
+    border-radius: 6px;
+    min-height: 44px;
+  }
+
+  button {
+    padding: 0.9rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    min-height: 44px;
+  }
+
+  .error {
+    padding: 0.65rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+  }
+
+  .register-link {
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+  }
+
+  .register-link p {
+    font-size: 0.85rem;
+  }
+
+  .test-accounts {
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+  }
+
+  .test-accounts h3 {
+    font-size: 0.85rem;
+  }
+
+  .test-accounts li {
+    padding: 0.4rem 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Very Small Mobile - below 360px */
+@media (max-width: 360px) {
+  .login-container {
+    padding: 0.5rem;
+  }
+
+  .login-box {
+    padding: 1.2rem;
+    border-radius: 8px;
+  }
+
+  .login-box h1 {
+    font-size: 1.2rem;
+  }
+
+  .login-box h2 {
+    font-size: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+  }
+
+  .form-group input {
+    padding: 0.8rem;
+  }
+
+  button {
+    padding: 0.8rem;
+  }
 }
