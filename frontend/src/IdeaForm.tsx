@@ -1,14 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
+import "./IdeaForm.css";
 import {
-  ideaService,
-  categoryService,
-  topicService,
-  documentService,
+    categoryService,
+    documentService,
+    ideaService,
+    topicService,
 } from "./services";
 import type { Category, Topic } from "./types";
-import "./IdeaForm.css";
 
 function IdeaForm() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -23,6 +23,17 @@ function IdeaForm() {
   const [agreeingTerms, setAgreeingTerms] = useState(false);
   const user = authService.getCurrentUser();
   const navigate = useNavigate();
+
+  // Check if deadline has passed
+  const isDeadlinePassed = topic
+    ? new Date(topic.ideaSubmissionDeadline) < new Date()
+    : false;
+  const daysUntilDeadline = topic
+    ? Math.ceil(
+        (new Date(topic.ideaSubmissionDeadline).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 0;
 
   useEffect(() => {
     const loadData = async () => {
@@ -199,16 +210,39 @@ function IdeaForm() {
                   {new Date(topic.ideaSubmissionDeadline).toLocaleDateString(
                     "en-US",
                   )}
+                  {daysUntilDeadline > 0 && (
+                    <em className="deadline-info"> ({daysUntilDeadline} days left)</em>
+                  )}
                 </span>
                 <span>
                   💬 Comment Deadline:{" "}
                   {new Date(topic.commentDeadline).toLocaleDateString("en-US")}
                 </span>
               </div>
+              {isDeadlinePassed && (
+                <div className="deadline-expired-alert">
+                  ❌ <strong>Submission Deadline Has Passed</strong>
+                  <p>
+                    This topic is no longer accepting new ideas. The deadline was{" "}
+                    {new Date(topic.ideaSubmissionDeadline).toLocaleDateString(
+                      "en-US",
+                    )}
+                    . Comments can still be made until{" "}
+                    {new Date(topic.commentDeadline).toLocaleDateString("en-US")}
+                    .
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="idea-form">
+            {isDeadlinePassed && (
+              <div className="form-disabled-notice">
+                ⏰ Idea submission is closed. You cannot submit new ideas for this topic.
+              </div>
+            )}
+
             <div className="form-group">
               <label htmlFor="title">Idea Title *</label>
               <input
@@ -219,6 +253,7 @@ function IdeaForm() {
                 placeholder="Enter idea title..."
                 required
                 maxLength={200}
+                disabled={isDeadlinePassed}
               />
               <small>{title.length}/200 characters</small>
             </div>
@@ -232,6 +267,7 @@ function IdeaForm() {
                 placeholder="Describe your idea in detail..."
                 rows={10}
                 required
+                disabled={isDeadlinePassed}
               />
               <small>{content.length} characters</small>
             </div>
@@ -247,6 +283,7 @@ function IdeaForm() {
                   )
                 }
                 required
+                disabled={isDeadlinePassed}
               >
                 <option value="">-- Select Category --</option>
                 {categories.map((cat) => (
@@ -265,6 +302,7 @@ function IdeaForm() {
                 onChange={(e) => setFiles(e.target.files)}
                 multiple
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
+                disabled={isDeadlinePassed}
               />
               <small>
                 Accepted: PDF, Word, Excel, PowerPoint, images. Max 10MB per
@@ -279,11 +317,13 @@ function IdeaForm() {
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
+                  disabled={isDeadlinePassed}
                 />
                 <span>Submit Anonymously</span>
               </label>
               <small>
-                If selected, your name will not be displayed to others.
+                If selected, your name will not be displayed to others. Only QA
+                Manager/Admin will know your identity.
               </small>
             </div>
 
@@ -296,8 +336,17 @@ function IdeaForm() {
               >
                 Cancel
               </button>
-              <button type="submit" className="btn-submit" disabled={loading}>
-                {loading ? "Submitting..." : "Submit Idea"}
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={loading || isDeadlinePassed}
+                title={isDeadlinePassed ? "Idea submission deadline has passed" : ""}
+              >
+                {loading
+                  ? "Submitting..."
+                  : isDeadlinePassed
+                    ? "❌ Deadline Closed"
+                    : "Submit Idea"}
               </button>
             </div>
           </form>
