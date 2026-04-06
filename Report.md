@@ -4,7 +4,7 @@
 
 **Module**: COMP1640 – Enterprise Web Development  
 **Project**: Student Idea Contribution System (SICS)  
-**Technology Stack**: ASP.NET Core 8 (C#) · React 18 (TypeScript) · Entity Framework Core · MySQL  
+**Technology Stack**: ASP.NET Core (.NET 9.0) (C#) · React 18.2 (TypeScript) · Entity Framework Core · MySQL  
 **Academic Year**: 2025–2026
 
 ---
@@ -25,7 +25,8 @@
    - 3.3 [Website Design](#33-website-design)
 4. [Implementation](#4-implementation)
    - 4.1 [List of Files in System](#41-list-of-files-in-system)
-   - 4.2 [Some Screenshots of System](#42-some-screenshots-of-system)
+   - 4.2 [API Endpoints](#42-api-endpoints)
+   - 4.3 [Some Screenshots of System](#43-some-screenshots-of-system)
 5. [Testing](#5-testing)
    - 5.1 [Test Plan](#51-test-plan)
    - 5.2 [Test Log](#52-test-log)
@@ -37,6 +38,25 @@
 ## 1. Introduction
 
 The **Student Idea Contribution System (SICS)** is a web-based platform developed as part of the COMP1640 module. The system enables staff and students within a university to submit, discuss, and evaluate ideas across academic departments. It is designed to facilitate bottom-up innovation by allowing any staff member to contribute ideas, which are then organised around Topics (academic campaigns) and can be reacted to, commented on, and exported for management review.
+
+### Technology Stack
+
+#### Backend
+- **Framework**: ASP.NET Core (.NET 9.0)
+- **ORM**: Entity Framework Core
+- **Database**: MySQL 8.0+
+- **Authentication**: JWT Bearer tokens + BCrypt password hashing
+- **API Documentation**: Swagger/Swashbuckle 6.5.0
+- **Port**: 5122
+- **CORS**: Configured for cross-origin requests
+
+#### Frontend
+- **Framework**: React 18.2 + TypeScript
+- **Build Tool**: Vite 5.4.21
+- **Styling**: Tailwind CSS (PostCSS plugin)
+- **HTTP Client**: Axios 1.6.2
+- **Routing**: React Router DOM 6.21.0
+- **Port**: 5173
 
 ---
 
@@ -65,10 +85,13 @@ The team adopted the Scrum framework for the full project lifecycle. The followi
 | Project Management | **Trello** / **Jira**                | Sprint board, backlog tracking, user story mapping        |
 | Version Control    | **Git + GitHub**                     | Source code management, branching strategy, pull requests |
 | Communication      | **Microsoft Teams** / **Discord**    | Daily Scrum, sprint planning, issue discussion            |
-| IDE – Backend      | **Visual Studio 2022** / **VS Code** | C# development, EF Core migrations                        |
-| IDE – Frontend     | **Visual Studio Code**               | React/TypeScript development                              |
-| API Testing        | **Postman**                          | Manual API endpoint testing                               |
-| Database           | **MySQL Workbench**                  | Schema design, query execution, seed data management      |
+| IDE – Backend      | **Visual Studio 2022** / **VS Code** | C# (.NET 9.0) development, EF Core migrations             |
+| IDE – Frontend     | **Visual Studio Code**               | React 18.2 / TypeScript development                       |
+| Build Tool         | **Vite 5.4.21**                      | Frontend build and hot-module replacement                 |
+| CSS Framework      | **Tailwind CSS**                     | Utility-first responsive styling                          |
+| HTTP Client        | **Axios 1.6.2**                      | Frontend API requests with interceptors                   |
+| API Testing        | **Postman**                          | Manual API endpoint testing; Swagger UI (port 5122)       |
+| Database           | **MySQL 8.0+ / MySQL Workbench**     | Schema design, query execution, seed data management      |
 | Diagram & Design   | **draw.io** / **Figma**              | Use case diagrams, wireframes, site map                   |
 | Documentation      | **Markdown / GitHub Wiki**           | Technical documentation, README files                     |
 | CI/CD              | **GitHub Actions** (planned)         | Automated build and test pipeline                         |
@@ -551,6 +574,72 @@ SICS Web Application
 
 ### 4.1 List of Files in System
 
+#### Project Structure
+
+```
+COMP1640/
+├── backend/
+│   ├── Controllers/          # API Controllers
+│   │   ├── AuthController.cs
+│   │   ├── TopicController.cs
+│   │   ├── IdeaController.cs
+│   │   ├── CommentController.cs
+│   │   ├── CategoryController.cs
+│   │   ├── DepartmentController.cs
+│   │   ├── DocumentController.cs
+│   │   ├── AdminController.cs
+│   │   ├── StatisticsController.cs
+│   │   └── SystemSettingsController.cs
+│   ├── Models/              # Data Models
+│   │   ├── User.cs
+│   │   ├── Topic.cs
+│   │   ├── Idea.cs
+│   │   ├── Comment.cs
+│   │   ├── Reaction.cs
+│   │   ├── Category.cs
+│   │   ├── Department.cs
+│   │   ├── Document.cs
+│   │   ├── SystemSettings.cs
+│   │   └── AdminDtos.cs
+│   ├── Data/AppDbContext.cs  # EF Core DbContext
+│   ├── Services/EmailService.cs
+│   ├── Database/            # SQL schema & seed scripts
+│   ├── Migrations/          # EF Core migration files
+│   ├── Program.cs           # Entry point
+│   └── appsettings.json     # Configuration
+│
+└── frontend/
+    ├── src/
+    │   ├── Login.tsx / Login.css
+    │   ├── Register.tsx / Register.css
+    │   ├── Dashboard.tsx / Dashboard.css
+    │   ├── Topics.tsx / Topics.css
+    │   ├── IdeaForm.tsx / IdeaForm.css
+    │   ├── IdeaDetail.tsx / IdeaDetail.css
+    │   ├── AdminDashboard.tsx / AdminDashboard.css
+    │   ├── NavBar.tsx / NavBar.css
+    │   ├── services/        # API Services
+    │   │   ├── authService.ts
+    │   │   ├── topicService.ts
+    │   │   ├── ideaService.ts
+    │   │   ├── commentService.ts
+    │   │   ├── categoryService.ts
+    │   │   ├── departmentService.ts
+    │   │   ├── documentService.ts
+    │   │   ├── statisticsService.ts
+    │   │   ├── adminService.ts
+    │   │   └── systemSettingsService.ts
+    │   ├── api.ts           # Axios configuration
+    │   ├── types.ts         # TypeScript types
+    │   ├── App.tsx          # Root component
+    │   └── main.tsx         # Entry point
+    ├── index.html
+    ├── tailwind.config.js
+    ├── postcss.config.js
+    ├── vite.config.ts
+    └── package.json
+```
+
 #### Backend (`/backend/`)
 
 | File/Directory                 | Description                                                                       |
@@ -609,7 +698,82 @@ SICS Web Application
 
 ---
 
-### 4.2 Some Screenshots of System
+### 4.2 API Endpoints
+
+#### Authentication
+- `POST /api/auth/login` – Đăng nhập
+- `POST /api/auth/register` – Đăng ký
+- `GET /api/auth/me` – Lấy thông tin user hiện tại
+
+#### Topics
+- `GET /api/topic` – Lấy tất cả topics
+- `GET /api/topic/{id}` – Lấy topic theo ID
+- `POST /api/topic` – Tạo topic mới
+- `PUT /api/topic/{id}` – Cập nhật topic
+- `DELETE /api/topic/{id}` – Xóa topic
+- `GET /api/topic/statistics` – Thống kê
+- `GET /api/topic/{id}/export` – Export data
+
+#### Ideas
+- `GET /api/idea` – Lấy tất cả ideas
+- `GET /api/idea/{id}` – Lấy idea theo ID
+- `GET /api/idea/topic/{topicId}` – Lấy ideas theo topic
+- `POST /api/idea` – Tạo idea mới
+- `PUT /api/idea/{id}` – Cập nhật idea
+- `DELETE /api/idea/{id}` – Xóa idea
+- `POST /api/idea/{id}/react` – React to idea
+- `GET /api/idea/topic/{topicId}/no-comments` – Ideas không có comment
+- `GET /api/idea/anonymous` – Ideas ẩn danh
+- `GET /api/idea/most-popular` – Most popular ideas (sorted by votes)
+- `GET /api/idea/most-viewed` – Most viewed ideas
+- `GET /api/idea/latest` – Latest ideas
+
+#### Comments
+- `GET /api/comment/idea/{ideaId}` – Lấy comments theo idea
+- `POST /api/comment` – Tạo comment
+- `PUT /api/comment/{id}` – Cập nhật comment
+- `DELETE /api/comment/{id}` – Xóa comment
+
+#### Categories
+- `GET /api/category` – Lấy tất cả categories
+- `GET /api/category/{id}` – Lấy category theo ID
+- `POST /api/category` – Tạo category (QA Manager only)
+- `PUT /api/category/{id}` – Cập nhật category
+- `DELETE /api/category/{id}` – Xóa category
+
+#### Departments
+- `GET /api/department` – Lấy tất cả departments
+- `GET /api/department/{id}` – Lấy department theo ID
+
+#### Documents
+- `POST /api/Document/upload/{ideaId}` – Upload file
+- `GET /api/Document/{id}` – Get document info
+- `GET /api/Document/idea/{ideaId}` – Get all documents for idea
+- `DELETE /api/Document/{id}` – Delete document
+
+#### Statistics
+- `GET /api/Statistics/overview` – Overall statistics
+- `GET /api/Statistics/departments` – Stats by department
+- `GET /api/Statistics/ideas-by-category` – Ideas by category
+- `GET /api/Statistics/ideas-by-topic` – Ideas by topic
+- `GET /api/Statistics/top-contributors` – Top contributors
+- `GET /api/Statistics/ideas-timeline` – Timeline data
+
+#### Admin (Export – QA Manager / Administrator only)
+- `GET /api/Admin/export-csv/{topicId}` – Export ideas to CSV (after comment deadline)
+- `GET /api/Admin/export-documents/{topicId}` – Export documents as ZIP
+- `GET /api/Admin/export-all-data/{topicId}` – Export everything (CSV + ZIP)
+
+#### System Settings
+- `GET /api/SystemSettings` – Get all settings
+- `GET /api/SystemSettings/{key}` – Get setting by key
+- `PUT /api/SystemSettings/{key}` – Update setting
+- `POST /api/SystemSettings` – Create setting
+- `DELETE /api/SystemSettings/{key}` – Delete setting
+
+---
+
+### 4.3 Some Screenshots of System
 
 > **Note**: The following descriptions correspond to the key screens of the implemented system.
 
@@ -665,7 +829,7 @@ The admin dashboard includes:
 
 **Test Environment**:
 
-- Backend: `http://localhost:5005`
+- Backend: `http://localhost:5122`
 - Frontend: `http://localhost:5173`
 - Database: MySQL (local instance, seeded with test data)
 - Browser: Google Chrome (latest), Microsoft Edge
@@ -830,10 +994,29 @@ The Student Idea Contribution System successfully meets all core requirements sp
 
 ### 6.2 Technical Achievements
 
-- **Security**: All passwords are hashed using BCrypt. SQL injection is prevented through Entity Framework Core's parameterised queries. JWT tokens expire after 24 hours. File uploads are validated for type and size.
+#### Backend Optimizations
+- **Response Compression**: Enabled response compression for reduced bandwidth usage.
+- **JSON Serialization**: Configured to ignore cycles and null values for cleaner API responses.
+- **Global Error Handling**: Middleware catches unhandled exceptions and returns consistent error responses.
+- **Health Check Endpoint**: `/health` endpoint available for monitoring.
+- **Swagger Documentation**: Detailed API documentation via Swashbuckle 6.5.0 at `/swagger`.
+- **Async/Await Patterns**: All database and I/O operations use async methods.
+- **Proper HTTP Status Codes**: Consistent use of 200, 201, 400, 401, 403, 404, 500 codes.
+- **Security**: All passwords are hashed using BCrypt. SQL injection is prevented through Entity Framework Core's parameterised queries. JWT tokens have configurable expiry. File uploads are validated for type and size.
 - **Scalability**: Pagination is implemented on all listing endpoints to handle large volumes of ideas.
 - **Data Integrity**: Unique constraints on email addresses, department codes, and vote reactions are enforced at both the application and database level.
 - **Privacy**: Anonymous posting stores the author's ID server-side for administrative traceability while hiding identity from other users.
+
+#### Frontend Optimizations
+- **Axios Interceptors**: Auto-attach JWT token to every request; handle 401/403/500 errors globally.
+- **Client-Side Caching**: 30–60 second TTL cache for topics, categories, and ideas; auto-cleared on mutation.
+- **Form Validation**: Custom validators in `utils/validators.ts`; client-side validation before API requests.
+- **Loading & Error States**: All async operations show loading spinners and error messages.
+- **React.memo Optimization**: Applied to frequently-rendered card components.
+- **useCallback & useMemo Hooks**: Minimise unnecessary re-renders.
+- **File Upload Validation**: File size limit 10 MB; allowed types: images, PDF, Word documents.
+- **Responsive Design**: Mobile-first layout with Tailwind CSS.
+- **TypeScript Strict Mode**: End-to-end type safety across all services and components.
 - **Separation of Concerns**: Clean separation between frontend (React/TypeScript) and backend (REST API), allowing independent deployment and scaling.
 
 ### 6.3 Challenges Encountered
@@ -848,15 +1031,17 @@ The Student Idea Contribution System successfully meets all core requirements sp
 
 ### 6.4 Limitations and Future Work
 
-| Area            | Current Limitation          | Proposed Enhancement                                          |
-| --------------- | --------------------------- | ------------------------------------------------------------- |
-| Email Service   | Log-only in development     | Configure production SMTP (e.g., SendGrid, Office 365)        |
-| Testing         | Manual black-box tests only | Add xUnit unit tests and Playwright/Cypress E2E tests         |
-| Mobile UI       | Basic responsive layout     | Dedicated mobile-optimised layout with touch interactions     |
-| Search & Filter | Basic listing               | Full-text search, filter by category/department/date          |
-| Notifications   | Email only                  | In-app real-time notifications (SignalR WebSocket)            |
-| Analytics       | Static charts               | Interactive filterable analytics dashboard                    |
-| CI/CD           | Manual deployment           | GitHub Actions pipeline for automated build, test, and deploy |
+| Area            | Current Limitation                                        | Proposed Enhancement                                          |
+| --------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
+| Email Service   | Log-only in development (SMTP config needed)              | Configure production SMTP (e.g., SendGrid, Office 365)        |
+| Testing         | Manual black-box tests only                               | Add xUnit unit tests and Playwright/Cypress E2E tests         |
+| Mobile UI       | Basic responsive layout                                   | Dedicated mobile-optimised layout with touch interactions     |
+| Search & Filter | Basic listing                                             | Full-text search, filter by category/department/date          |
+| Notifications   | Email only                                                | In-app real-time notifications (SignalR WebSocket)            |
+| Analytics       | Static charts                                             | Interactive filterable analytics dashboard                    |
+| CI/CD           | Manual deployment                                         | GitHub Actions pipeline for automated build, test, and deploy |
+| Database        | Entity Framework Core + MySQL (local)                     | Setup Redis caching; add database indexing review             |
+| Authentication  | JWT (60 min expiry)                                       | Refresh token mechanism; rate limiting                        |
 
 ### 6.5 Lessons Learned
 
@@ -871,16 +1056,18 @@ The project provided valuable experience in:
 
 ## 7. References
 
-1. Microsoft Corporation. (2024). _ASP.NET Core documentation_. Retrieved from https://learn.microsoft.com/en-us/aspnet/core/
+1. Microsoft Corporation. (2024). _ASP.NET Core (.NET 9.0) documentation_. Retrieved from https://learn.microsoft.com/en-us/aspnet/core/
 2. Microsoft Corporation. (2024). _Entity Framework Core documentation_. Retrieved from https://learn.microsoft.com/en-us/ef/core/
-3. Meta Platforms, Inc. (2024). _React documentation_. Retrieved from https://react.dev/
-4. OpenJS Foundation. (2024). _TypeScript documentation_. Retrieved from https://www.typescriptlang.org/docs/
+3. Meta Platforms, Inc. (2024). _React 18 documentation_. Retrieved from https://react.dev/
+4. Microsoft Corporation. (2024). _TypeScript documentation_. Retrieved from https://www.typescriptlang.org/docs/
 5. Scrum Alliance. (2020). _The Scrum Guide_ (K. Schwaber & J. Sutherland). Retrieved from https://www.scrum.org/resources/scrum-guide
 6. OWASP Foundation. (2024). _OWASP Top Ten_. Retrieved from https://owasp.org/www-project-top-ten/
-7. Vitejs. (2024). _Vite documentation_. Retrieved from https://vitejs.dev/
-8. Auth0. (2024). _JSON Web Tokens (JWT) Introduction_. Retrieved from https://jwt.io/introduction/
-9. BCrypt.Net contributors. (2024). _BCrypt.Net-Next documentation_. Retrieved from https://github.com/BcryptNet/bcrypt.net
-10. MySQL AB. (2024). _MySQL 8.0 Reference Manual_. Retrieved from https://dev.mysql.com/doc/refman/8.0/en/
+7. Vitejs. (2024). _Vite 5 documentation_. Retrieved from https://vitejs.dev/
+8. Tailwind Labs. (2024). _Tailwind CSS documentation_. Retrieved from https://tailwindcss.com/docs/
+9. Auth0. (2024). _JSON Web Tokens (JWT) Introduction_. Retrieved from https://jwt.io/introduction/
+10. BCrypt.Net contributors. (2024). _BCrypt.Net-Next documentation_. Retrieved from https://github.com/BcryptNet/bcrypt.net
+11. MySQL AB. (2024). _MySQL 8.0 Reference Manual_. Retrieved from https://dev.mysql.com/doc/refman/8.0/en/
+12. Axios contributors. (2024). _Axios documentation_. Retrieved from https://axios-http.com/docs/intro
 
 ---
 
