@@ -410,6 +410,247 @@ The system uses a relational MySQL database managed through Entity Framework Cor
 
 ---
 
+### 3.2.1 Relational Schema – Table Definitions
+
+#### Table: Users
+
+| Column            | Data Type      | Constraints                                    | Description                                     |
+| ----------------- | -------------- | ---------------------------------------------- | ----------------------------------------------- |
+| Id                | INT            | PRIMARY KEY, AUTO_INCREMENT                    | Unique user identifier                          |
+| FullName          | NVARCHAR(200)  | NOT NULL                                       | Full name of user                               |
+| Email             | NVARCHAR(255)  | NOT NULL, UNIQUE                               | Email address (login credential)                |
+| PasswordHash      | NVARCHAR(MAX)  | NOT NULL                                       | BCrypt hashed password                          |
+| Role              | NVARCHAR(50)   | NOT NULL, ENUM (Administrator, QAManager, QACoordinator, Staff) | User role                                       |
+| DepartmentId      | INT            | FOREIGN KEY (Departments.Id), NOT NULL         | User's department                               |
+| StudentId         | NVARCHAR(20)   | NULLABLE                                       | Student ID (if staff/student)                   |
+| AgreedTerms       | BIT            | NOT NULL, DEFAULT 0                            | T&C acceptance flag                             |
+| AgreedTermsDate   | DATETIME       | NULLABLE                                       | Timestamp of T&C agreement                      |
+| IsActive          | BIT            | NOT NULL, DEFAULT 1                            | Soft delete flag                                |
+| CreatedAt         | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())               | Account creation timestamp                      |
+| UpdatedAt         | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())               | Last update timestamp                           |
+
+**Indexes:**
+- `UX_User_Email` on `Email`
+- `IX_User_DepartmentId` on `DepartmentId`
+
+---
+
+#### Table: Departments
+
+| Column      | Data Type      | Constraints                               | Description              |
+| ----------- | -------------- | ----------------------------------------- | ------------------------ |
+| Id          | INT            | PRIMARY KEY, AUTO_INCREMENT               | Unique department ID     |
+| Name        | NVARCHAR(200)  | NOT NULL                                  | Department name          |
+| Code        | NVARCHAR(50)   | NOT NULL, UNIQUE                         | Department code          |
+| QACoordinId | INT            | FOREIGN KEY (Users.Id), NULLABLE         | QA Coordinator ID        |
+| CreatedAt   | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())         | Creation timestamp       |
+
+**Indexes:**
+- `UX_Department_Code` on `Code`
+- `IX_Department_QACoordinId` on `QACoordinId`
+
+---
+
+#### Table: Topics
+
+| Column                 | Data Type      | Constraints                               | Description                    |
+| ---------------------- | -------------- | ----------------------------------------- | ------------------------------ |
+| Id                     | INT            | PRIMARY KEY, AUTO_INCREMENT               | Unique topic ID                |
+| Name                   | NVARCHAR(255)  | NOT NULL                                  | Topic name                     |
+| Description            | NVARCHAR(MAX)  | NULLABLE                                  | Topic description              |
+| IdeaSubmissionDeadline | DATETIME       | NOT NULL                                  | Deadline for idea submission   |
+| CommentDeadline        | DATETIME       | NOT NULL                                  | Deadline for final comments    |
+| CreatedById            | INT            | FOREIGN KEY (Users.Id), NOT NULL         | Topic creator (typically QAM) |
+| IsActive               | BIT            | NOT NULL, DEFAULT 1                       | Active/archived flag           |
+| CreatedAt              | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())         | Creation timestamp             |
+| UpdatedAt              | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())         | Last update timestamp          |
+
+**Indexes:**
+- `IX_Topic_CreatedById` on `CreatedById`
+- `IX_Topic_IsActive` on `IsActive`
+
+---
+
+#### Table: Categories
+
+| Column      | Data Type      | Constraints                       | Description                  |
+| ----------- | -------------- | --------------------------------- | ---------------------------- |
+| Id          | INT            | PRIMARY KEY, AUTO_INCREMENT       | Unique category ID           |
+| TopicId     | INT            | FOREIGN KEY (Topics.Id), NOT NULL | Category belongs to topic    |
+| Name        | NVARCHAR(150)  | NOT NULL                          | Category name                |
+| Description | NVARCHAR(MAX)  | NULLABLE                          | Category description         |
+| CreatedAt   | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE()) | Creation timestamp           |
+
+**Indexes:**
+- `IX_Category_TopicId` on `TopicId`
+
+**Constraints:**
+- Categories can only be deleted if they have no associated ideas
+
+---
+
+#### Table: Ideas
+
+| Column         | Data Type      | Constraints                                      | Description                          |
+| -------------- | -------------- | ------------------------------------------------ | ------------------------------------ |
+| Id             | INT            | PRIMARY KEY, AUTO_INCREMENT                      | Unique idea ID                       |
+| TopicId        | INT            | FOREIGN KEY (Topics.Id), NOT NULL               | Topic this idea belongs to           |
+| AuthorId       | INT            | FOREIGN KEY (Users.Id), NOT NULL                | Idea author (always stored)          |
+| CategoryId     | INT            | FOREIGN KEY (Categories.Id), NULLABLE           | Idea category                        |
+| DepartmentId   | INT            | FOREIGN KEY (Departments.Id), NULLABLE          | Author's department                  |
+| Title          | NVARCHAR(255)  | NOT NULL                                         | Idea title                           |
+| Content        | NVARCHAR(MAX)  | NOT NULL                                         | Idea content/body                    |
+| IsAnonymous    | BIT            | NOT NULL, DEFAULT 0                              | Whether idea posted anonymously      |
+| ViewCount      | INT            | NOT NULL, DEFAULT 0                              | Number of views                      |
+| ThumbsUpCount  | INT            | NOT NULL, DEFAULT 0                              | Thumbs up reaction count             |
+| ThumbsDownCount| INT            | NOT NULL, DEFAULT 0                              | Thumbs down reaction count           |
+| CreatedAt      | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())                | Submission timestamp                 |
+| UpdatedAt      | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())                | Last modification                    |
+
+**Indexes:**
+- `IX_Idea_TopicId` on `TopicId`
+- `IX_Idea_AuthorId` on `AuthorId`
+- `IX_Idea_CategoryId` on `CategoryId`
+- `IX_Idea_DepartmentId` on `DepartmentId`
+- `IX_Idea_CreatedAt` on `CreatedAt` (for sorting)
+
+**Special Behavior:**
+- Ideas are immutable after submission (no UPDATE on Content)
+- AuthorId always stored even for anonymous ideas (audit trail)
+- Display `IsAnonymous` flag controls visibility of author
+
+---
+
+#### Table: Comments
+
+| Column      | Data Type      | Constraints                               | Description                 |
+| ----------- | -------------- | ----------------------------------------- | --------------------------- |
+| Id          | INT            | PRIMARY KEY, AUTO_INCREMENT               | Unique comment ID           |
+| IdeaId      | INT            | FOREIGN KEY (Ideas.Id), NOT NULL         | Comment belongs to idea     |
+| AuthorId    | INT            | FOREIGN KEY (Users.Id), NOT NULL         | Commenter (always tracked)  |
+| Content     | NVARCHAR(MAX)  | NOT NULL                                  | Comment text                |
+| IsAnonymous | BIT            | NOT NULL, DEFAULT 0                       | Anonymous posting flag      |
+| CreatedAt   | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())         | Comment timestamp           |
+
+**Indexes:**
+- `IX_Comment_IdeaId` on `IdeaId`
+- `IX_Comment_AuthorId` on `AuthorId`
+- `IX_Comment_CreatedAt` on `CreatedAt`
+
+**Constraints:**
+- Comments cannot be posted after `Topic.CommentDeadline`
+
+---
+
+#### Table: Reactions
+
+| Column    | Data Type | Constraints                                                      | Description               |
+| --------- | --------- | ---------------------------------------------------------------- | ------------------------- |
+| Id        | INT       | PRIMARY KEY, AUTO_INCREMENT                                      | Unique reaction ID        |
+| IdeaId    | INT       | FOREIGN KEY (Ideas.Id), NOT NULL                                 | Reaction on idea          |
+| UserId    | INT       | FOREIGN KEY (Users.Id), NOT NULL                                 | User giving reaction      |
+| IsThumbsUp| BIT       | NOT NULL                                                          | Thumbs up (1) or down (0) |
+| CreatedAt | DATETIME  | NOT NULL, DEFAULT (GETUTCDATE())                                | Reaction timestamp       |
+
+**Indexes:**
+- `UX_Reaction_IdeaId_UserId` UNIQUE on `(IdeaId, UserId)` – Enforces one vote per user per idea
+
+---
+
+#### Table: Documents
+
+| Column    | Data Type      | Constraints                               | Description                    |
+| --------- | -------------- | ----------------------------------------- | ------------------------------ |
+| Id        | INT            | PRIMARY KEY, AUTO_INCREMENT               | Unique document ID             |
+| IdeaId    | INT            | FOREIGN KEY (Ideas.Id), NOT NULL         | Document attached to idea      |
+| FileName  | NVARCHAR(255)  | NOT NULL                                  | Original file name             |
+| FilePath  | NVARCHAR(MAX)  | NOT NULL                                  | Physical storage path          |
+| FileType  | NVARCHAR(50)   | NOT NULL                                  | MIME type (e.g., application/pdf) |
+| FileSize  | BIGINT         | NOT NULL                                  | File size in bytes             |
+| UploadedAt| DATETIME       | NOT NULL, DEFAULT (GETUTCDATE())         | Upload timestamp               |
+
+**Indexes:**
+- `IX_Document_IdeaId` on `IdeaId`
+
+**Constraints:**
+- Allowed file types: .pdf, .docx, .doc, .xlsx, .pptx, .jpg, .png, .gif
+- Maximum file size: 10 MB per file
+
+---
+
+#### Table: SystemSettings
+
+| Column    | Data Type      | Constraints                       | Description             |
+| --------- | -------------- | --------------------------------- | ----------------------- |
+| Id        | INT            | PRIMARY KEY, AUTO_INCREMENT       | Unique setting ID       |
+| Key       | NVARCHAR(100)  | NOT NULL, UNIQUE                  | Configuration key       |
+| Value     | NVARCHAR(MAX)  | NULLABLE                          | Configuration value     |
+| CreatedAt | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE()) | Creation timestamp      |
+| UpdatedAt | DATETIME       | NOT NULL, DEFAULT (GETUTCDATE()) | Last update timestamp   |
+
+**Sample Keys:**
+- `SystemYear` → "2025-2026"
+- `MaxIdeasPerUser` → "50"
+- `NotificationEmailFrom` → "noreply@university.edu"
+
+---
+
+### 3.2.2 Sample Data & Relationships
+
+#### Sample: Department & User
+
+```sql
+INSERT INTO Departments (Name, Code, QACoordinId) 
+VALUES ('Information Technology', 'IT', 2);
+
+INSERT INTO Users (FullName, Email, PasswordHash, Role, DepartmentId, StudentId, AgreedTerms, AgreedTermsDate)
+VALUES 
+('John IT Manager', 'john.it@university.edu', '$2b$10$...', 'QAManager', 1, NULL, 1, '2026-01-15'),
+('Jane IT Coordinator', 'jane.it@university.edu', '$2b$10$...', 'QACoordinator', 1, NULL, 1, '2026-01-15'),
+('Mike IT Staff', 'mike.it@university.edu', '$2b$10$...', 'Staff', 1, 'S20200123', 1, '2026-02-01');
+```
+
+#### Sample: Topic → Idea → Comment → Reaction
+
+```sql
+INSERT INTO Topics (Name, Description, IdeaSubmissionDeadline, CommentDeadline, CreatedById)
+VALUES ('Software Innovation 2026', 'Submit ideas for Q1 2026', '2026-03-31', '2026-04-15', 1);
+
+INSERT INTO Ideas (TopicId, AuthorId, CategoryId, DepartmentId, Title, Content, IsAnonymous)
+VALUES (1, 15, 3, 1, 'Cloud Migration Framework', 'Proposal for moving legacy systems...', 0);
+
+INSERT INTO Comments (IdeaId, AuthorId, Content, IsAnonymous)
+VALUES (42, 7, 'Great idea! We should consider cost implications.', 1);
+
+INSERT INTO Reactions (IdeaId, UserId, IsThumbsUp)
+VALUES (42, 8, 1);  -- User 8 gives thumbs up to idea 42
+-- If user 8 tries to react again, UNIQUE constraint prevents duplicate
+```
+
+#### Sample: Export Workflow
+
+```sql
+-- QA Manager exports all ideas for Topic 1 after CommentDeadline passed
+SELECT 
+    i.Id, i.Title, i.Content,
+    CASE WHEN i.IsAnonymous = 1 THEN 'Anonymous' ELSE u.FullName END AS Author,
+    d.Name AS Department,
+    c.Name AS Category,
+    COUNT(DISTINCT re.Id) AS TotalReactions,
+    COUNT(DISTINCT co.Id) AS TotalComments
+FROM Ideas i
+LEFT JOIN Users u ON i.AuthorId = u.Id
+LEFT JOIN Departments d ON i.DepartmentId = d.Id
+LEFT JOIN Categories c ON i.CategoryId = c.Id
+LEFT JOIN Reactions re ON i.Id = re.IdeaId
+LEFT JOIN Comments co ON i.Id = co.IdeaId
+WHERE i.TopicId = 1 AND GETUTCDATE() > (SELECT CommentDeadline FROM Topics WHERE Id = 1)
+GROUP BY i.Id, i.Title, i.Content, i.IsAnonymous, u.FullName, d.Name, c.Name
+ORDER BY i.CreatedAt DESC;
+```
+
+---
+
 ### 3.3 Website Design
 
 #### 3.3.1 Wireframes Diagrams
