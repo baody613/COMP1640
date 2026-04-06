@@ -1,34 +1,34 @@
-# Admin Dashboard - Hướng dẫn sử dụng
+# Admin Dashboard - User Guide
 
-## ✅ Đã hoàn thành
+## ✅ Completed
 
 ### 1. 📊 **Admin Dashboard Component**
 
-- **File**: `frontend-app/src/AdminDashboard.tsx` và `AdminDashboard.css`
-- **Tính năng**:
-  - ✅ Tab "Tổng quan": Hiển thị thống kê tổng quan (tổng số ideas, comments, users, departments)
-  - ✅ Tab "Quản lý User": Hiển thị danh sách tất cả users với thông tin chi tiết (role, department, status)
-  - ✅ Tab "Quản lý Topics": Hiển thị tất cả topics với deadline management và export functions
-  - ✅ Tab "Quản lý Categories": Hiển thị danh sách categories
-  - ✅ Tab "Thống kê": Thống kê chi tiết theo phòng ban, category, và topic với biểu đồ
-  - ✅ Navigation trong Dashboard.tsx đã được cập nhật (Admin button hiển thị cho QAManager và Administrator)
-  - ✅ Route `/admin` đã được thêm vào App.tsx với PrivateRoute protection
+- **File**: `frontend-app/src/AdminDashboard.tsx` and `AdminDashboard.css`
+- **Features**:
+  - ✅ "Overview" Tab: Display overall statistics (total ideas, comments, users, departments)
+  - ✅ "User Management" Tab: Display list of all users with detailed information (role, department, status)
+  - ✅ "Topics Management" Tab: Display all topics with deadline management and export functions
+  - ✅ "Categories Management" Tab: Display list of categories
+  - ✅ "Statistics" Tab: Detailed statistics by department, category, and topic with charts
+  - ✅ Navigation in Dashboard.tsx has been updated (Admin button shown for QAManager and Administrator)
+  - ✅ Route `/admin` has been added to App.tsx with PrivateRoute protection
 
 ### 2. 🔧 **Backend APIs - User Management**
 
-- **GET** `/api/Admin/users` - Lấy danh sách tất cả users
-- **POST** `/api/Admin/users` - Tạo user mới (Administrator only)
-- **PUT** `/api/Admin/users/{id}` - Cập nhật thông tin user (Administrator only)
+- **GET** `/api/Admin/users` - Get list of all users
+- **POST** `/api/Admin/users` - Create new user (Administrator only)
+- **PUT** `/api/Admin/users/{id}` - Update user information (Administrator only)
 - **DELETE** `/api/Admin/users/{id}` - Deactivate user (soft delete) (Administrator only)
 
-**Request body cho POST/PUT users:**
+**Request body for POST/PUT users:**
 
 ```json
 {
   "fullName": "Nguyen Van A",
   "email": "nguyenvana@university.edu",
   "password": "password123",
-  "role": "Staff", // Administrator | QAManager | Staff | QACoordinator
+  "role": "Staff" // Administrator | QAManager | Staff | QACoordinator
   "departmentId": 1,
   "isActive": true
 }
@@ -36,11 +36,11 @@
 
 ### 3. 🔧 **Backend APIs - Topic Management**
 
-- **POST** `/api/Admin/topics` - Tạo topic mới
-- **PUT** `/api/Admin/topics/{id}` - Cập nhật topic
-- **DELETE** `/api/Admin/topics/{id}` - Xóa topic (nếu chưa có ideas)
+- **POST** `/api/Admin/topics` - Create new topic
+- **PUT** `/api/Admin/topics/{id}` - Update topic
+- **DELETE** `/api/Admin/topics/{id}` - Delete topic (if no ideas)
 
-**Request body cho POST/PUT topics:**
+**Request body for POST/PUT topics:**
 
 ```json
 {
@@ -62,116 +62,116 @@
 
 ---
 
-## 🚀 Cách sử dụng
+## 🚀 How to Use
 
-### **Bước 1: Restart Backend** ⚠️ (BẮT BUỘC)
+### **Step 1: Restart Backend** ⚠️ (REQUIRED)
 
-Backend đang chạy (PID 7668) và cần restart để áp dụng các endpoint mới:
+Backend is running and needs to restart to apply new endpoints:
 
 ```powershell
-# Stop backend hiện tại
+# Stop current backend
 Stop-Process -Id 7668 -Force
 
-# Start lại backend
+# Start backend again
 cd N:\COMP1640\backend
 dotnet run
 ```
 
-Hoặc trong VS Code:
+Or in VS Code:
 
-1. Nhấn `Ctrl+C` trong terminal đang chạy backend
-2. Chạy lại: `dotnet run`
+1. Press `Ctrl+C` in the terminal running backend
+2. Run again: `dotnet run`
 
-### **Bước 2: Truy cập Admin Dashboard**
+### **Step 2: Access Admin Dashboard**
 
-1. Login với tài khoản Administrator:
+1. Login with Administrator account:
    - **Email**: `admin@university.edu`
    - **Password**: `password123`
 
-2. Sau khi login, click button **"Admin"** trên Dashboard header
+2. After login, click **"Admin"** button on Dashboard header
 
-3. Hoặc truy cập trực tiếp: `http://localhost:3000/admin`
+3. Or access directly: `http://localhost:3000/admin`
 
 ---
 
-## 📋 Chi tiết các tab trong Admin Dashboard
+## 📋 Details of Tabs in Admin Dashboard
 
-### 📊 **Tab "Tổng quan"**
+### 📊 **"Overview" Tab**
 
-- Hiển thị 4 stat cards:
-  - 💡 Tổng số ý tưởng
-  - 💬 Tổng số bình luận
-  - 👥 Tổng số người dùng
-  - 🏢 Tổng số phòng ban
+- Display 4 stat cards:
+  - 💡 Total ideas
+  - 💬 Total comments
+  - 👥 Total users
+  - 🏢 Total departments
 
-### 👥 **Tab "Quản lý User"**
+### 👥 **"User Management" Tab**
 
-- **Hiển thị danh sách users** với thông tin:
-  - ID, Họ tên, Email, Role (với color badge)
-  - Phòng ban, Trạng thái Đồng ý T&C, Trạng thái Active/Inactive
-  - Ngày tạo
+- **Display user list** with information:
+  - ID, Full Name, Email, Role (with color badge)
+  - Department, T&C Agreement Status, Active/Inactive Status
+  - Creation Date
 
-- **Tính năng hiện tại**: Xem danh sách và refresh
-- **TODO**: Thêm CRUD forms (Create/Edit/Delete user)
+- **Current features**: View list and refresh
+- **TODO**: Add CRUD forms (Create/Edit/Delete user)
 
-### 📚 **Tab "Quản lý Topics"**
+### 📚 **"Topics Management" Tab**
 
-- **Hiển thị grid của topics** với:
-  - Tên topic, mô tả
-  - 📅 Deadline ý tưởng (Idea Submission Deadline)
-  - 💬 Deadline bình luận (Comment Deadline)
-  - Số lượng ideas và categories
+- **Display topics grid** with:
+  - Topic name, description
+  - 📅 Idea Submission Deadline
+  - 💬 Comment Deadline
+  - Number of ideas and categories
   - **Export buttons**:
-    - 📥 Export CSV - Xuất danh sách ideas ra file CSV
-    - 📦 Export Docs - Xuất tất cả documents trong topic ra file ZIP
+    - 📥 Export CSV - Export ideas list to CSV file
+    - 📦 Export Docs - Export all documents in topic to ZIP file
 
-- **Tính năng hiện tại**: Xem topics và export
-- **TODO**: Thêm CRUD forms (Create/Edit/Delete topic)
+- **Current features**: View topics and export
+- **TODO**: Add CRUD forms (Create/Edit/Delete topic)
 
-### 🏷️ **Tab "Quản lý Categories"**
+### 🏷️ **"Categories Management" Tab**
 
-- **Hiển thị grid của categories** với tên và mô tả
-- **TODO**: Thêm CRUD forms (Create/Edit/Delete category)
+- **Display categories grid** with name and description
+- **TODO**: Add CRUD forms (Create/Edit/Delete category)
 
-### 📈 **Tab "Thống kê"**
+### 📈 **"Statistics" Tab**
 
-- **3 bảng thống kê chi tiết**:
-  1. **🏢 Thống kê theo phòng ban**:
-     - Số nhân viên
-     - Số ý tưởng
-     - Số bình luận
-     - Lượt xem
-  2. **🏷️ Thống kê theo danh mục**:
-     - Số ý tưởng
-     - Số bình luận
-     - 👍 Thumbs Up (màu xanh)
-     - 👎 Thumbs Down (màu đỏ)
-  3. **📚 Thống kê theo topic**:
-     - Số ý tưởng
-     - Số bình luận
-     - Lượt xem
-     - Số người tham gia
-     - Trạng thái Active/Inactive
+- **3 detailed statistics tables**:
+  1. **🏢 Statistics by Department**:
+     - Number of employees
+     - Number of ideas
+     - Number of comments
+     - Views
+  2. **🏷️ Statistics by Category**:
+     - Number of ideas
+     - Number of comments
+     - 👍 Thumbs Up (green)
+     - 👎 Thumbs Down (red)
+  3. **📚 Statistics by Topic**:
+     - Number of ideas
+     - Number of comments
+     - Views
+     - Number of participants
+     - Active/Inactive Status
 
 ---
 
-## 🔐 Phân quyền
+## 🔐 Permissions
 
-### **QAManager và Administrator**
+### **QAManager and Administrator**
 
-- ✅ Xem tất cả tabs trong Admin Dashboard
-- ✅ Export CSV và Documents
-- ✅ Xem thống kê
+- ✅ View all tabs in Admin Dashboard
+- ✅ Export CSV and Documents
+- ✅ View statistics
 
-### **Administrator only** (cho CRUD operations)
+### **Administrator only** (for CRUD operations)
 
-- ✅ Tạo/Sửa/Xóa User
-- ✅ Tạo/Sửa/Xóa Topic
-- ✅ Tạo/Sửa/Xóa Category
+- ✅ Create/Edit/Delete User
+- ✅ Create/Edit/Delete Topic
+- ✅ Create/Edit/Delete Category
 
-### **Staff và QACoordinator**
+### **Staff and QACoordinator**
 
-- ❌ Không có quyền truy cập Admin Dashboard
+- ❌ No access to Admin Dashboard
 
 ---
 
@@ -182,7 +182,7 @@ Hoặc trong VS Code:
 - Gradient background (purple theme)
 - Modern card-based layout
 - Responsive grid system
-- Hover effects và transitions
+- Hover effects and transitions
 - Color-coded role badges:
   - 🟡 Administrator (yellow/gold)
   - 🔵 QAManager (blue)
@@ -191,20 +191,20 @@ Hoặc trong VS Code:
 
 ### **Navigation**
 
-- Tab-based navigation với active state
-- Breadcrumb trong header
+- Tab-based navigation with active state
+- Breadcrumb in header
 - Quick return to Dashboard button
-- Logout button luôn hiển thị
+- Logout button always displayed
 
 ---
 
-## 🔄 Các bước tiếp theo (Optional enhancements)
+## 🔄 Next Steps (Optional enhancements)
 
 ### **1. User Management CRUD Forms**
 
 ```tsx
-// TODO: Thêm modal/form cho:
-- ➕ Create User button → Form modal với fields (FullName, Email, Password, Role, Department)
+// TODO: Add modal/form for:
+- ➕ Create User button → Form modal with fields (FullName, Email, Password, Role, Department)
 - ✏️ Edit User button → Pre-filled form
 - 🗑️ Delete User button → Confirmation dialog
 - Validation: Email format, password strength, unique email
@@ -213,18 +213,18 @@ Hoặc trong VS Code:
 ### **2. Topic Management CRUD Forms**
 
 ```tsx
-// TODO: Thêm modal/form cho:
-- ➕ Create Topic button → Form với Name, Description, Deadlines
+// TODO: Add modal/form for:
+- ➕ Create Topic button → Form with Name, Description, Deadlines
 - ✏️ Edit Topic button → Update deadlines
-- 🗑️ Delete Topic button (với check ideas count)
+- 🗑️ Delete Topic button (with check ideas count)
 - Toggle Active/Inactive status
 ```
 
 ### **3. Category Management CRUD Forms**
 
 ```tsx
-// TODO: Thêm modal/form cho:
-- ➕ Create Category button → Form với Name, Description, TopicId
+// TODO: Add modal/form for:
+- ➕ Create Category button → Form with Name, Description, TopicId
 - ✏️ Edit Category button
 - 🗑️ Delete Category button
 ```
@@ -232,7 +232,7 @@ Hoặc trong VS Code:
 ### **4. Search & Filters**
 
 ```tsx
-// TODO: Thêm:
+// TODO: Add:
 - 🔍 Search users by name, email, role
 - 🔍 Filter topics by active status
 - 🔍 Filter categories by topic
@@ -241,9 +241,9 @@ Hoặc trong VS Code:
 ### **5. Charts & Visualizations** (Optional)
 
 ```bash
-# Cài đặt chart library
+# Install chart library
 npm install recharts
-# hoặc
+# or
 npm install chart.js react-chartjs-2
 ```
 
@@ -257,9 +257,9 @@ Then add charts to Statistics tab:
 
 ## ✅ Testing Checklist
 
-- [x] Backend build thành công (có warnings về file lock - normal)
-- [x] Frontend không có TypeScript errors
-- [ ] Restart backend và test endpoints:
+- [x] Backend build successful (has warnings about file lock - normal)
+- [x] Frontend has no TypeScript errors
+- [ ] Restart backend and test endpoints:
   - [ ] GET `/api/Admin/users` → Returns user list
   - [ ] POST `/api/Admin/users` → Creates new user
   - [ ] PUT `/api/Admin/users/1` → Updates user
@@ -280,24 +280,24 @@ Then add charts to Statistics tab:
 
 ## 📝 Notes
 
-1. **Backend đang chạy** (PID 7668) nên build failed vì không thể copy file mới. **BẮT BUỘC phải restart backend** để áp dụng các endpoint mới.
+1. **Backend is running** (PID 7668) so build failed because cannot copy new files. **MUST restart backend** to apply new endpoints.
 
 2. **Validation rules**:
-   - Email phải unique
-   - Password tối thiểu 6 ký tự (có thể thêm validation)
-   - Idea submission deadline phải trước comment deadline
-   - Không thể xóa topic có ideas (chỉ có thể deactivate)
-   - Không thể xóa chính mình (trong DeleteUser)
+   - Email must be unique
+   - Password minimum 6 characters (can add validation)
+   - Idea submission deadline must be before comment deadline
+   - Cannot delete topic with ideas (can only deactivate)
+   - Cannot delete yourself (in DeleteUser)
 
-3. **Database changes**: Không cần migration mới vì chỉ thêm endpoints, không thay đổi schema.
+3. **Database changes**: No new migration needed because only adding endpoints, no schema changes.
 
-4. **Frontend đã sẵn sàng**: Có thể test ngay sau khi restart backend.
+4. **Frontend is ready**: Can test immediately after restarting backend.
 
 ---
 
 ## 🎯 Summary
 
-**✅ HOÀN THÀNH:**
+**✅ COMPLETED:**
 
 - Admin Dashboard UI với 5 tabs
 - Backend APIs cho User Management (GET/POST/PUT/DELETE)
