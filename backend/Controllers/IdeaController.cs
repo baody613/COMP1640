@@ -49,7 +49,8 @@ public class IdeaController : ControllerBase
                     i.Title,
                     i.Content,
                     i.IsAnonymous,
-                    AuthorId = i.AuthorId,
+                    // Do NOT expose AuthorId when anonymous for privacy
+                    AuthorId = i.IsAnonymous ? (int?)null : i.AuthorId,
                     AuthorName = i.IsAnonymous ? "Anonymous" : i.Author!.FullName,
                     i.TopicId,
                     i.CategoryId,
@@ -107,15 +108,26 @@ public class IdeaController : ControllerBase
             if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int uid))
                 currentUserId = uid;
 
+            // Get user role for authorization check
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+
+            // Only show real author info if: not anonymous OR user is QAManager/Admin OR user is the idea author
+            var isAuthorized = !idea.IsAnonymous || 
+                              userRole == "QAManager" || 
+                              userRole == "Administrator" || 
+                              idea.AuthorId == currentUserId;
+
             var result = new
             {
                 idea.Id,
                 idea.Title,
                 idea.Content,
                 idea.IsAnonymous,
-                AuthorId = idea.AuthorId,
+                // Do NOT expose AuthorId when anonymous unless user is authorized
+                AuthorId = isAuthorized ? idea.AuthorId : (int?)null,
                 AuthorName = idea.IsAnonymous ? "Anonymous" : idea.Author!.FullName,
-                AuthorEmail = idea.Author!.Email,
+                // Only show email if authorized (QAManager/Admin or idea owner)
+                AuthorEmail = isAuthorized ? idea.Author!.Email : null,
                 idea.TopicId,
                 idea.CategoryId,
                 CategoryName = idea.Category!.Name,
@@ -417,6 +429,13 @@ public class IdeaController : ControllerBase
     }
 }
 
+/// <summary>
+/// NOTE: Ideas are IMMUTABLE after submission.
+/// There are NO PUT/PATCH or DELETE endpoints for ideas.
+/// This is by design to maintain audit trail and prevent post-submission modifications.
+/// Once submitted, an idea cannot be edited or deleted.
+/// Users should review content before submission.
+/// </summary>
 public class IdeaCreateDto
 {
     public string Title { get; set; } = string.Empty;

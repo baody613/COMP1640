@@ -1,48 +1,48 @@
 # COMP1640 - Student Idea Contribution System
 
-## 📌 Tổng Quan Dự Án
+## 📌 Project Overview
 
-Hệ thống web-based role-based để thu thập ý tưởng cải tiến từ nhân viên trong trường Đại học.
+A web-based role-based system for collecting improvement ideas from employees in a university.
 
-### Stack Công Nghệ
+### Technology Stack
 
 - **Frontend**: React.js 18+ với TypeScript
-- **Backend**: ASP.NET Core 9.0 Web API
+- **Backend**: ASP.NET Core 8.0 Web API
 - **Database**: MySQL 8.0+
-- **ORM**: Entity Framework Core 9.0
+- **ORM**: Entity Framework Core 8.0
 - **Authentication**: JWT Bearer Token
 
 ---
 
-## 🎯 Tính Năng Chính
+## 🎯 Main Features
 
-### Vai Trò Người Dùng
+### User Roles
 
-1. **Administrator** - Quản lý hệ thống
-2. **QA Manager** - Quản lý toàn bộ quy trình
-3. **QA Coordinator** - Quản lý theo Department
-4. **Staff** - Nhân viên đóng góp ý tưởng
+1. **Administrator** - System management
+2. **QA Manager** - Full process management
+3. **QA Coordinator** - Department management
+4. **Staff** - Employee idea contribution
 
-### Chức Năng
+### Features
 
-✅ Submit ideas (có thể ẩn danh) với file attachments  
-✅ Comment và Thumbs Up/Down cho ideas  
-✅ Phân loại ideas theo categories  
-✅ Deadline cho submission và comments  
-✅ Email notifications (QA Coordinator và tác giả)  
-✅ Statistics và Analytics  
-✅ Export CSV và ZIP files (sau final closure date)  
+✅ Submit ideas (can be anonymous) with file attachments  
+✅ Comment and Thumbs Up/Down for ideas  
+✅ Categorize ideas by category  
+✅ Deadlines for submission and comments  
+✅ Email notifications (QA Coordinator and author)  
+✅ Statistics and Analytics  
+✅ Export CSV and ZIP files (after final closure date)  
 ✅ Pagination (5 items/page)  
 ✅ Responsive design (mobile, tablet, desktop)
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt
+## 🚀 Installation Guide
 
-### Yêu Cầu Hệ Thống
+### System Requirements
 
-- Node.js 18+ và npm/yarn
-- .NET SDK 9.0+
+- Node.js 18+ and npm/yarn
+- .NET SDK 8.0+
 - MySQL Server 8.0+
 - Git
 
@@ -53,15 +53,15 @@ git clone <repository-url>
 cd COMP1640
 ```
 
-### 2. Thiết Lập Database (MySQL)
+### 2. Set Up Database (MySQL)
 
-#### Cài đặt MySQL
+#### Install MySQL
 
 **Windows:**
 
 ```powershell
-# Download MySQL Installer từ https://dev.mysql.com/downloads/installer/
-# Hoặc dùng Chocolatey
+# Download MySQL Installer from https://dev.mysql.com/downloads/installer/
+# Or use Chocolatey
 choco install mysql
 ```
 
@@ -80,17 +80,17 @@ sudo apt install mysql-server
 sudo systemctl start mysql
 ```
 
-#### Tạo Database
+#### Create Database
 
 ```bash
-# Đăng nhập MySQL
+# Login to MySQL
 mysql -u root -p
 
-# Chạy script tạo database
+# Run database creation script
 mysql -u root -p < backend/Database/schema.sql
 ```
 
-Hoặc chạy từng dòng SQL:
+Or run SQL commands individually:
 
 ```sql
 CREATE DATABASE COMP1640_IdeaHub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -98,7 +98,7 @@ USE COMP1640_IdeaHub;
 -- Sau đó chạy toàn bộ script trong backend/Database/schema.sql
 ```
 
-### 3. Thiết Lập Backend (.NET)
+### 3. Set Up Backend (.NET)
 
 ```bash
 cd backend
@@ -106,11 +106,11 @@ cd backend
 # Restore packages
 dotnet restore
 
-# Cập nhật connection string trong appsettings.json
+# Update connection string in appsettings.json
 # "DefaultConnection": "Server=localhost;Port=3306;Database=COMP1640_IdeaHub;User=root;Password=YOUR_PASSWORD;AllowUserVariables=True;UseAffectedRows=False"
 ```
 
-#### Cấu hình appsettings.json
+#### Configure appsettings.json
 
 ```json
 {
@@ -135,42 +135,42 @@ dotnet restore
 }
 ```
 
-#### Chạy Migration (nếu cần)
+#### Run Migration (if needed)
 
 ```bash
-# Tạo migration mới
+# Create new migration
 dotnet ef migrations add InitialCreate
 
 # Apply migration
 dotnet ef database update
 ```
 
-#### Chạy Backend
+#### Run Backend
 
 ```bash
 dotnet run
 ```
 
-Backend sẽ chạy tại: `http://localhost:5122`  
+Backend will run at: `http://localhost:5122`  
 Swagger UI: `http://localhost:5122/swagger`
 
-### 4. Thiết Lập Frontend (React)
+### 4. Set Up Frontend (React)
 
 ```bash
 cd frontend
 
-# Cài đặt dependencies
+# Install dependencies
 npm install
 
-# Chạy development server
+# Run development server
 npm run dev
 ```
 
-Frontend sẽ chạy tại: `http://localhost:5173`
+Frontend will run at: `http://localhost:5173`
 
 ---
 
-## 👥 Tài Khoản Mặc Định
+## 👥 Default Accounts
 
 | Email                    | Password    | Role          |
 | ------------------------ | ----------- | ------------- |
@@ -180,7 +180,7 @@ Frontend sẽ chạy tại: `http://localhost:5173`
 
 ---
 
-## 📂 Cấu Trúc Dự Án
+## 📂 Project Structure
 
 ```
 COMP1640/
@@ -231,38 +231,38 @@ COMP1640/
 
 ### Authentication
 
-- `POST /api/Auth/login` - Đăng nhập
-- `POST /api/Auth/register` - Đăng ký
+- `POST /api/Auth/login` - Login
+- `POST /api/Auth/register` - Register
 - `POST /api/Auth/refresh` - Refresh token
 
 ### Ideas
 
-- `GET /api/Idea` - Lấy danh sách ideas (pagination)
-- `GET /api/Idea/{id}` - Lấy chi tiết idea
-- `POST /api/Idea` - Tạo idea mới
-- `PUT /api/Idea/{id}` - Cập nhật idea
-- `DELETE /api/Idea/{id}` - Xóa idea
-- `GET /api/Idea/most-popular` - Ideas phổ biến nhất
-- `GET /api/Idea/most-viewed` - Ideas xem nhiều nhất
-- `GET /api/Idea/latest` - Ideas mới nhất
+- `GET /api/Idea` - Get ideas list (pagination)
+- `GET /api/Idea/{id}` - Get idea details
+- `POST /api/Idea` - Create new idea
+- `PUT /api/Idea/{id}` - Update idea
+- `DELETE /api/Idea/{id}` - Delete idea
+- `GET /api/Idea/most-popular` - Most popular ideas
+- `GET /api/Idea/most-viewed` - Most viewed ideas
+- `GET /api/Idea/latest` - Latest ideas
 
 ### Comments
 
-- `GET /api/Comment/idea/{ideaId}` - Lấy comments của idea
-- `POST /api/Comment` - Tạo comment
-- `DELETE /api/Comment/{id}` - Xóa comment
+- `GET /api/Comment/idea/{ideaId}` - Get comments for idea
+- `POST /api/Comment` - Create comment
+- `DELETE /api/Comment/{id}` - Delete comment
 
 ### Documents
 
 - `POST /api/Document/upload/{ideaId}` - Upload file
-- `GET /api/Document/idea/{ideaId}` - Lấy files của idea
-- `DELETE /api/Document/{id}` - Xóa file
+- `GET /api/Document/idea/{ideaId}` - Get files for idea
+- `DELETE /api/Document/{id}` - Delete file
 
 ### Statistics
 
-- `GET /api/Statistics/overview` - Thống kê tổng quan
-- `GET /api/Statistics/departments` - Thống kê theo department
-- `GET /api/Statistics/ideas-by-category` - Ideas theo category
+- `GET /api/Statistics/overview` - Overall statistics
+- `GET /api/Statistics/departments` - Statistics by department
+- `GET /api/Statistics/ideas-by-category` - Ideas by category
 - `GET /api/Statistics/top-contributors` - Top contributors
 
 ### Admin
@@ -275,17 +275,17 @@ COMP1640/
 
 ## 🗃️ Database Schema
 
-### Bảng Chính
+### Main Tables
 
-1. **Users** - Thông tin người dùng
-2. **Departments** - Khoa/Phòng ban
-3. **Topics** - Chủ đề/Năm học
-4. **Categories** - Danh mục phân loại
-5. **Ideas** - Ý tưởng
-6. **Comments** - Bình luận
+1. **Users** - User information
+2. **Departments** - Department/Division
+3. **Topics** - Topic/Academic year
+4. **Categories** - Classification categories
+5. **Ideas** - Ideas
+6. **Comments** - Comments
 7. **Reactions** - Thumbs up/down
-8. **Documents** - File đính kèm
-9. **SystemSettings** - Cấu hình hệ thống
+8. **Documents** - Attachments
+9. **SystemSettings** - System configuration
 
 ### Relationships
 
@@ -331,7 +331,7 @@ dotnet publish -c Release -o ./publish
 ```bash
 cd frontend
 npm run build
-# Build output trong folder: dist/
+# Build output in folder: dist/
 ```
 
 ### Environment Variables
@@ -348,14 +348,14 @@ npm run build
 
 ---
 
-## 📝 Yêu Cầu Đặc Biệt
+## 📝 Special Requirements
 
-### ✅ Đã Implement
+### ✅ Implemented
 
 - ✅ Role-based access control (4 roles)
 - ✅ Terms & Conditions agreement
-- ✅ Anonymous posting (lưu author trong DB)
-- ✅ File uploads với validation
+- ✅ Anonymous posting (store author in DB)
+- ✅ File uploads with validation
 - ✅ Email notifications
 - ✅ Closure dates (idea submission & final comment)
 - ✅ Thumbs Up/Down (1 vote per user per idea)
@@ -364,11 +364,11 @@ npm run build
 - ✅ Statistics by Department
 - ✅ Responsive design ready
 
-### 🔄 Cần Hoàn Thiện
+### 🔄 To Be Completed
 
-- Email SMTP configuration (hiện đang log only)
+- Email SMTP configuration (currently logs only)
 - Frontend UI components (some pages need implementation)
-- Unit tests và Integration tests
+- Unit tests and Integration tests
 - Security audit (CSRF, XSS, SQL Injection prevention)
 
 ---
@@ -378,11 +378,11 @@ npm run build
 ### Database Connection Error
 
 ```bash
-# Kiểm tra MySQL đang chạy
+# Check if MySQL is running
 mysql --version
 mysql -u root -p
 
-# Kiểm tra connection string trong appsettings.json
+# Check connection string in appsettings.json
 ```
 
 ### Port Already in Use
@@ -407,8 +407,8 @@ dotnet ef database update
 
 ## 📞 Support & Contact
 
-- **Project Lead**: [Tên của bạn]
-- **Email**: [Email của bạn]
+- **Project Lead**: [Your name]
+- **Email**: [Your email]
 - **GitHub**: [GitHub repo URL]
 
 ---
@@ -426,4 +426,4 @@ This project is developed for educational purposes (COMP1640 coursework).
 
 ---
 
-**Last Updated**: February 2026
+**Last Updated**: April 2026

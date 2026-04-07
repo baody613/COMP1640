@@ -252,6 +252,48 @@
   line-height: 1.5;
 }
 
+/* Deadline Expired Alert */
+.deadline-expired-alert {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+  color: #721c24;
+}
+
+.deadline-expired-alert strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.deadline-expired-alert p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Deadline Info Inline */
+.deadline-info {
+  color: #667eea;
+  font-weight: 500;
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+/* Form Disabled Notice */
+.form-disabled-notice {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #856404;
+  text-align: center;
+  font-weight: 500;
+}
+
 .terms-warning {
   display: flex;
   flex-direction: column;
