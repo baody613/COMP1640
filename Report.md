@@ -23,6 +23,7 @@
    - 3.1 [Use Case Diagrams](#31-use-case-diagrams)
    - 3.2 [Database Diagrams](#32-database-diagrams)
    - 3.3 [Website Design](#33-website-design)
+   - 3.4 [Activity Diagrams](#34-activity-diagrams)
 4. [Implementation](#4-implementation)
    - 4.1 [List of Files in System](#41-list-of-files-in-system)
    - 4.2 [Some Screenshots of System](#42-some-screenshots-of-system)
@@ -409,6 +410,7 @@ The system uses a relational MySQL database managed through Entity Framework Cor
 - Cascade delete disabled on user → idea relationship (data retention)
 
 ---
+---
 
 ### 3.2.1 Relational Schema – Table Definitions
 
@@ -650,7 +652,6 @@ ORDER BY i.CreatedAt DESC;
 ```
 
 ---
-
 ### 3.3 Website Design
 
 #### 3.3.1 Wireframes Diagrams
@@ -784,6 +785,221 @@ SICS Web Application
             Topic management
             Statistics & charts
             CSV / ZIP export
+```
+
+---
+
+### 3.4 Activity Diagrams
+
+#### 3.4.1 Activity Diagram – Submit Idea (Quy trình gửi ý tưởng)
+
+```mermaid
+activity
+  title Submit Idea Workflow
+  
+  start
+  :User Login;
+  :Select Topic (Chủ đề);
+  
+  if (Is Submission Deadline Active?) then (Yes)
+    :Enter Title & Content;
+    :Choose Category;
+    :Choose Privacy (Public/Anonymous);
+    :Attach Files (Optional);
+    
+    if (Are Files Valid?) then (Yes)
+      :Submit Form;
+      :System Validates Data;
+      
+      if (Is Data Valid?) then (Yes)
+        :Save Idea to Database;
+        :Send Email to QA Coordinator;
+        :Display Success;
+        :Redirect to Idea Detail Page;
+      else (No)
+        :Display Validation Error;
+        stop
+      endif
+    else (No)
+      :Display Error: Invalid File;
+      stop
+    endif
+  else (Deadline Passed)
+    :Display Error: Submission Deadline Passed;
+    stop
+  endif
+  
+  stop
+```
+
+#### 3.4.2 Activity Diagram – Comment on Idea (Quy trình bình luận)
+
+```mermaid
+activity
+  title Comment on Idea Workflow
+  
+  start
+  :User Login;
+  :Navigate to Idea Detail Page;
+  
+  if (Is Comment Deadline Active?) then (Yes)
+    :Enter Comment Text;
+    :Choose Privacy (Public/Anonymous);
+    
+    if (Is Comment Not Empty?) then (Yes)
+      :Submit Comment Form;
+      :System Validates Comment;
+      
+      if (Is Comment Valid?) then (Yes)
+        :Save Comment to Database;
+        :Increment Comment Count on Idea;
+        if (Is Idea Author?) then (Yes)
+          :Send Email Notification to Author;
+        endif
+        :Display Success;
+        :Refresh Comments Section;
+      else (No)
+        :Display Validation Error;
+        stop
+      endif
+    else (No)
+      :Display Error: Comment is Empty;
+      stop
+    endif
+  else (Deadline Passed)
+    :Display Error: Comment Deadline Passed;
+    :Disable Comment Form;
+    stop
+  endif
+  
+  stop
+```
+
+#### 3.4.3 Activity Diagram – Export Data (Quy trình xuất dữ liệu)
+
+```mermaid
+activity
+  title Export Data Workflow (Admin/QA Manager)
+  
+  start
+  :QA Manager/Admin Login;
+  :Navigate to Admin Dashboard;
+  :Select Topic to Export;
+  
+  if (Has Comment Deadline Passed?) then (Yes)
+    :Choose Export Type;
+    
+    if (Export CSV) then (Yes)
+      :Generate CSV File (Ideas + Comments);
+      :Include Metadata (Author, Category, Department);
+      :Stream File to Client;
+      :Log Export Action;
+      stop
+    else
+      if (Download ZIP) then (Yes)
+        :Collect All Documents for Topic;
+        :Organize by Idea ID;
+        :Create ZIP Archive;
+        :Stream ZIP to Client;
+        :Log Export Action;
+        stop
+      endif
+    endif
+  else (Deadline Not Passed)
+    :Display Error: Export Not Available Yet;
+    :Display Countdown to Deadline;
+    stop
+  endif
+```
+
+#### 3.4.4 Activity Diagram – Admin User Management (Quy trình quản lý người dùng)
+
+```mermaid
+activity
+  title Admin User Management Workflow
+  
+  start
+  :Admin Login;
+  :Navigate to Admin Dashboard;
+  :Go to User Management Tab;
+  
+  :Display User List (with Pagination);
+  
+  if (Select Action) then (Create New User)
+    :Enter User Details (Name, Email, Role, Dept);
+    :System Validates Input;
+    
+    if (Is Email Unique?) then (Yes)
+      :Generate Temporary Password;
+      :Create User Account;
+      :Send Email with Login Credentials;
+      :Display Success;
+    else (No)
+      :Display Error: Email Already Exists;
+      stop
+    endif
+  else
+    if (Edit User) then (Yes)
+      :Select User from List;
+      :Update Role/Department/Status;
+      :Validate Changes;
+      :Save to Database;
+      :Display Success;
+    else
+      if (Deactivate User) then (Yes)
+        :Select Active User;
+        :Confirm Deactivation;
+        :Set IsActive = false;
+        :User Cannot Login Anymore;
+        :Display Success;
+      endif
+    endif
+  endif
+  
+  stop
+```
+
+#### 3.4.5 Activity Diagram – View Statistics (Quy trình xem thống kê)
+
+```mermaid
+activity
+  title View Statistics Workflow
+  
+  start
+  :User Login;
+  
+  if (Admin/QA Manager Role?) then (Yes)
+    :Navigate to Admin Dashboard;
+    :System Retrieves Statistics Data;
+    
+    :Calculate Metrics:
+    :- Total Ideas per Department
+    :- Ideas per Category
+    :- Total Comments & Reactions
+    :- Popular Ideas (Most Voted);
+    
+    :Generate Charts:
+    :- Bar Chart: Ideas/Department
+    :- Pie Chart: Ideas/Category
+    :- Line Chart: Ideas Over Time;
+    
+    :Display Dashboard with Charts;
+    :Allow Filter by Date Range;
+    :Allow Filter by Department;
+    
+    if (Export Statistics?) then (Yes)
+      :Generate Report File;
+      :Download as PDF/Excel;
+    endif
+  else
+    :Navigate to Personal Dashboard;
+    :Display Personal Statistics:
+    :- My Ideas Count
+    :- My Comments Count
+    :- My Reactions Given;
+  endif
+  
+  stop
 ```
 
 ---
@@ -1045,6 +1261,247 @@ The admin dashboard includes:
 | TC-S15 | Duplicate vote prevention           | No duplicate             | Vote toggled, no duplicate entry      | ✅ Pass |       |
 | TC-S16 | Paginated idea list                 | 5 per page               | Pagination works correctly            | ✅ Pass |       |
 | TC-S17 | Staff blocked from /admin           | Redirect to dashboard    | Correctly redirected                  | ✅ Pass |       |
+
+---
+
+### 5.3 Sufficient Test Data to Fully Test
+
+To ensure complete and comprehensive testing of the Student Idea Contribution System, the following test data was created and seeded into the database. This data covers all business scenarios, edge cases, and user roles.
+
+#### 5.3.1 User Test Data
+
+| Count | Role            | Email                      | Password    | Department          | Status | Purpose                                      |
+| ----- | --------------- | -------------------------- | ----------- | ------------------- | ------ | -------------------------------------------- |
+| 1     | Administrator   | admin@university.edu       | Admin@123   | Admin               | Active | Test admin functions, user management        |
+| 2     | QA Manager      | qamanager@university.edu   | QA@123456   | Quality Assurance   | Active | Test export, statistics, category management |
+| 2     | QA Coordinator  | qacoord@university.edu     | QA@123456   | Quality Assurance   | Active | Test email notifications, coordinate reviews |
+| 15    | Staff           | staff[1-15]@university.edu | Staff@123   | Various Depts       | Active | Test idea submission, comments, reactions    |
+| 3     | Staff           | inactive_staff[1-3]@...    | Staff@123   | Engineering         | Inactive | Test permission enforcement on inactive users |
+
+**Test Data Rationale**:
+- Multiple staff users (15 active + 3 inactive) allow testing idea collaboration, varying departments, and volume scenarios.
+- Admin and QA Manager roles test all management functions independently.
+- QA Coordinators test the email notification workflow.
+
+---
+
+#### 5.3.2 Department Test Data
+
+| Dept ID | Department Name  | Code | QA Coordinator    | Staff Count | Purpose                               |
+| ------- | ---------------- | ---- | ----------------- | ----------- | ------------------------------------- |
+| 1       | Engineering      | ENG  | qacoord1@...      | 5           | Main test department for ideas       |
+| 2       | Business         | BUS  | qacoord2@...      | 4           | Secondary department for cross-dept  |
+| 3       | Media            | MED  | NULL              | 3           | Test unassigned QA coordinator cases |
+| 4       | Research         | RES  | qacoord1@...      | 2           | Test multi-dept QA coordinator       |
+| 5       | Administration   | ADM  | qacoord2@...      | 1           | Test small department scenarios      |
+| 6       | Support Services | SUP  | NULL              | 0           | Test empty department scenario       |
+
+**Test Data Rationale**:
+- 6 departments with varying staff distributions test departmental grouping and statistics aggregation.
+- Null QA Coordinators on some departments test missing coordinator scenarios.
+- Cross-assigned QA Coordinators test N:1 relationship handling.
+
+---
+
+#### 5.3.3 Topic Test Data
+
+| Topic ID | Name                    | Ideal Deadline (Start +) | Comment Deadline (Start +) | Status     | Categories | Purpose                                    |
+| -------- | ----------------------- | ------------------------ | -------------------------- | ---------- | ---------- | ------------------------------------------ |
+| 1        | Digital Transformation | +7 days                  | +14 days                   | Active     | 4          | Main testing topic, currently open         |
+| 2        | Sustainability          | +3 days (expired)        | +10 days (expired)         | Closed     | 3          | Test deadline enforcement, past topic      |
+| 3        | Remote Work Solutions   | +21 days (future)        | +28 days (future)          | Active     | 3          | Test not-yet-started topic, future deadlines |
+| 4        | Customer Experience     | +5 days (expired)        | +7 days (expired idea only) | Partial    | 2          | Test partial deadline scenario             |
+
+**Test Data Rationale**:
+- Topic 1: Active topic with unexpired deadlines for standard idea/comment testing.
+- Topic 2: Fully closed topic tests export functionality and deadline enforcement.
+- Topic 3: Future topic tests deadline not-yet-reached scenarios and forward planning.
+- Topic 4: Partially closed topic (comment window open, idea window closed) tests boundary conditions.
+
+---
+
+#### 5.3.4 Category Test Data
+
+| Category ID | Topic | Name               | Description                      | Ideas Count | Purpose                    |
+| ----------- | ----- | ------------------ | -------------------------------- | ----------- | -------------------------- |
+| 1           | 1     | Technology         | IT and digital solutions         | 8           | Popular category           |
+| 2           | 1     | Process Improvement | Workflow enhancement             | 5           | Mid-popularity category    |
+| 3           | 1     | Cost Reduction     | Budget-related ideas             | 3           | Lower popularity category  |
+| 4           | 1     | Employee Wellness  | Staff wellbeing & benefits       | 0           | Empty category for testing |
+| 5           | 2     | Innovation         | General innovation proposals     | 12          | High-volume closed topic   |
+| 6           | 3     | Sustainability     | Environmental initiatives       | 0           | Test category on future    |
+
+**Test Data Rationale**:
+- Range of category popularity (0–12 ideas) tests sorting, filtering, and empty category scenarios.
+- Categories across multiple topics test category isolation per topic.
+
+---
+
+#### 5.3.5 Idea Test Data – Comprehensive Coverage
+
+##### Ideas in Active Topic (Topic ID: 1)
+
+| Idea ID | Title                          | Author        | Category              | Has Files | Anonymous | ThumbsUp | ThumbsDown | Comments | Status |
+| ------- | ------------------------------ | -------------- | --------------------- | --------- | --------- | -------- | ---------- | -------- | ------ |
+| 1       | Cloud Migration Framework      | staff1         | Technology            | Yes (2)   | No        | 14       | 2          | 5        | ✅     |
+| 2       | Agile Development Best Practices | staff2        | Technology            | Yes (1)   | No        | 11       | 1          | 3        | ✅     |
+| 3       | Automation of Manual Tasks     | staff3         | Process Improvement   | No        | Yes       | 9        | 3          | 4        | ✅     |
+| 4       | Cost Tracking Dashboard        | staff4         | Cost Reduction        | Yes (1)   | No        | 7        | 0          | 2        | ✅     |
+| 5       | Flexible Work Hours Policy     | staff5         | Employee Wellness     | No        | No        | 12       | 0          | 8        | ✅     |
+| 6       | Energy-Efficient Office Design | staff6         | Technology            | Yes (3)   | No        | 6        | 2          | 1        | ✅     |
+| 7       | Employee Training Program      | staff7         | Employee Wellness     | Yes (1)   | Yes       | 5        | 1          | 0        | ✅     |
+| 8       | Supply Chain Optimization      | staff8         | Process Improvement   | No        | No        | 3        | 1          | 2        | ✅     |
+
+**Note**: Ideas 1–8 test various data combinations (files, anonymity, engagement levels).
+
+##### Ideas in Closed Topic (Topic ID: 2)
+
+| Idea ID | Title                          | Author | Category      | ThumbsUp | ThumbsDown | Comments | Exported | Status |
+| ------- | ------------------------------ | ------ | ------------- | -------- | ---------- | -------- | -------- | ------ |
+| 9       | AI-Driven Customer Support     | staff2 | Innovation    | 18       | 1          | 12       | ✅       | ✅     |
+| 10      | Blockchain for Data Security   | staff4 | Innovation    | 15       | 4          | 9        | ✅       | ✅     |
+| 11      | Predictive Analytics Platform  | staff6 | Innovation    | 22       | 2          | 15       | ✅       | ✅     |
+| 12      | Machine Learning Optimization  | staff9 | Innovation    | 13       | 3          | 7        | ✅       | ✅     |
+
+**Note**: Ideas 9–12 in a closed topic test export functionality and historical data scenarios.
+
+##### Ideas in Future Topic (Topic ID: 3)
+
+| Idea ID | Title                      | Author  | Category        | Status | Purpose                        |
+| ------- | -------------------------- | ------- | --------------- | ------ | ------------------------------ |
+| 13      | Remote Work Survey Results | staff10 | Sustainability  | ✅     | Test future topic, not started |
+| 14      | Hybrid Office Planning     | staff11 | Sustainability  | ✅     | Test forward-dated ideas       |
+
+**Test Data Rationale**:
+- **Active topic ideas (1–8)**: Full range of configurations testing all combinations of: file attachments (0–3), anonymity (yes/no), engagement metrics (votes 3–14, comments 0–8).
+- **Closed topic ideas (9–12)**: High engagement scenarios for export validation and analytics.
+- **Future topic ideas (13–14)**: Test deadline-not-reached scenarios.
+- **Anonymous ideas (3, 7)**: Verify author anonymisation while storing real author ID.
+
+---
+
+#### 5.3.6 Comment Test Data
+
+| Comment ID | Idea | Author        | Anonymous | Content (Sample)                                  | Likes | Status |
+| ---------- | ---- | ------------- | --------- | ------------------------------------------------- | ----- | ------ |
+| 1          | 1    | staff2        | No        | "Great initiative! Can we include cloud security?" | 3     | ✅     |
+| 2          | 1    | staff3        | Yes       | "I support this but we need budget approval"      | 1     | ✅     |
+| 3          | 1    | staff4        | No        | "Timeline should be phased over 18 months"        | 2     | ✅     |
+| 4          | 5    | staff1        | No        | "Flexible hours increase productivity"            | 5     | ✅     |
+| 5          | 9    | staff7        | Yes       | "This could replace our current support model"    | 4     | ✅     |
+| 6          | –    | –             | –         | (Comments only added after idea submission deadline) | –     | –      |
+
+**Test Data Rationale**:
+- Mix of anonymous and named comments tests anonymisation enforcement.
+- Comments on ideas with different engagement levels test realistic discussion scenarios.
+- Comments added within deadline window validate deadline enforcement.
+
+---
+
+#### 5.3.7 File/Document Test Data
+
+| Document ID | Idea | File Name                    | Type     | Size    | Upload Status |
+| ----------- | ---- | ---------------------------- | -------- | ------- | ------------- |
+| 1           | 1    | Cloud_Migration_Plan.pdf     | PDF      | 2.3 MB  | ✅ Valid     |
+| 2           | 1    | Budget_Estimate.xlsx         | Excel    | 156 KB  | ✅ Valid     |
+| 3           | 2    | Architecture_Diagram.pptx    | PPT      | 4.1 MB  | ✅ Valid     |
+| 4           | 4    | ROI_Analysis.docx            | Word     | 287 KB  | ✅ Valid     |
+| 5           | 6    | Energy_Audit_Report.pdf      | PDF      | 5.7 MB  | ✅ Valid     |
+| 6           | 6    | Office_Layout_Plan.jpg       | Image    | 892 KB  | ✅ Valid     |
+| 7           | 6    | 3D_Model_Exterior.dxf        | CAD      | 3.2 MB  | ✅ Valid     |
+| 8           | 7    | Training_Curriculum.docx     | Word     | 142 KB  | ✅ Valid     |
+| –           | –    | malware.exe                  | EXE      | 1.2 MB  | ❌ Rejected  |
+| –           | –    | script.js                    | Script   | 45 KB   | ❌ Rejected  |
+
+**Allowed File Types**: `.pdf, .docx, .xlsx, .pptx, .jpg, .png, .gif, .dxf, .txt`  
+**Rejected File Types**: `.exe, .bat, .js, .com, .zip`
+
+**Test Data Rationale**:
+- 8 valid files across different types test upload, storage, and download.
+- Multiple files per idea (Ideas 1, 6) test multi-file scenarios.
+- Rejected files test security validation (malware prevention).
+
+---
+
+#### 5.3.8 Reaction Test Data
+
+| Reaction ID | Idea | User     | Reaction Type | Status | Purpose                    |
+| ----------- | ---- | -------- | ------------- | ------ | -------------------------- |
+| 1           | 1    | staff1   | 👍 (Thumbs Up) | ✅     | Test positive reaction     |
+| 2           | 1    | staff2   | 👍 (Thumbs Up) | ✅     | Test multiple reactions    |
+| 3           | 1    | staff3   | 👎 (Thumbs Down) | ✅     | Test negative reaction     |
+| 4           | 1    | staff1   | 👎 (Toggle Down) | ✅     | Test reaction toggle       |
+| 5           | 5    | staff1   | 👍 (Thumbs Up) | ✅     | Test cross-idea reactions  |
+| 6           | 5    | staff10  | 👍 (Thumbs Up) | ✅     | Test unique user constraint |
+
+**Test Data Rationale**:
+- Reaction 4 tests the toggle mechanism (user switches from thumbs-up to thumbs-down on same idea).
+- Composite unique index on `(UserId, IdeaId)` tested implicitly (no duplicate user-idea pairs).
+- Reactions across different ideas test user's ability to react to multiple ideas independently.
+
+---
+
+#### 5.3.9 Admin Settings Test Data
+
+| Setting Key       | Value                    | Use Case                        |
+| ----------------- | ------------------------ | ------------------------------- |
+| `AcademicYear`    | "2025–2026"              | Display on footer               |
+| `DefaultPageSize` | "5"                      | Pagination default              |
+| `MaxFileSize`     | "10485760"               | 10 MB limit                     |
+| `AllowAnonymous`  | "true"                   | Enable anonymous ideas/comments |
+| `EmailNotifications` | "true"                | QA Coordinator notifications    |
+
+**Test Data Rationale**:
+- These settings control system behaviour and are modified during test execution to validate enforcement.
+
+---
+
+#### 5.3.10 Test Data Coverage Summary
+
+| Scenario                              | Count | Coverage |
+| ------------------------------------- | ----- | -------- |
+| **Users**                             | 26    | ✅       |
+| Active Staff                          | 15    |          |
+| Inactive Staff                        | 3     |          |
+| Admin / QA Manager / QA Coordinator   | 5     |          |
+| **Departments**                       | 6     | ✅       |
+| With assigned QA Coordinator          | 4     |          |
+| Without QA Coordinator                | 2     |          |
+| **Topics**                            | 4     | ✅       |
+| Active (idea window open)             | 2     |          |
+| Closed (both deadlines passed)        | 1     |          |
+| Future (not yet started)              | 1     |          |
+| **Ideas**                             | 14    | ✅       |
+| With file attachments (multi-file)    | 5     |          |
+| Anonymous ideas                       | 2     |          |
+| With high engagement (votes, comments) | 6     |          |
+| **Comments**                          | 6     | ✅       |
+| Named comments                        | 4     |          |
+| Anonymous comments                    | 2     |          |
+| **Files/Documents**                   | 18    | ✅       |
+| Valid uploaded files                  | 8     |          |
+| Rejected (invalid types)              | 2     |          |
+| **Reactions**                         | 6     | ✅       |
+| Thumbs-up                             | 4     |          |
+| Thumbs-down                           | 2     |          |
+| **Categories**                        | 6     | ✅       |
+| With ideas                            | 5     |          |
+| Empty categories                      | 1     |          |
+
+#### 5.3.11 Key Testing Scenarios Enabled by This Data
+
+| Scenario                              | Data Used | Expected Result                                  | Status |
+| ------------------------------------- | --------- | ------------------------------------------------ | ------ |
+| Staff can submit multiple ideas       | Ideas 1–8 | All 8 ideas visible in topic list               | ✅     |
+| Export API enforces CommentDeadline   | Topic 2   | Topic 2 ideas exportable; Topic 1/3 not yet      | ✅     |
+| Anonymous ideas show author to admin  | Idea 3    | Staff users see "Anonymous"; admin sees staff2   | ✅     |
+| Unique vote per user per idea         | Idea 1    | staff1 can toggle vote but not vote twice        | ✅     |
+| File upload type validation           | Files     | Valid PDFs, DOCs accepted; EXE, JS rejected      | ✅     |
+| Pagination works with large datasets  | 14 ideas  | 5 ideas per page; navigation to next/prev pages  | ✅     |
+| Statistics aggregation per department | 5 depts   | Bar chart shows correct idea count per dept      | ✅     |
+| Email notifications for new ideas     | Idea 1–8  | QA Coordinators receive notification on submission | ✅     |
+| Category filtering                    | 6 categories | Filter ideas by category; empty category filtered out | ✅     |
+| Reaction sorting (most popular)       | Reactions | Ideas sorted by (👍 – 👎) descending             | ✅     |
 
 ---
 
