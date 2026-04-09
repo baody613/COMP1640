@@ -270,12 +270,14 @@ function AdminDashboard() {
         >
           📎 Ideas & File Upload
         </button>
-        <button
-          className={`tab ${activeTab === "pendingIdeas" ? "active" : ""}`}
-          onClick={() => setActiveTab("pendingIdeas")}
-        >
-          🕐 Pending Approval
-        </button>
+        {user?.role === "QAManager" && (
+          <button
+            className={`tab ${activeTab === "pendingIdeas" ? "active" : ""}`}
+            onClick={() => setActiveTab("pendingIdeas")}
+          >
+            🕐 Pending Ideas
+          </button>
+        )}
       </div>
 
       <div className="admin-content">
@@ -638,10 +640,29 @@ function TopicIdeasFilesTab({
                         <td>
                           <a
                             href={`http://${window.location.hostname}:5000${doc.filePath}`}
-                            target="_blank"
-                            rel="noreferrer"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              const url = `http://${window.location.hostname}:5000${doc.filePath}`;
+                              try {
+                                const res = await fetch(url);
+                                if (!res.ok) throw new Error("Download failed");
+                                const blob = await res.blob();
+                                const blobUrl =
+                                  window.URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = blobUrl;
+                                a.download = doc.fileName;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                window.URL.revokeObjectURL(blobUrl);
+                              } catch (err) {
+                                console.error("Fallback to open:", err);
+                                window.open(url, "_blank");
+                              }
+                            }}
                           >
-                            Open file
+                            Download
                           </a>
                         </td>
                       </tr>
@@ -1016,16 +1037,6 @@ function TopicsTab({
       <div className="tab-header">
         <h2>📚 Manage Topics</h2>
         <div style={{ display: "flex", gap: ".5rem" }}>
-          <button
-            className="btn-primary"
-            onClick={() => {
-              setShowCreate(true);
-              setCreateForm(emptyForm);
-              setCreateErr("");
-            }}
-          >
-            + Create New Topic
-          </button>
           <button className="btn-secondary" onClick={onRefresh}>
             🔄 Refresh
           </button>

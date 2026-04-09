@@ -174,16 +174,40 @@ function IdeaDetail() {
             <div className="idea-documents">
               <h3>📎 Attachments</h3>
               <div className="documents-list">
-                {idea.documents.map((doc) => (
-                  <a
-                    key={doc.id}
-                    href={`http://localhost:5000/api/document/download/${doc.id}`}
-                    className="document-item"
-                    download
-                  >
-                    📄 {doc.fileName} ({(doc.fileSize / 1024).toFixed(2)} KB)
-                  </a>
-                ))}
+                {idea.documents.map((doc) => {
+                  const url = `http://${window.location.hostname}:5000${doc.filePath}`;
+                  return (
+                    <a
+                      key={doc.id}
+                      href={url}
+                      className="document-item"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        try {
+                          const res = await fetch(url);
+                          if (!res.ok) throw new Error("Network error");
+                          const blob = await res.blob();
+                          const blobUrl = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = blobUrl;
+                          a.download = doc.fileName;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          window.URL.revokeObjectURL(blobUrl);
+                        } catch (err) {
+                          console.error(
+                            "Direct download failed, falling back to new tab:",
+                            err,
+                          );
+                          window.open(url, "_blank");
+                        }
+                      }}
+                    >
+                      📄 {doc.fileName} ({(doc.fileSize / 1024).toFixed(2)} KB)
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}
