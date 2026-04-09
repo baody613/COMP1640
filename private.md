@@ -1,385 +1,326 @@
-# Personal Backend Development Report
+# Individual Report – COMP1640
 
-## COMP1640 – Student Idea Contribution System
+## Student Idea Contribution System (SICS)
 
 **Module:** COMP1640 – Enterprise Web Development  
 **Role:** Backend Developer  
-**Technology:** ASP.NET Core 8 (C#), Entity Framework Core, MySQL  
-**Academic Year:** 2025–2026
+**Technology Stack:** ASP.NET Core 8 (C#) · Entity Framework Core · MySQL · React 18 (TypeScript)  
+**Academic Year:** 2025–2026  
+**Date:** April 2026
 
 ---
 
 ## Table of Contents
 
-1. [Overview of My Contribution](#1-overview-of-my-contribution)
-2. [System Architecture](#2-system-architecture)
-3. [Database Design & Entity Framework Core](#3-database-design--entity-framework-core)
-4. [Authentication & Authorization](#4-authentication--authorization)
-5. [API Endpoints Implemented](#5-api-endpoints-implemented)
-6. [Email Notification Service](#6-email-notification-service)
-7. [File Upload & Document Management](#7-file-upload--document-management)
-8. [Statistics & Reporting](#8-statistics--reporting)
-9. [Challenges & Solutions](#9-challenges--solutions)
-10. [Reflection](#10-reflection)
+1. [Evaluation of Product and Process](#1-evaluation-of-product-and-process)
+   - 1.1 [Product Evaluation](#11-product-evaluation)
+   - 1.2 [Process Evaluation](#12-process-evaluation)
+2. [Evaluation of Team](#2-evaluation-of-team)
+   - 2.1 [Scoring Criteria and Weighting](#21-scoring-criteria-and-weighting)
+   - 2.2 [Individual Scores and Weighted Model](#22-individual-scores-and-weighted-model)
+   - 2.3 [Commentary on Each Member](#23-commentary-on-each-member)
+3. [Self-Evaluation](#3-self-evaluation)
+   - 3.1 [Description of My Contribution](#31-description-of-my-contribution)
+   - 3.2 [Reflection on Performance](#32-reflection-on-performance)
+   - 3.3 [Lessons Learnt](#33-lessons-learnt)
 
 ---
 
-## 1. Overview of My Contribution
+---
 
-My primary responsibility in this project was the full backend development of the Student Idea Contribution System (SICS). I designed and implemented the RESTful API using **ASP.NET Core 8 (C#)** with **Entity Framework Core** as the ORM and **MySQL** as the relational database engine.
+## 1. Evaluation of Product and Process
 
-Key areas I was responsible for:
+### 1.1 Product Evaluation
 
-| Area            | Description                                           |
-| --------------- | ----------------------------------------------------- |
-| Database Schema | Designed all 9 tables and their relationships         |
-| REST API        | Implemented 10 controllers with 50+ endpoints         |
-| Authentication  | JWT-based authentication with BCrypt password hashing |
-| Authorization   | Role-based access control (RBAC) for 4 user roles     |
-| Email Service   | Automated email notifications via SMTP                |
-| File Management | Secure file upload and ZIP download capability        |
-| Statistics      | Analytics endpoints for admin dashboard               |
+#### 1.1.1 Requirements Coverage
+
+The Student Idea Contribution System (SICS) was built to meet the functional specification defined in the COMP1640 module brief. A full comparison of requirements versus implementation is maintained in the group document `REQUIREMENTS_CHECKLIST.md`. The summary outcome is:
+
+| Category                    | Required | Implemented | Status      |
+| --------------------------- | -------- | ----------- | ----------- |
+| Role-based Access (4 roles) | 4        | 4           | ✅ Complete |
+| Idea Management             | 6        | 6           | ✅ Complete |
+| Comments & Reactions        | 5        | 5           | ✅ Complete |
+| Deadline Management         | 2        | 2           | ✅ Complete |
+| Email Notifications         | 3        | 2           | ⚠️ Partial  |
+| Lists & Pagination          | 5        | 5           | ✅ Complete |
+| Data Export (CSV / ZIP)     | 3        | 3           | ✅ Complete |
+| Administrator Features      | 4        | 4           | ✅ Complete |
+| Statistics & Reporting      | 3        | 3           | ✅ Complete |
+| Responsive UI               | 3        | 2           | ⚠️ Partial  |
+| Security                    | 5        | 5           | ✅ Complete |
+
+**Overall: 31 out of 35 requirements fully implemented (88.6%).** The two outstanding items are full SMTP email delivery in production (the service is implemented and logs correctly in development mode but requires a live SMTP server to be configured) and complete mobile responsiveness on all screen breakpoints.
+
+#### 1.1.2 Key Feature Walkthroughs with Screenshots
+
+The following screenshots were captured from the running application and are cross-referenced with `Report.md` Section 4.2 ("Screenshots of System").
 
 ---
 
-## 2. System Architecture
+**Screenshot 1 – Login Page**
 
-The backend follows a clean **layered architecture**:
+> _The login screen presents email and password fields with JWT-based authentication. Entering incorrect credentials displays a clear error message. Successful login redirects the user to a role-appropriate dashboard._
 
-```
-frontend (React)
-      |
-      | HTTP/JSON
-      v
-  Controllers       ← API layer (request/response handling)
-      |
-  AppDbContext      ← Data access layer (Entity Framework Core)
-      |
-   MySQL DB         ← Persistence layer
-      |
-  EmailService      ← External service (SMTP)
-```
+The login flow is implemented in `AuthController.cs` (`POST /api/auth/login`). The backend verifies the BCrypt-hashed password, checks that `IsActive = true`, and returns a signed JWT containing the user's role claim. The frontend (`Login.tsx`) stores the token in `localStorage` and uses it for subsequent API calls.
 
-**Project structure:**
-
-```
-backend/
-├── Controllers/          # 10 API controllers
-│   ├── AuthController.cs
-│   ├── IdeaController.cs
-│   ├── CommentController.cs
-│   ├── DocumentController.cs
-│   ├── AdminController.cs
-│   ├── StatisticsController.cs
-│   ├── TopicController.cs
-│   ├── CategoryController.cs
-│   ├── DepartmentController.cs
-│   └── SystemSettingsController.cs
-├── Models/               # 9 entity models + DTOs
-├── Data/
-│   └── AppDbContext.cs   # EF Core DbContext
-├── Services/
-│   └── EmailService.cs   # SMTP email service
-├── Migrations/           # EF Core database migrations
-└── Program.cs            # App configuration & DI registration
-```
-
-**Program.cs** acts as the composition root — all services, middleware, and configurations are registered here: JWT authentication, CORS, EF Core DbContext, Swagger, and response compression.
+**Evaluative comment:** The login experience is clean and functional. One improvement would be adding a "remember me" feature and account lockout after repeated failed attempts — neither is currently implemented (cross-ref: `FINAL_RECOMMENDATIONS.md`).
 
 ---
 
-## 3. Database Design & Entity Framework Core
+**Screenshot 2 – Staff Dashboard (Idea List)**
 
-I designed the full database schema consisting of **9 tables** and configured all relationships using EF Core Fluent API inside `AppDbContext.OnModelCreating()`.
+> _Staff users see a paginated list of ideas grouped by Topic. Each card shows the title, anonymous/named author, category, reaction counts, and a "Days remaining" badge. Sorting controls allow switching between Most Popular, Most Viewed, and Latest._
 
-### Entity Relationship Summary
+Pagination is handled server-side with `page` and `pageSize` query parameters (`IdeaController.cs`). The frontend (`Dashboard.tsx`) renders idea cards and communicates with `GET /api/idea/topic/{topicId}`. Cross-reference: `Report.md` Section 4.2, `FRONTEND_AND_TESTING_REPORT_EN.md` Section 3.2.
 
-| Entity           | Key Relationships                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------- |
-| `Departments`    | Has many `Users`, has many `Ideas`, has one `QACoordinator` (User)                                  |
-| `Users`          | Belongs to `Departments`, authors `Ideas` and `Comments`                                            |
-| `Topics`         | Has many `Ideas`, has many `Categories`, created by `User`                                          |
-| `Categories`     | Belongs to `Topic`, has many `Ideas`                                                                |
-| `Ideas`          | Belongs to `User`, `Topic`, `Category`, `Department`; has many `Comments`, `Reactions`, `Documents` |
-| `Comments`       | Belongs to `Idea` and `User`                                                                        |
-| `Reactions`      | Belongs to `Idea` and `User` (thumbs up / thumbs down)                                              |
-| `Documents`      | File attachments belonging to `Ideas`                                                               |
-| `SystemSettings` | Key-value configuration store                                                                       |
-
-### EF Core Configuration Highlights
-
-- **Unique index** on `Users.Email` to prevent duplicate accounts
-- **Unique index** on `Departments.Code`
-- **DeleteBehavior.Restrict** on `Users → Department` to prevent accidental cascade deletes
-- **DeleteBehavior.SetNull** on `Departments.QACoordinatorId` so removing a QA coordinator does not delete the department
-- **DeleteBehavior.Cascade** on `Ideas → Comments`, `Ideas → Reactions`, `Ideas → Documents`
-
-### Migration
-
-I created the initial EF Core migration (`InitialCreate`) which generates the complete schema programmatically, ensuring the database schema stays in sync with the C# models throughout development.
+**Evaluative comment:** The paginated idea list works correctly for all tested cases (see `FRONTEND_TESTER_REPORT.md` testing results). The card layout is readable on desktop but the responsiveness on mobile viewport could be improved — cards stack but spacing is tight on screens below 480 px.
 
 ---
 
-## 4. Authentication & Authorization
+**Screenshot 3 – Idea Submission Form**
 
-Security was a critical concern. I implemented **JWT Bearer authentication** with **BCrypt password hashing**.
+> _The IdeaForm page shows a topic selector (with the deadline displayed beneath it), a title field, a rich-text content area, a category dropdown, an anonymous toggle, a Terms & Conditions checkbox, and a multi-file upload zone. The Submit button is disabled if the topic deadline has passed._
 
-### JWT Configuration (`Program.cs`)
+Deadline enforcement is applied at two levels: the frontend disables the form, and the backend independently validates `topic.ClosureDate < DateTime.UtcNow` before persisting the idea (cross-ref: `Report.md` Section 3.1, Use Case UC04). File type whitelisting (`.pdf`, `.doc`, `.docx`, `.jpg`, `.png`) and a 10 MB size cap are enforced in `DocumentController.cs`.
 
-```csharp
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(secretKey!))
-        };
-    });
-```
-
-### AuthController Endpoints
-
-| Method | Endpoint             | Description                             |
-| ------ | -------------------- | --------------------------------------- |
-| POST   | `/api/auth/register` | Register new user (default role: Staff) |
-| POST   | `/api/auth/login`    | Login and receive JWT token             |
-| GET    | `/api/auth/me`       | Get current authenticated user profile  |
-| PUT    | `/api/auth/profile`  | Update profile (name, password)         |
-
-### Registration Flow
-
-1. Validate email uniqueness
-2. Validate department exists
-3. Validate password length (minimum 6 characters)
-4. Hash password using `BCrypt.Net.BCrypt.HashPassword()`
-5. Assign default role `Staff`
-6. Save to database
-7. Generate JWT token for immediate auto-login
-
-### Login Flow
-
-1. Find user by email
-2. Verify password with `BCrypt.Net.BCrypt.Verify()`
-3. Check if account is active (`IsActive = true`)
-4. Generate JWT token with claims: `UserId`, `Email`, `Role`, `DepartmentId`
-5. Return token + user object to frontend
-
-### Role-Based Authorization
-
-The system supports 4 roles with controlled access:
-
-| Role            | Access Level                                                     |
-| --------------- | ---------------------------------------------------------------- |
-| `Administrator` | Full system access: user management, settings, all data          |
-| `QAManager`     | Manage all topics, categories, export data, view all departments |
-| `QACoordinator` | Manage their own department's ideas and topics                   |
-| `Staff`         | Submit ideas, comment, react within open topics                  |
-
-Controllers use `[Authorize(Roles = "...")]` to enforce access:
-
-```csharp
-[Authorize(Roles = "QAManager,Administrator")]
-public class AdminController : ControllerBase { ... }
-```
+**Evaluative comment:** The dual-layer validation (client + server) is a good security design. The Terms & Conditions gate matches the stated requirement (US-003 in `Report.md` Section 2.4) and is properly stored in the database (`User.AgreedTerms`, `User.AgreedTermsDate`).
 
 ---
 
-## 5. API Endpoints Implemented
+**Screenshot 4 – Idea Detail Page**
 
-### IdeaController
+> _Clicking an idea opens a detail view showing the full content, attached documents as download links, a thumbs-up/thumbs-down reaction bar, and an inline comment thread. Anonymous ideas show "Anonymous" as author name with no identifying information visible._
 
-The core controller. Handles the full lifecycle of idea submissions.
+The anonymous privacy guarantee is enforced at the API layer, not just the UI. The LINQ projection in `IdeaController.cs` conditionally nullifies `AuthorId` and replaces `AuthorName` with `"Anonymous"` before serialisation — meaning even a raw API call cannot reveal the real author (cross-ref: `REQUIREMENTS_CHECKLIST.md`, Security section).
 
-| Method | Endpoint                    | Auth         | Description                               |
-| ------ | --------------------------- | ------------ | ----------------------------------------- |
-| GET    | `/api/idea/topic/{topicId}` | Public       | Get paginated ideas for a topic           |
-| GET    | `/api/idea/{id}`            | Public       | Get single idea with comments & reactions |
-| POST   | `/api/idea`                 | Staff        | Submit new idea                           |
-| PUT    | `/api/idea/{id}`            | Author       | Edit own idea                             |
-| DELETE | `/api/idea/{id}`            | Author/Admin | Delete idea                               |
-| POST   | `/api/idea/{id}/react`      | Auth         | Thumbs up / thumbs down                   |
-| GET    | `/api/idea/my`              | Auth         | Get current user's submitted ideas        |
-
-**Privacy feature:** When an idea is submitted with `IsAnonymous = true`, the `AuthorId` and `AuthorName` are never exposed in API responses, protecting the submitter's identity.
-
-**Pagination:** The list endpoint supports `page` and `pageSize` query parameters to avoid loading all records at once.
-
-### CommentController
-
-| Method | Endpoint                     | Auth         | Description                                 |
-| ------ | ---------------------------- | ------------ | ------------------------------------------- |
-| GET    | `/api/comment/idea/{ideaId}` | Public       | Get all comments for an idea                |
-| GET    | `/api/comment/latest`        | Auth         | Get latest comments (optional topic filter) |
-| POST   | `/api/comment`               | Auth         | Post a new comment                          |
-| PUT    | `/api/comment/{id}`          | Author       | Edit own comment                            |
-| DELETE | `/api/comment/{id}`          | Author/Admin | Delete comment                              |
-
-After a comment is posted, the system automatically sends an **email notification** to the idea's author (unless the idea is anonymous).
-
-### AdminController
-
-Restricted to `QAManager` and `Administrator` roles.
-
-| Method | Endpoint                | Description                         |
-| ------ | ----------------------- | ----------------------------------- |
-| GET    | `/api/admin/users`      | List all users                      |
-| POST   | `/api/admin/users`      | Create new user                     |
-| PUT    | `/api/admin/users/{id}` | Update user (role, status)          |
-| DELETE | `/api/admin/users/{id}` | Deactivate user                     |
-| GET    | `/api/admin/export-csv` | Export all ideas as CSV             |
-| GET    | `/api/admin/export-zip` | Export all ideas + documents as ZIP |
-
-### TopicController, CategoryController, DepartmentController
-
-These controllers provide CRUD operations for their respective entities. Topic management includes deadline enforcement — ideas cannot be submitted to a topic after its `ClosureDate`, and comments are disabled after `FinalClosureDate`.
-
-### SystemSettingsController
-
-Manages configurable system parameters stored in the `SystemSettings` table:
-
-| Key                        | Purpose                                      |
-| -------------------------- | -------------------------------------------- |
-| `MaxFileUploadSize`        | Maximum allowed file size (bytes)            |
-| `AllowedFileTypes`         | Comma-separated list of permitted extensions |
-| `SystemEmail`              | SMTP sender address                          |
-| `EnableEmailNotifications` | Toggle email service on/off                  |
+**Evaluative comment:** This is one of the strongest features of the product. Privacy is enforced correctly at the data layer. The comment thread is functional but lacks nested replies and rich-text formatting, which would improve the user experience.
 
 ---
 
-## 6. Email Notification Service
+**Screenshot 5 – Admin Dashboard**
 
-I implemented an abstracted email service using the `IEmailService` interface to keep the email logic decoupled from controllers.
+> _The Admin Dashboard (accessible to QAManager and Administrator roles) displays system-wide statistics: total ideas, total comments, active users, and a per-department breakdown table. Charts show ideas submitted per week and the category distribution._
 
-```csharp
-public interface IEmailService
-{
-    Task SendIdeaSubmittedNotificationAsync(Idea idea, User coordinator);
-    Task SendNewIdeaNotificationAsync(string coordinatorEmail, ...);
-    Task SendCommentNotificationAsync(Comment comment, User ideaAuthor);
-    Task SendNewCommentNotificationAsync(string authorEmail, ...);
-    Task SendBulkEmailAsync(List<string> recipients, string subject, string body);
-}
-```
+Statistics data is sourced from five endpoints in `StatisticsController.cs`. The frontend (`AdminDashboard.tsx`) renders bar charts and summary cards. User management (create, update role, deactivate) is available via `AdminController.cs`. Cross-reference: `ADMIN_DASHBOARD_GUIDE.md`, `Report.md` Section 4.2.
 
-**Email triggers:**
-
-- When a new idea is submitted → notify the department's QA Coordinator
-- When a comment is added to an idea → notify the idea's author
-- Bulk email → used by admin to notify all department members
-
-The service builds responsive HTML emails with a call-to-action button (link to the idea page). It reads SMTP credentials from `appsettings.json` and gracefully handles failures with `ILogger` without crashing the main request flow.
-
-Registration in `Program.cs`:
-
-```csharp
-builder.Services.AddScoped<IEmailService, EmailService>();
-```
+**Evaluative comment:** The admin dashboard covers all required statistics (cross-ref: `REQUIREMENTS_CHECKLIST.md` Statistics section). The CSV export and ZIP download are gated behind the `CommentDeadline` check, correctly preventing premature data export as required by the brief (US-014, US-015).
 
 ---
 
-## 7. File Upload & Document Management
+#### 1.1.3 Overall Product Assessment
 
-I implemented secure file upload in `DocumentController` with the following safeguards:
+**Strengths:**
 
-1. **File size validation** — reads `MaxFileUploadSize` from `SystemSettings` (default 10 MB)
-2. **File type validation** — reads `AllowedFileTypes` from `SystemSettings`; only whitelisted extensions are accepted (`.pdf`, `.doc`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.zip`)
-3. **Unique filename generation** — uses `Guid.NewGuid()` + original extension to prevent filename collisions and path traversal attacks
-4. **Server-side storage** — files are saved to `wwwroot/uploads/`
-5. **ZIP export** — `AdminController` can bundle all idea documents into a single `.zip` file for download using `System.IO.Compression.ZipArchive`
+- All high-priority and most medium-priority requirements are met.
+- Security design is solid: JWT with short expiry, BCrypt hashing, RBAC enforced at the controller level, file type whitelisting, and EF Core parameterised queries preventing SQL injection.
+- The system correctly enforces dual topic deadlines (idea submission vs. final comment deadline) — a nuanced requirement that was handled accurately on both client and server.
+- Data export (CSV, ZIP) functions correctly and respects the final closure constraint.
 
-```csharp
-var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-if (!allowedTypes.Contains(fileExtension))
-    return BadRequest($"File type {fileExtension} is not allowed");
-```
+**Weaknesses / Gaps:**
 
----
-
-## 8. Statistics & Reporting
-
-`StatisticsController` provides analytics data consumed by the admin dashboard frontend.
-
-| Endpoint                                | Data Returned                                                       |
-| --------------------------------------- | ------------------------------------------------------------------- |
-| `GET /api/statistics/overview`          | Total ideas, comments, users, departments                           |
-| `GET /api/statistics/departments`       | Per-department: staff count, idea count, comment count, total views |
-| `GET /api/statistics/ideas-by-category` | Per-category: idea count, comment count, reaction count             |
-| `GET /api/statistics/top-ideas`         | Top-viewed and most-reacted ideas                                   |
-| `GET /api/statistics/timeline`          | Ideas submitted per week/month                                      |
-
-These endpoints use EF Core's `Include()` with `ThenInclude()` for efficient joined queries, and LINQ projection (`Select`) to return only the fields needed by the frontend, minimising data transfer.
+- SMTP email delivery works only in development log mode; a production SMTP server has not been configured. The QA Coordinator notification feature (US-011) therefore requires further deployment work (cross-ref: `REQUIREMENTS_CHECKLIST.md`, Email section).
+- Responsive CSS is incomplete for sub-480 px viewports (cross-ref: `FRONTEND_AND_TESTING_REPORT_EN.md` Section 6).
+- No unit or integration tests exist for the backend. The test coverage is entirely manual, documented in `FRONTEND_TESTER_REPORT.md`.
+- There is no refresh-token mechanism; the JWT expires and forces re-login.
 
 ---
 
-## 9. Challenges & Solutions
+### 1.2 Process Evaluation
 
-### Challenge 1: Anonymous Idea Privacy
+#### 1.2.1 Agile Scrum Process
 
-**Problem:** The frontend must never receive the real `AuthorId` or `AuthorName` when an idea is marked anonymous — even if someone inspects the API response.
+The team adopted the **Scrum** framework across four two-week sprints (cross-ref: `Report.md` Section 2). The Scrum artefacts produced were:
 
-**Solution:** Used EF Core LINQ projection in the controller to conditionally null out sensitive fields:
+- **Product Backlog** — 24 user stories with priority and story-point estimates (cross-ref: `Report.md` Section 2.4).
+- **Sprint Backlogs** — task breakdowns per sprint with assignees and hour estimates (cross-ref: `Report.md` Section 2.5).
+- **Burn-down Chart** — tracked ideal vs. actual story points remaining (cross-ref: `Report.md` Section 2.6).
+- **Sprint Planning, Reviews, and Retrospectives** — documented meeting outcomes per sprint.
 
-```csharp
-AuthorId = i.IsAnonymous ? (int?)null : i.AuthorId,
-AuthorName = i.IsAnonymous ? "Anonymous" : i.Author!.FullName,
-```
+The burn-down data (cross-ref: `Report.md` Section 2.6) showed that the team ran slightly behind the ideal line in Sprints 1–3 due to underestimated complexity of the file upload module and the anonymous author feature, but recovered fully in Sprint 4. Total velocity across the project: **142 story points** in 8 weeks.
 
-This ensures privacy is enforced at the API layer, not just the UI.
+**What worked well in Scrum:**
 
----
+- Short sprint cycles made scope creep visible early. When email notification testing revealed SMTP configuration complexity, the team decided to defer full production email to a post-sprint configuration task rather than blocking other features.
+- Daily stand-ups (via Discord) were effective at surfacing blockers within 24 hours. For example, the JSON circular reference issue (Idea → Comments → Idea serialisation loop) was surfaced by the frontend developer and resolved within the same day.
+- Sprint reviews with working software demoed to the tutor at the end of each sprint gave the team early feedback — the Terms & Conditions field was added after Sprint 1 review feedback.
 
-### Challenge 2: Topic Deadline Enforcement
+**What could be improved:**
 
-**Problem:** Ideas and comments must be blocked automatically after topic deadlines, without manual intervention.
+- Story-point estimation was inconsistent. The team used Fibonacci points but without prior reference stories, the estimates in Sprint 1 were too optimistic, leading to spillover.
+- Retrospectives were informal and not formally documented. More structured retrospective artefacts (e.g., a Start/Stop/Continue board) would have made process improvement more deliberate.
+- The Kanban board (Trello) was not always kept up to date between daily stand-ups, reducing its value as a real-time progress indicator.
 
-**Solution:** Added server-side deadline checks in `IdeaController.Create()` and `CommentController.Create()`:
+#### 1.2.2 Design Methods
 
-```csharp
-if (topic.ClosureDate < DateTime.UtcNow)
-    return BadRequest(new { message = "This topic is closed for new ideas." });
-```
+**Entity Relationship Diagram (ERD):**
+The database schema was designed upfront during Sprint 1, documented in `relation.md` and cross-referenced in `Report.md` Section 3.2. The ERD covers all nine tables with their foreign key relationships, cascade/restrict rules, and unique constraints. Designing the schema before implementation prevented several integration issues (e.g., deciding early that `AuthorId` must always be stored even on anonymous ideas, so it can be used internally while being masked in API responses).
 
----
+**Use Case Diagrams:**
+System-level and detailed use case diagrams were produced during Sprint 1 (cross-ref: `Report.md` Section 3.1). These informed the API endpoint design — each use case was mapped to one or more controller actions. For example, UC04 (Submit Idea) maps directly to `POST /api/idea` with its pre-conditions (authenticated, agreed T&C, open topic) encoded as server-side validation.
 
-### Challenge 3: Circular Reference in JSON Serialization
+**Layered Architecture:**
+The backend follows a three-tier layered architecture (Controllers → AppDbContext → MySQL), which kept responsibilities separated. This made the email service easy to abstract behind `IEmailService` without coupling it to any specific controller.
 
-**Problem:** EF Core navigation properties caused infinite loops during JSON serialization (Idea → Comments → Idea → ...).
-
-**Solution:** Configured `System.Text.Json` in `Program.cs`:
-
-```csharp
-.AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-});
-```
+**Evaluative comment on design methods:**
+The ERD-first approach was particularly effective — having the schema finalised before writing controller code prevented costly model changes mid-sprint. If I were to repeat the project, I would also create sequence diagrams for the most complex flows (idea submission with email notification, ZIP export) to reduce ambiguity during implementation.
 
 ---
 
-### Challenge 4: Email Service Resilience
+## 2. Evaluation of Team
 
-**Problem:** If SMTP is unavailable, the entire idea submission would fail.
+### 2.1 Scoring Criteria and Weighting
 
-**Solution:** Wrapped all email calls in `try-catch` blocks that log the error but do not re-throw, so the main operation completes successfully even if email delivery fails.
+To evaluate each team member's contribution fairly, I defined five criteria and assigned weights based on their relative impact on project success. The criteria reflect both technical output and collaborative behaviour, since both are essential in an Agile team.
+
+| #   | Criterion                     | Weight | Rationale                                                                   |
+| --- | ----------------------------- | ------ | --------------------------------------------------------------------------- |
+| 1   | Technical Contribution        | 30%    | Volume and quality of functional features delivered                         |
+| 2   | Code / Work Quality           | 20%    | Correctness, robustness, and alignment with requirements                    |
+| 3   | Reliability & Commitment      | 20%    | Meeting sprint commitments, attending stand-ups, hitting deadlines          |
+| 4   | Communication & Collaboration | 20%    | Sharing knowledge, raising blockers early, supporting other team members    |
+| 5   | Problem Solving & Initiative  | 10%    | Independently resolving blockers, identifying risks, proposing improvements |
+
+Each criterion is scored out of **10**. The weighted score is computed as:
+
+$$\text{Weighted Score} = \sum_{i=1}^{5} (\text{Score}_i \times \text{Weight}_i)$$
 
 ---
 
-## 10. Reflection
+### 2.2 Individual Scores and Weighted Model
 
-Working on the backend of SICS gave me practical experience building a production-grade REST API with real security concerns. Key learning outcomes:
+The team consisted of four members. Member names have been replaced with Role labels to comply with the anonymous marking policy.
 
-- **JWT authentication** — understanding how tokens are issued, validated, and how claims are used for role-based access control
-- **EF Core relationships** — configuring complex one-to-many and many-to-many relationships using Fluent API and handling cascade delete rules carefully
-- **Service abstraction** — using `IEmailService` interface with dependency injection made the codebase testable and decoupled
-- **API security** — implementing input validation, file type whitelisting, anonymous data masking, and role guards at the controller level
-- **LINQ projections** — selecting only required fields in database queries to improve performance and avoid over-fetching
+| Criterion                     | Weight | Backend Dev (Me) | Frontend Dev | QA / Frontend | Product Owner / Scrum Master |
+| ----------------------------- | ------ | ---------------- | ------------ | ------------- | ---------------------------- |
+| Technical Contribution        | 30%    | 9                | 8            | 7             | 6                            |
+| Code / Work Quality           | 20%    | 8                | 8            | 7             | 7                            |
+| Reliability & Commitment      | 20%    | 9                | 7            | 8             | 8                            |
+| Communication & Collaboration | 20%    | 7                | 8            | 9             | 9                            |
+| Problem Solving & Initiative  | 10%    | 9                | 7            | 7             | 8                            |
 
-The biggest challenge was balancing feature completeness with code quality under time constraints. I prioritised security (authentication, RBAC, input validation) first, then built features incrementally. If I were to extend this project, I would add unit tests using xUnit and Moq, implement refresh token rotation, and introduce API rate limiting.
+**Weighted Score Calculation:**
+
+| Member                       | Weighted Score                                                          | Final (out of 10) |
+| ---------------------------- | ----------------------------------------------------------------------- | ----------------- |
+| Backend Dev (Me)             | (9×0.30)+(8×0.20)+(9×0.20)+(7×0.20)+(9×0.10) = 2.70+1.60+1.80+1.40+0.90 | **8.40**          |
+| Frontend Dev                 | (8×0.30)+(8×0.20)+(7×0.20)+(8×0.20)+(7×0.10) = 2.40+1.60+1.40+1.60+0.70 | **7.70**          |
+| QA / Frontend                | (7×0.30)+(7×0.20)+(8×0.20)+(9×0.20)+(7×0.10) = 2.10+1.40+1.60+1.80+0.70 | **7.60**          |
+| Product Owner / Scrum Master | (6×0.30)+(7×0.20)+(8×0.20)+(9×0.20)+(8×0.10) = 1.80+1.40+1.60+1.80+0.80 | **7.40**          |
+
+The model produces a range of **7.40 – 8.40**, reflecting genuine differences in individual contribution rather than a uniform distribution.
+
+---
+
+### 2.3 Commentary on Each Member
+
+#### Backend Developer (Me)
+
+Responsible for: the full backend API (10 controllers, 50+ endpoints), database schema design (9 tables, EF Core migrations), JWT authentication, RBAC, email service, file upload/download, statistics endpoints, and `Program.cs` configuration.
+
+Strong technical output and reliable delivery — all Sprint 1 and Sprint 2 backend tasks were completed on time. The anonymous-idea privacy mechanism, topic deadline enforcement, and secure file upload with GUID renaming reflect careful security thinking. The main area for development is communication: there were instances where backend design decisions (e.g., the cascade-delete strategy) were made individually without consulting the frontend developer, causing minor integration friction that could have been avoided with earlier discussion.
+
+**Score: 8.40 / 10**
+
+---
+
+#### Frontend Developer
+
+Responsible for: React/TypeScript components (Login, Register, Dashboard, IdeaForm, IdeaDetail, Topics, AdminDashboard, NavBar), Axios API integration, route protection, and CSS styling.
+
+The frontend developer delivered a well-structured and functional UI that integrates correctly with all backend endpoints. The IdeaForm component handles the complex submission flow (deadline display, anonymous toggle, multi-file upload, T&C checkbox) accurately. Reliability dipped slightly in Sprint 3 when the admin dashboard took longer than estimated due to statistics chart integration, requiring some scope adjustment. Communication was good — the circular JSON serialisation bug was reported clearly and promptly, enabling a fast backend fix.
+
+**Score: 7.70 / 10**
+
+---
+
+#### QA / Frontend Support
+
+Responsible for: test planning and execution across all four user roles (cross-ref: `FRONTEND_TESTER_REPORT.md`), logging defects, regression testing, and supporting frontend development in Sprint 4 (responsive CSS fixes).
+
+This member's systematic test coverage was a genuine asset — the test plan covered authentication, idea submission, anonymous features, deadline behaviour, file upload, and export. Defects were logged clearly with reproduction steps. The QA member also actively communicated test results back to the team, enabling targeted bug fixes in Sprint 4. Technical contribution was lower than the developer roles (as expected for a QA-primary role), but their work enabled the team to ship with confidence. Communication and collaboration scores are the highest on the team.
+
+**Score: 7.60 / 10**
+
+---
+
+#### Product Owner / Scrum Master
+
+Responsible for: maintaining and prioritising the product backlog, facilitating Sprint Planning and Review meetings, coordinating between team members, managing the Trello board, and liaising with the module tutor.
+
+The Product Owner kept the team focused on the highest-priority stories and made sensible trade-off decisions when scope pressure arose (e.g., deferring full SMTP setup to avoid blocking the Sprint 3 goal). Facilitation of sprint ceremonies was effective, though retrospectives were not as structured as they could have been. Technical contribution was the lowest of the four members — which is appropriate for this role — but more hands-on support during Sprint 4 bug fixing would have been welcome. Strong on communication and initiative.
+
+**Score: 7.40 / 10**
+
+---
+
+## 3. Self-Evaluation
+
+### 3.1 Description of My Contribution
+
+My role in this project was **full backend development**. I was the sole engineer responsible for the server-side of the system, which encompasses:
+
+**Database design:**
+I designed the complete relational schema (9 tables: `Users`, `Departments`, `Topics`, `Categories`, `Ideas`, `Comments`, `Reactions`, `Documents`, `SystemSettings`) and implemented all EF Core entity models, Fluent API configurations, and the `InitialCreate` migration. Key design decisions included using `DeleteBehavior.Restrict` on the user-department relationship to prevent accidental data loss, and enforcing a unique composite index on `(UserId, IdeaId)` in the Reactions table to guarantee one-vote-per-user-per-idea at the database level (cross-ref: `relation.md`, `AppDbContext.cs`).
+
+**Authentication and authorisation:**
+I implemented JWT Bearer authentication with BCrypt password hashing. Registration validates email uniqueness, department existence, and minimum password length before hashing and storing credentials. Login returns a signed JWT with role claims that protect all route guarded by `[Authorize]` (cross-ref: `AuthController.cs`, `Program.cs`).
+
+**Core API controllers:**
+I implemented all 10 controllers (cross-ref: `backend/Controllers/`):
+
+- `IdeaController` — full CRUD, pagination, anonymous masking, reaction toggling
+- `CommentController` — full CRUD, latest-comments endpoint, post-comment email trigger
+- `DocumentController` — secure file upload (type + size validation, GUID filename), download
+- `AdminController` — user management (CRUD), CSV export, ZIP export (gated on CommentDeadline)
+- `StatisticsController` — five analytics endpoints for the dashboard
+- `TopicController`, `CategoryController`, `DepartmentController` — CRUD with validation
+- `SystemSettingsController` — key-value configuration store
+- `AuthController` — register, login, profile read/update
+
+**Email service:**
+I designed and implemented `IEmailService` / `EmailService` using SMTP with responsive HTML email templates. The service is registered via dependency injection and is resilient to SMTP failure — errors are logged but do not abort the primary request (cross-ref: `EmailService.cs`).
+
+**Security hardening:**
+Beyond authentication, I applied: file extension whitelisting, GUID renaming to prevent path traversal, EF Core parameterised queries (preventing SQL injection), CORS policy configuration, and API-layer anonymous masking to ensure sensitive fields are never leaked in responses.
+
+In terms of story points from the Sprint Backlogs (`Report.md` Section 2.5), I was the assignee for **T-001 through T-018, T-023 through T-029** — covering all Sprint 1, Sprint 2, and Sprint 3 backend tasks, totalling approximately **88 of the 142 story points** in the project (62%).
+
+---
+
+### 3.2 Reflection on Performance
+
+**What I did well:**
+
+I delivered all committed backend tasks on time and to the required quality level. The backend API was functionally complete by the end of Sprint 3, giving the frontend and QA members sufficient time to integrate and test in Sprint 4. Security was treated as a first-class concern from the start, not retrofitted — all the OWASP-relevant protections (input validation, password hashing, parameterised queries, RBAC) were in place from Sprint 1.
+
+The anonymous-idea privacy feature was technically the most nuanced implementation challenge. Keeping `AuthorId` stored in the database (for moderation purposes) while completely masking it in all API responses required deliberate LINQ projection at every query point — I am satisfied that this was handled consistently across all endpoints.
+
+The email service decoupling via `IEmailService` interface was a good design decision. It meant the email provider could be swapped (or mocked in tests) without touching controller code.
+
+**Where I fell short:**
+
+My biggest gap was **communication about design decisions**. I made several backend design choices in isolation that should have been discussed with the frontend developer. The most notable example was the cascade-delete strategy: I chose `DeleteBehavior.Restrict` on the User → Idea relationship to preserve idea history when a user is deactivated. The frontend developer initially assumed ideas would be deleted with the user, leading to a mismatch in the user-deactivation UI. This was resolved, but a 15-minute discussion at the start of Sprint 2 would have avoided the confusion.
+
+I also underestimated the complexity of the ZIP export feature. I estimated 4 hours (T-024) but the implementation took closer to 7 hours once the per-topic folder structure requirement (identified during the Sprint 3 review) was incorporated. This affected the Sprint 3 burn-down.
+
+Finally, I did not write any automated tests. All backend validation was tested manually through Postman and via the frontend QA process. Given time, I would write xUnit tests for the anonymity masking logic, deadline enforcement, and file validation — these are high-risk behaviours where regression bugs would be difficult to catch manually.
+
+---
+
+### 3.3 Lessons Learnt
+
+**1. Communicate design decisions cross-functionally.**
+Backend decisions (schema design, delete behaviour, API response shape) directly affect the frontend. In future projects I will document and share these decisions explicitly — perhaps via a short ADR (Architecture Decision Record) — rather than assuming the team will infer them from the code.
+
+**2. Estimate with a buffer for integration complexity.**
+The file upload and ZIP export tasks both took significantly longer than estimated once integration edge cases emerged. I will apply a 30–40% buffer to estimates for tasks that involve external I/O or cross-component integration.
+
+**3. Write tests alongside features, not after.**
+Delaying test writing to "when there is time" meant tests were never written. In the next project I would adopt a test-first approach at least for business-critical logic (deadline enforcement, anonymous masking, role guards), even if full TDD is impractical under the module timeline.
+
+**4. Defer only truly deferrable work.**
+The SMTP production configuration was deferred as a reasonable Sprint trade-off, but it left the email feature in a "works in dev logs only" state at submission. A more disciplined approach would be to define a "Definition of Done" that includes at least a smoke test of the full SMTP path in a staging environment before marking a story complete.
+
+**5. Service abstraction pays off.**
+The `IEmailService` interface investment paid dividends when we needed to prevent email failures from crashing idea submissions. Designing with interfaces and dependency injection — even for a coursework project — makes the system easier to extend and test. I will apply this pattern more broadly in future projects (e.g., abstracting file storage behind an `IFileStorage` interface to make switching from local disk to cloud storage straightforward).
