@@ -270,7 +270,7 @@ function AdminDashboard() {
         >
           📎 Ideas & File Upload
         </button>
-        {user?.role === "QAManager" && (
+        {(user?.role === "Administrator" || user?.role === "QAManager") && (
           <button
             className={`tab ${activeTab === "pendingIdeas" ? "active" : ""}`}
             onClick={() => setActiveTab("pendingIdeas")}
