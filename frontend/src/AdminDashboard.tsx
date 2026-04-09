@@ -14,7 +14,6 @@ import {
   type OverviewStatistics,
   type TopicFormData,
   type TopicStatistics,
-  type PendingIdea,
   type PendingIdeasResponse,
 } from "./services";
 import type { Category, Idea, Topic } from "./types";
@@ -69,7 +68,8 @@ function AdminDashboard() {
     useState<AdminTopicIdeasResponse | null>(null);
 
   // Pending ideas data (for QA Manager approval)
-  const [pendingIdeasData, setPendingIdeasData] = useState<PendingIdeasResponse | null>(null);
+  const [pendingIdeasData, setPendingIdeasData] =
+    useState<PendingIdeasResponse | null>(null);
   const [pendingPage, setPendingPage] = useState(1);
 
   useEffect(() => {
@@ -180,7 +180,11 @@ function AdminDashboard() {
     }
   };
 
-  const handleReviewIdea = async (ideaId: number, approve: boolean, rejectionReason?: string) => {
+  const handleReviewIdea = async (
+    ideaId: number,
+    approve: boolean,
+    rejectionReason?: string,
+  ) => {
     try {
       await ideaService.reviewIdea(ideaId, approve, rejectionReason);
       // Reload current page of pending ideas
@@ -198,8 +202,7 @@ function AdminDashboard() {
     else if (activeTab === "statistics") loadStatistics();
     else if (activeTab === "topicIdeas") {
       loadTopics();
-    }
-    else if (activeTab === "pendingIdeas") {
+    } else if (activeTab === "pendingIdeas") {
       loadPendingIdeas(1);
     }
   }, [activeTab]);
@@ -233,24 +236,28 @@ function AdminDashboard() {
         >
           📊 Overview
         </button>
-        <button
-          className={`tab ${activeTab === "users" ? "active" : ""}`}
-          onClick={() => setActiveTab("users")}
-        >
-          👥 Manage Users
-        </button>
+        {user?.role === "Administrator" && (
+          <button
+            className={`tab ${activeTab === "users" ? "active" : ""}`}
+            onClick={() => setActiveTab("users")}
+          >
+            👥 Manage Users
+          </button>
+        )}
         <button
           className={`tab ${activeTab === "topics" ? "active" : ""}`}
           onClick={() => setActiveTab("topics")}
         >
           📚 Manage Topics
         </button>
-        <button
-          className={`tab ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          🏷️ Manage Categories
-        </button>
+        {user?.role === "Administrator" && (
+          <button
+            className={`tab ${activeTab === "categories" ? "active" : ""}`}
+            onClick={() => setActiveTab("categories")}
+          >
+            🏷️ Manage Categories
+          </button>
+        )}
         <button
           className={`tab ${activeTab === "statistics" ? "active" : ""}`}
           onClick={() => setActiveTab("statistics")}
@@ -341,7 +348,11 @@ function PendingIdeasTab({
   data: PendingIdeasResponse | null;
   loading: boolean;
   currentPage: number;
-  onReview: (ideaId: number, approve: boolean, rejectionReason?: string) => Promise<void>;
+  onReview: (
+    ideaId: number,
+    approve: boolean,
+    rejectionReason?: string,
+  ) => Promise<void>;
   onPageChange: (page: number) => void;
 }) {
   const [rejectingId, setRejectingId] = useState<number | null>(null);
@@ -393,8 +404,13 @@ function PendingIdeasTab({
 
             <div className="pending-author-row">
               <span>
-                👤 <strong>{idea.isAnonymous ? "Anonymous" : idea.authorName}</strong>
-                {!idea.isAnonymous && <span className="author-email"> ({idea.authorEmail})</span>}
+                👤{" "}
+                <strong>
+                  {idea.isAnonymous ? "Anonymous" : idea.authorName}
+                </strong>
+                {!idea.isAnonymous && (
+                  <span className="author-email"> ({idea.authorEmail})</span>
+                )}
               </span>
               <span className="pending-date">
                 {new Date(idea.createdAt).toLocaleString("en-US")}
@@ -423,11 +439,16 @@ function PendingIdeasTab({
                     disabled={processingId === idea.id}
                     onClick={() => handleRejectSubmit(idea.id)}
                   >
-                    {processingId === idea.id ? "Rejecting..." : "Confirm Reject"}
+                    {processingId === idea.id
+                      ? "Rejecting..."
+                      : "Confirm Reject"}
                   </button>
                   <button
                     className="btn-secondary"
-                    onClick={() => { setRejectingId(null); setRejectionReason(""); }}
+                    onClick={() => {
+                      setRejectingId(null);
+                      setRejectionReason("");
+                    }}
                   >
                     Cancel
                   </button>
@@ -444,7 +465,10 @@ function PendingIdeasTab({
                 </button>
                 <button
                   className="btn-danger"
-                  onClick={() => { setRejectingId(idea.id); setRejectionReason(""); }}
+                  onClick={() => {
+                    setRejectingId(idea.id);
+                    setRejectionReason("");
+                  }}
                 >
                   ❌ Reject
                 </button>
@@ -462,7 +486,9 @@ function PendingIdeasTab({
           >
             ← Prev
           </button>
-          <span>Page {currentPage} / {data.totalPages}</span>
+          <span>
+            Page {currentPage} / {data.totalPages}
+          </span>
           <button
             disabled={currentPage >= data.totalPages}
             onClick={() => onPageChange(currentPage + 1)}
@@ -611,7 +637,7 @@ function TopicIdeasFilesTab({
                         </td>
                         <td>
                           <a
-                             href={`http://${window.location.hostname}:5000${doc.filePath}`}
+                            href={`http://${window.location.hostname}:5000${doc.filePath}`}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -748,7 +774,9 @@ function UsersTab({
                         disabled={savingRole}
                       >
                         {ROLES.map((r) => (
-                          <option key={r} value={r}>{r}</option>
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
                         ))}
                       </select>
                       <button
@@ -775,7 +803,9 @@ function UsersTab({
                   )}
                 </td>
                 <td data-label="Department">{user.departmentName || "N/A"}</td>
-                <td data-label="Agreed T&C">{user.agreedTerms ? "✅" : "❌"}</td>
+                <td data-label="Agreed T&C">
+                  {user.agreedTerms ? "✅" : "❌"}
+                </td>
                 <td data-label="Status">
                   {user.isActive ? "🟢 Active" : "🔴 Inactive"}
                 </td>
@@ -783,15 +813,16 @@ function UsersTab({
                   {new Date(user.createdAt).toLocaleDateString("en-US")}
                 </td>
                 <td data-label="Actions">
-                  {user.id !== Number(currentUser?.id) && assigningId !== user.id && (
-                    <button
-                      className="btn-assign-role"
-                      onClick={() => handleOpenAssign(user)}
-                      title="Assign Role"
-                    >
-                      🔑 Assign Role
-                    </button>
-                  )}
+                  {user.id !== Number(currentUser?.id) &&
+                    assigningId !== user.id && (
+                      <button
+                        className="btn-assign-role"
+                        onClick={() => handleOpenAssign(user)}
+                        title="Assign Role"
+                      >
+                        🔑 Assign Role
+                      </button>
+                    )}
                 </td>
               </tr>
             ))}

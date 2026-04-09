@@ -22,11 +22,13 @@ if (!topic.CanSubmitIdea())
 ```
 
 **Topic Model Logic:**
+
 ```csharp
 public bool CanSubmitIdea() => DateTime.Now <= IdeaSubmissionDeadline;
 ```
 
 **API Response:**
+
 - ✅ When deadline passed: `400 BadRequest` with message "Idea submission deadline has passed for this topic"
 - ✅ When submitted before deadline: `201 Created` with new idea ID
 
@@ -35,6 +37,7 @@ public bool CanSubmitIdea() => DateTime.Now <= IdeaSubmissionDeadline;
 **Location:** [IdeaForm.tsx](frontend/src/IdeaForm.tsx)
 
 **Features:**
+
 - Calculates days until deadline
 - Shows deadline date and remaining days
 - Disables all form inputs when deadline passes
@@ -43,17 +46,23 @@ public bool CanSubmitIdea() => DateTime.Now <= IdeaSubmissionDeadline;
 - Displays warning message
 
 **States:**
+
 ```typescript
 const isDeadlinePassed = topic
   ? new Date(topic.ideaSubmissionDeadline) < new Date()
   : false;
 
 const daysUntilDeadline = topic
-  ? Math.ceil((new Date(topic.ideaSubmissionDeadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  ? Math.ceil(
+      (new Date(topic.ideaSubmissionDeadline).getTime() -
+        new Date().getTime()) /
+        (1000 * 60 * 60 * 24),
+    )
   : 0;
 ```
 
 **Disabled Elements When Deadline Passed:**
+
 - Title input field
 - Content textarea
 - Category dropdown
@@ -62,6 +71,7 @@ const daysUntilDeadline = topic
 - Submit button
 
 **User Messages:**
+
 1. Deadline info in topic header: "📅 Idea Submission Deadline: MM/DD/YYYY (N days left)"
 2. Red alert if deadline passed: "❌ Submission Deadline Has Passed"
 3. Form notice: "Ideas must be submitted before the topic deadline"
@@ -123,6 +133,7 @@ public async Task SendNewIdeaNotificationAsync(
 ```
 
 **Process Flow:**
+
 1. User submits idea ✅
 2. Idea saved to database ✅
 3. System finds user's department ✅
@@ -130,9 +141,11 @@ public async Task SendNewIdeaNotificationAsync(
 5. Email sent to QA Coordinator ✅
 
 **Database Relationships:**
+
 - User → DepartmentId → Department → QACoordinatorId → User (QACoordinator)
 
 **Email Content:**
+
 ```
 Subject: New Idea Submitted: {ideaTitle}
 
@@ -152,7 +165,7 @@ Please log in to the system to review and respond.
 
 ```typescript
 alert(
-  "Successfully created an idea! A notification email has been sent to the QA Coordinator."
+  "Successfully created an idea! A notification email has been sent to the QA Manager.",
 );
 ```
 
@@ -165,6 +178,7 @@ alert(
 **Design Principle:** Ideas are IMMUTABLE
 
 **What's NOT Implemented:**
+
 - ❌ NO PUT endpoint for ideas
 - ❌ NO PATCH endpoint for ideas
 - ❌ NO DELETE endpoint for ideas
@@ -182,6 +196,7 @@ alert(
 ```
 
 **Allowed Operations on Ideas:**
+
 - ✅ POST: Create idea (before deadline)
 - ✅ GET: View idea
 - ✅ GET: List ideas
@@ -189,6 +204,7 @@ alert(
 - ✅ POST: Add reaction (thumbs up/down)
 
 **NOT Allowed:**
+
 - ❌ PUT/PATCH: Edit idea
 - ❌ DELETE: Delete idea
 
@@ -213,6 +229,7 @@ alert(
    - Prevents data manipulation after submission
 
 **User Flow:**
+
 1. User fills out idea form ✅
 2. Reviews all content ✅
 3. Clicks Submit ✅
@@ -228,11 +245,13 @@ alert(
 #### List View - [IdeaController.cs](backend/Controllers/IdeaController.cs#L44-45)
 
 **Before (PRIVACY LEAK):**
+
 ```csharp
 AuthorId = i.AuthorId,  // ❌ Always exposed, defeats anonymity!
 ```
 
 **After (FIXED):**
+
 ```csharp
 // Do NOT expose AuthorId when anonymous for privacy
 AuthorId = i.IsAnonymous ? (int?)null : i.AuthorId,  // ✅ Hidden for anonymous ideas
@@ -242,6 +261,7 @@ AuthorName = i.IsAnonymous ? "Anonymous" : i.Author!.FullName,  // ✅ Hidden fo
 #### Detail View - [IdeaController.cs](backend/Controllers/IdeaController.cs#L119-140)
 
 **Role-Based Authorization:**
+
 ```csharp
 // Get user role for authorization check
 var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
@@ -269,14 +289,14 @@ var result = new
 
 ### Privacy Matrix
 
-| User Type | Scenario | AuthorId | AuthorName | AuthorEmail |
-|-----------|----------|----------|-----------|-------------|
-| **Everyone** | Public Idea | Visible | Visible | Visible |
-| **Everyone** | Anonymous Idea - List | `null` | "Anonymous" | N/A |
-| **Everyone** | Anonymous Idea - Detail | `null` | "Anonymous" | `null` |
-| **QA Manager** | Anonymous Idea - Detail | Visible ✅ | Visible ✅ | Visible ✅ |
-| **Admin** | Anonymous Idea - Detail | Visible ✅ | Visible ✅ | Visible ✅ |
-| **Idea Author** | Own Anonymous Idea | Visible ✅ | Visible ✅ | Visible ✅ |
+| User Type       | Scenario                | AuthorId   | AuthorName  | AuthorEmail |
+| --------------- | ----------------------- | ---------- | ----------- | ----------- |
+| **Everyone**    | Public Idea             | Visible    | Visible     | Visible     |
+| **Everyone**    | Anonymous Idea - List   | `null`     | "Anonymous" | N/A         |
+| **Everyone**    | Anonymous Idea - Detail | `null`     | "Anonymous" | `null`      |
+| **QA Manager**  | Anonymous Idea - Detail | Visible ✅ | Visible ✅  | Visible ✅  |
+| **Admin**       | Anonymous Idea - Detail | Visible ✅ | Visible ✅  | Visible ✅  |
+| **Idea Author** | Own Anonymous Idea      | Visible ✅ | Visible ✅  | Visible ✅  |
 
 ### Frontend Implementation ✅
 
@@ -302,11 +322,13 @@ var result = new
 ```
 
 **User Information:**
+
 - Checkbox for anonymous submission
 - Clear explanation: "If selected, your name will not be displayed to others"
 - Important note: "Only QA Manager/Admin will know your identity"
 
 **Form Notice:**
+
 ```
 📌 Important:
 • Ideas must be submitted before the topic deadline
@@ -318,6 +340,7 @@ var result = new
 ### Database Storage ✅
 
 **[Idea Model](backend/Models/Idea.cs):**
+
 ```csharp
 public class Idea
 {
@@ -332,12 +355,14 @@ public class Idea
 ```
 
 **Key Design:**
+
 - ✅ `AuthorId` is stored in database (audit trail)
 - ✅ `IsAnonymous` flag controls display
 - ✅ Backend returns author info based on role
 - ✅ Frontend respects backend authorization
 
 **Use Cases:**
+
 1. **Investigation:** If anonymous idea violates policy, admin can identify author
 2. **Email Notifications:** Author emails still used for comment notifications
 3. **Accountability:** Maintains audit trail while preserving user privacy
@@ -348,6 +373,7 @@ public class Idea
 ## 📋 IMPLEMENTATION CHECKLIST
 
 ### Feature 1: Deadline Enforcement
+
 - [x] Backend: Check deadline before allowing submission
 - [x] Frontend: Show deadline in topic info
 - [x] Frontend: Disable form when deadline passes
@@ -357,6 +383,7 @@ public class Idea
 - [x] API Response: Return 400 error when deadline exceeded
 
 ### Feature 2: Email Notifications
+
 - [x] Backend: Email service implemented
 - [x] Backend: Send email after idea submission
 - [x] Backend: Link QA Coordinator to department
@@ -367,6 +394,7 @@ public class Idea
 - [x] Database: Department → QACoordinator relationship
 
 ### Feature 3: Ideas Immutable After Submission
+
 - [x] Backend: NO PUT endpoint for ideas
 - [x] Backend: NO PATCH endpoint for ideas
 - [x] Backend: NO DELETE endpoint for ideas
@@ -377,6 +405,7 @@ public class Idea
 - [x] Comments: CAN be edited (different requirement)
 
 ### Feature 4: Anonymous Privacy Protection
+
 - [x] Backend: Hide AuthorId when anonymous (list view)
 - [x] Backend: Role-based author info display (detail view)
 - [x] Backend: Only QA Manager/Admin see real author
@@ -391,6 +420,7 @@ public class Idea
 ## 🚀 TESTING SCENARIOS
 
 ### Scenario 1: Submit Idea Before Deadline
+
 1. User navigates to topic form
 2. Topic shows "3 days left"
 3. All form fields enabled
@@ -400,6 +430,7 @@ public class Idea
 7. User redirected to idea detail page
 
 ### Scenario 2: Try to Submit After Deadline
+
 1. User navigates to topic form
 2. Topic shows "Deadline Passed"
 3. All form fields disabled
@@ -408,6 +439,7 @@ public class Idea
 6. Alert shown: "Cannot export data before final closure date"
 
 ### Scenario 3: Submit Anonymously
+
 1. User fills idea form
 2. Checks "Submit Anonymously"
 3. Reads: "Only QA Manager/Admin will know your identity"
@@ -417,20 +449,25 @@ public class Idea
 7. QA Manager can see real author name
 
 ### Scenario 4: View Anonymous Idea
+
 **As Regular User:**
+
 - List view: "Anonymous" displayed
 - Detail view: "Anonymous" displayed
 - No author email shown
 
 **As QA Manager:**
+
 - List view: "Anonymous" displayed (correct, privacy in list)
 - Detail view: Real author name and email visible ✅
 
 **As Admin:**
+
 - List view: "Anonymous" displayed (correct)
 - Detail view: Real author name and email visible ✅
 
 **As Idea Author:**
+
 - List view: "Anonymous" displayed
 - Detail view: Own name visible (you know who you are) ✅
 
@@ -439,7 +476,9 @@ public class Idea
 ## ⚠️ IMPORTANT NOTES
 
 ### Email Configuration Required
+
 Before production deployment:
+
 ```json
 "EmailSettings": {
   "EnableNotifications": true,  // Already enabled ✅
@@ -450,6 +489,7 @@ Before production deployment:
 ```
 
 ### Security Notes
+
 - ✅ AuthorId stored in database for audit trail
 - ✅ Backend validates role before exposing author info
 - ✅ Frontend shows user what to expect
@@ -457,6 +497,7 @@ Before production deployment:
 - ✅ Deadline enforcement happens both front and backend
 
 ### User Experience
+
 - ✅ Clear messaging about all 4 features
 - ✅ Disabled inputs prevent accidental submission
 - ✅ Visual feedback (colors, icons) for important info
@@ -468,6 +509,7 @@ Before production deployment:
 ## 📝 API ENDPOINTS
 
 ### Idea Submission
+
 ```
 POST /api/idea
 Body: {
@@ -481,12 +523,14 @@ Response: 201 Created or 400 Bad Request
 ```
 
 ### Get Idea Detail
+
 ```
 GET /api/idea/{id}
 Response: Idea object with role-based author fields
 ```
 
 ### Get Ideas List
+
 ```
 GET /api/idea/topic/{topicId}?page=1&pageSize=5
 Response: List of ideas (without AuthorId if anonymous)
@@ -496,12 +540,12 @@ Response: List of ideas (without AuthorId if anonymous)
 
 ## ✅ VERIFICATION STATUS
 
-| Feature | Backend | Frontend | Database | Config | Testing |
-|---------|---------|----------|----------|--------|---------|
-| Feature 1: Deadline | ✅ | ✅ | ✅ | N/A | Ready |
-| Feature 2: Email | ✅ | ✅ | ✅ | ⚠️ SMTP | Ready |
-| Feature 3: Immutable | ✅ | ✅ | ✅ | N/A | Ready |
-| Feature 4: Privacy | ✅ | ✅ | ✅ | N/A | Ready |
+| Feature              | Backend | Frontend | Database | Config  | Testing |
+| -------------------- | ------- | -------- | -------- | ------- | ------- |
+| Feature 1: Deadline  | ✅      | ✅       | ✅       | N/A     | Ready   |
+| Feature 2: Email     | ✅      | ✅       | ✅       | ⚠️ SMTP | Ready   |
+| Feature 3: Immutable | ✅      | ✅       | ✅       | N/A     | Ready   |
+| Feature 4: Privacy   | ✅      | ✅       | ✅       | N/A     | Ready   |
 
 ---
 

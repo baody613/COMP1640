@@ -126,7 +126,7 @@ function IdeaForm() {
       }
 
       alert(
-        "Successfully created an idea! A notification email has been sent to the QA Coordinator.",
+        "Successfully created an idea! A notification email has been sent to the QA Manager.",
       );
       navigate(`/idea/${newIdea.id}`);
     } catch (error: unknown) {
