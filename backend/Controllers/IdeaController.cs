@@ -34,7 +34,7 @@ public class IdeaController : ControllerBase
                 .Include(i => i.Department)
                 .Include(i => i.Reactions)
                 .Include(i => i.Comments)
-                .Where(i => i.TopicId == topicId);
+                .Where(i => i.TopicId == topicId && i.ApprovalStatus == IdeaApprovalStatus.Approved);
 
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -99,6 +99,17 @@ public class IdeaController : ControllerBase
             if (idea == null)
                 return NotFound(new { message = "Idea not found" });
 
+            // Only allow viewing approved ideas (or QAManager/Admin/author can see pending/rejected)
+            var viewerRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            var viewerIdClaim = User.FindFirst("userId")?.Value;
+            int.TryParse(viewerIdClaim, out int viewerId);
+            if (idea.ApprovalStatus != IdeaApprovalStatus.Approved)
+            {
+                bool canView = viewerRole == "QAManager" || viewerRole == "Administrator" || idea.AuthorId == viewerId;
+                if (!canView)
+                    return NotFound(new { message = "Idea not found" });
+            }
+
             // Increment view count
             idea.ViewCount++;
             await _context.SaveChangesAsync();
@@ -123,6 +134,8 @@ public class IdeaController : ControllerBase
                 idea.Title,
                 idea.Content,
                 idea.IsAnonymous,
+                idea.ApprovalStatus,
+                idea.RejectionReason,
                 // Do NOT expose AuthorId when anonymous unless user is authorized
                 AuthorId = isAuthorized ? idea.AuthorId : (int?)null,
                 AuthorName = idea.IsAnonymous ? "Anonymous" : idea.Author!.FullName,
@@ -200,6 +213,7 @@ public class IdeaController : ControllerBase
                 TopicId = ideaDto.TopicId,
                 CategoryId = ideaDto.CategoryId,
                 DepartmentId = user.DepartmentId,
+                ApprovalStatus = IdeaApprovalStatus.Pending,
                 CreatedAt = DateTime.Now  // Use local time to match MySQL
             };
 
@@ -320,6 +334,7 @@ public class IdeaController : ControllerBase
                 .Include(i => i.Author)
                 .Include(i => i.Category)
                 .Include(i => i.Reactions)
+                .Where(i => i.ApprovalStatus == IdeaApprovalStatus.Approved)
                 .AsQueryable();
 
             if (topicId.HasValue)
@@ -361,6 +376,7 @@ public class IdeaController : ControllerBase
             var query = _context.Ideas
                 .Include(i => i.Author)
                 .Include(i => i.Category)
+                .Where(i => i.ApprovalStatus == IdeaApprovalStatus.Approved)
                 .AsQueryable();
 
             if (topicId.HasValue)
@@ -399,6 +415,7 @@ public class IdeaController : ControllerBase
             var query = _context.Ideas
                 .Include(i => i.Author)
                 .Include(i => i.Category)
+                .Where(i => i.ApprovalStatus == IdeaApprovalStatus.Approved)
                 .AsQueryable();
 
             if (topicId.HasValue)
@@ -427,6 +444,110 @@ public class IdeaController : ControllerBase
             return StatusCode(500, new { message = "Error fetching latest ideas" });
         }
     }
+
+    // GET: api/idea/pending – QA Manager xem danh sách idea chờ duyệt
+    [HttpGet("pending")]
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> GetPendingIdeas([FromQuery] int? topicId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            var query = _context.Ideas
+                .Include(i => i.Author)
+                .Include(i => i.Category)
+                .Include(i => i.Department)
+                .Include(i => i.Topic)
+                .Include(i => i.Reactions)
+                .Include(i => i.Comments)
+                .Where(i => i.ApprovalStatus == IdeaApprovalStatus.Pending)
+                .AsQueryable();
+
+            if (topicId.HasValue)
+                query = query.Where(i => i.TopicId == topicId.Value);
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var ideas = await query
+                .OrderByDescending(i => i.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(i => new
+                {
+                    i.Id,
+                    i.Title,
+                    i.Content,
+                    i.IsAnonymous,
+                    i.ApprovalStatus,
+                    AuthorName = i.Author!.FullName,
+                    AuthorEmail = i.Author.Email,
+                    i.AuthorId,
+                    i.TopicId,
+                    TopicName = i.Topic!.Name,
+                    i.CategoryId,
+                    CategoryName = i.Category!.Name,
+                    DepartmentName = i.Department != null ? i.Department.Name : "",
+                    i.CreatedAt,
+                    i.Attachments,
+                    CommentsCount = i.Comments.Count
+                })
+                .ToListAsync();
+
+            return Ok(new { data = ideas, page, pageSize, totalCount, totalPages });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching pending ideas");
+            return StatusCode(500, new { message = "Error fetching pending ideas" });
+        }
+    }
+
+    // PUT: api/idea/{id}/review – QA Manager duyệt hoặc từ chối idea
+    [HttpPut("{id}/review")]
+    [Authorize(Roles = "QAManager,Administrator")]
+    public async Task<IActionResult> ReviewIdea(int id, [FromBody] IdeaReviewDto reviewDto)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int reviewerId))
+                return Unauthorized(new { message = "Invalid user token" });
+
+            var idea = await _context.Ideas.FindAsync(id);
+            if (idea == null)
+                return NotFound(new { message = "Idea not found" });
+
+            if (idea.ApprovalStatus != IdeaApprovalStatus.Pending)
+                return BadRequest(new { message = "This idea has already been reviewed" });
+
+            if (reviewDto.Approve)
+            {
+                idea.ApprovalStatus = IdeaApprovalStatus.Approved;
+                idea.RejectionReason = null;
+            }
+            else
+            {
+                idea.ApprovalStatus = IdeaApprovalStatus.Rejected;
+                idea.RejectionReason = reviewDto.RejectionReason;
+            }
+
+            idea.ReviewedById = reviewerId;
+            idea.ReviewedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = reviewDto.Approve ? "Idea approved" : "Idea rejected",
+                status = idea.ApprovalStatus.ToString()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reviewing idea {IdeaId}", id);
+            return StatusCode(500, new { message = "Error reviewing idea" });
+        }
+    }
 }
 
 /// <summary>
@@ -448,4 +569,10 @@ public class IdeaCreateDto
 public class ReactionDto
 {
     public bool IsThumbsUp { get; set; }
+}
+
+public class IdeaReviewDto
+{
+    public bool Approve { get; set; }
+    public string? RejectionReason { get; set; }
 }

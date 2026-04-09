@@ -14,6 +14,8 @@ import {
   type OverviewStatistics,
   type TopicFormData,
   type TopicStatistics,
+  type PendingIdea,
+  type PendingIdeasResponse,
 } from "./services";
 import type { Category, Idea, Topic } from "./types";
 
@@ -35,7 +37,8 @@ type TabType =
   | "topics"
   | "categories"
   | "statistics"
-  | "topicIdeas";
+  | "topicIdeas"
+  | "pendingIdeas";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -65,8 +68,12 @@ function AdminDashboard() {
   const [topicIdeasData, setTopicIdeasData] =
     useState<AdminTopicIdeasResponse | null>(null);
 
+  // Pending ideas data (for QA Manager approval)
+  const [pendingIdeasData, setPendingIdeasData] = useState<PendingIdeasResponse | null>(null);
+  const [pendingPage, setPendingPage] = useState(1);
+
   useEffect(() => {
-    if (user?.role !== "Administrator") {
+    if (user?.role !== "Administrator" && user?.role !== "QAManager") {
       alert("You don't have permission to access this page!");
       navigate("/dashboard");
       return;
@@ -160,6 +167,30 @@ function AdminDashboard() {
     }
   };
 
+  const loadPendingIdeas = async (page: number = 1) => {
+    setLoading(true);
+    try {
+      const data = await ideaService.getPendingIdeas(page, 10);
+      setPendingIdeasData(data);
+      setPendingPage(page);
+    } catch (error) {
+      console.error("Failed to load pending ideas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReviewIdea = async (ideaId: number, approve: boolean, rejectionReason?: string) => {
+    try {
+      await ideaService.reviewIdea(ideaId, approve, rejectionReason);
+      // Reload current page of pending ideas
+      await loadPendingIdeas(pendingPage);
+    } catch (error) {
+      console.error("Failed to review idea:", error);
+      alert("Failed to review idea. Please try again.");
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "users") loadUsers();
     else if (activeTab === "topics") loadTopics();
@@ -167,6 +198,9 @@ function AdminDashboard() {
     else if (activeTab === "statistics") loadStatistics();
     else if (activeTab === "topicIdeas") {
       loadTopics();
+    }
+    else if (activeTab === "pendingIdeas") {
+      loadPendingIdeas(1);
     }
   }, [activeTab]);
 
@@ -229,6 +263,12 @@ function AdminDashboard() {
         >
           📎 Ideas & File Upload
         </button>
+        <button
+          className={`tab ${activeTab === "pendingIdeas" ? "active" : ""}`}
+          onClick={() => setActiveTab("pendingIdeas")}
+        >
+          🕐 Pending Approval
+        </button>
       </div>
 
       <div className="admin-content">
@@ -276,7 +316,161 @@ function AdminDashboard() {
             onRefreshTopics={loadTopics}
           />
         )}
+        {activeTab === "pendingIdeas" && (
+          <PendingIdeasTab
+            data={pendingIdeasData}
+            loading={loading}
+            currentPage={pendingPage}
+            onReview={handleReviewIdea}
+            onPageChange={loadPendingIdeas}
+          />
+        )}
       </div>
+    </div>
+  );
+}
+
+// Pending Ideas Approval Tab Component
+function PendingIdeasTab({
+  data,
+  loading,
+  currentPage,
+  onReview,
+  onPageChange,
+}: {
+  data: PendingIdeasResponse | null;
+  loading: boolean;
+  currentPage: number;
+  onReview: (ideaId: number, approve: boolean, rejectionReason?: string) => Promise<void>;
+  onPageChange: (page: number) => void;
+}) {
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [processingId, setProcessingId] = useState<number | null>(null);
+
+  const handleApprove = async (ideaId: number) => {
+    setProcessingId(ideaId);
+    await onReview(ideaId, true);
+    setProcessingId(null);
+  };
+
+  const handleRejectSubmit = async (ideaId: number) => {
+    if (!rejectionReason.trim()) {
+      alert("Please enter a rejection reason.");
+      return;
+    }
+    setProcessingId(ideaId);
+    await onReview(ideaId, false, rejectionReason);
+    setRejectingId(null);
+    setRejectionReason("");
+    setProcessingId(null);
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
+
+  return (
+    <div className="pending-ideas-tab">
+      <div className="tab-header">
+        <h2>🕐 Pending Ideas – Awaiting Approval</h2>
+        <span className="badge-count">
+          {data?.totalCount ?? 0} ideas pending
+        </span>
+      </div>
+
+      {(!data || data.data.length === 0) && (
+        <div className="empty">No ideas pending review. All caught up! ✅</div>
+      )}
+
+      <div className="pending-ideas-list">
+        {data?.data.map((idea) => (
+          <div key={idea.id} className="pending-idea-card">
+            <div className="pending-idea-header">
+              <h3>{idea.title}</h3>
+              <span className="pending-meta">
+                {idea.topicName} · {idea.categoryName} · {idea.departmentName}
+              </span>
+            </div>
+
+            <div className="pending-author-row">
+              <span>
+                👤 <strong>{idea.isAnonymous ? "Anonymous" : idea.authorName}</strong>
+                {!idea.isAnonymous && <span className="author-email"> ({idea.authorEmail})</span>}
+              </span>
+              <span className="pending-date">
+                {new Date(idea.createdAt).toLocaleString("en-US")}
+              </span>
+            </div>
+
+            <p className="pending-idea-content">{idea.content}</p>
+
+            {idea.attachments && (
+              <div className="pending-attachments">
+                📎 Attachments: {idea.attachments.split(",").length} file(s)
+              </div>
+            )}
+
+            {rejectingId === idea.id ? (
+              <div className="reject-form">
+                <textarea
+                  placeholder="Enter rejection reason (required)"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  rows={3}
+                />
+                <div className="reject-form-actions">
+                  <button
+                    className="btn-danger"
+                    disabled={processingId === idea.id}
+                    onClick={() => handleRejectSubmit(idea.id)}
+                  >
+                    {processingId === idea.id ? "Rejecting..." : "Confirm Reject"}
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => { setRejectingId(null); setRejectionReason(""); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="pending-idea-actions">
+                <button
+                  className="btn-success"
+                  disabled={processingId === idea.id}
+                  onClick={() => handleApprove(idea.id)}
+                >
+                  {processingId === idea.id ? "Approving..." : "✅ Approve"}
+                </button>
+                <button
+                  className="btn-danger"
+                  onClick={() => { setRejectingId(idea.id); setRejectionReason(""); }}
+                >
+                  ❌ Reject
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {data && data.totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            ← Prev
+          </button>
+          <span>Page {currentPage} / {data.totalPages}</span>
+          <button
+            disabled={currentPage >= data.totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -487,6 +681,32 @@ function UsersTab({
   loading: boolean;
   onRefresh: () => void;
 }) {
+  const currentUser = authService.getCurrentUser();
+  const [assigningId, setAssigningId] = useState<number | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [savingRole, setSavingRole] = useState(false);
+
+  const ROLES = ["Administrator", "QAManager", "QACoordinator", "Staff"];
+
+  const handleOpenAssign = (user: User) => {
+    setAssigningId(user.id);
+    setSelectedRole(user.role);
+  };
+
+  const handleSaveRole = async (userId: number) => {
+    if (!selectedRole) return;
+    setSavingRole(true);
+    try {
+      await adminService.assignRole(userId, selectedRole);
+      setAssigningId(null);
+      onRefresh();
+    } catch {
+      alert("Failed to assign role. Please try again.");
+    } finally {
+      setSavingRole(false);
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
@@ -509,6 +729,7 @@ function UsersTab({
               <th>Agreed T&C</th>
               <th>Status</th>
               <th>Created Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -518,9 +739,40 @@ function UsersTab({
                 <td data-label="Full Name">{user.fullName}</td>
                 <td data-label="Email">{user.email}</td>
                 <td data-label="Role">
-                  <span className={`role-badge ${user.role.toLowerCase()}`}>
-                    {user.role}
-                  </span>
+                  {assigningId === user.id ? (
+                    <div className="role-assign-inline">
+                      <select
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        className="role-select"
+                        disabled={savingRole}
+                      >
+                        {ROLES.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn-save-role"
+                        disabled={savingRole}
+                        onClick={() => handleSaveRole(user.id)}
+                        title="Save role"
+                      >
+                        {savingRole ? "..." : "✔"}
+                      </button>
+                      <button
+                        className="btn-cancel-role"
+                        disabled={savingRole}
+                        onClick={() => setAssigningId(null)}
+                        title="Cancel"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <span className={`role-badge ${user.role.toLowerCase()}`}>
+                      {user.role}
+                    </span>
+                  )}
                 </td>
                 <td data-label="Department">{user.departmentName || "N/A"}</td>
                 <td data-label="Agreed T&C">{user.agreedTerms ? "✅" : "❌"}</td>
@@ -529,6 +781,17 @@ function UsersTab({
                 </td>
                 <td data-label="Created Date">
                   {new Date(user.createdAt).toLocaleDateString("en-US")}
+                </td>
+                <td data-label="Actions">
+                  {user.id !== Number(currentUser?.id) && assigningId !== user.id && (
+                    <button
+                      className="btn-assign-role"
+                      onClick={() => handleOpenAssign(user)}
+                      title="Assign Role"
+                    >
+                      🔑 Assign Role
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

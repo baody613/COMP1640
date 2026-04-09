@@ -74,4 +74,9 @@ export const adminService = {
     );
     return response.data;
   },
+
+  // Assign role to a user
+  async assignRole(userId: number, role: string): Promise<void> {
+    await apiClient.patch(`/Admin/users/${userId}/role`, { role });
+  },
 };

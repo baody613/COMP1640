@@ -1,11 +1,23 @@
 namespace backend.Models;
 
+public enum IdeaApprovalStatus
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2
+}
+
 public class Idea
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public bool IsAnonymous { get; set; } = false;
+    public IdeaApprovalStatus ApprovalStatus { get; set; } = IdeaApprovalStatus.Pending;
+    public int? ReviewedById { get; set; }
+    public User? ReviewedBy { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+    public string? RejectionReason { get; set; }
     public int AuthorId { get; set; }
     public User? Author { get; set; }
     public int TopicId { get; set; }

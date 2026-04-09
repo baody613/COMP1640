@@ -56,6 +56,8 @@ export interface Idea {
   departmentId: number;
   department?: Department;
   isAnonymous: boolean;
+  approvalStatus?: "Pending" | "Approved" | "Rejected";
+  rejectionReason?: string;
   createdAt: string;
   viewCount: number;
   thumbsUpCount: number;

@@ -209,6 +209,50 @@ public class AdminController : ControllerBase
         }
     }
 
+    // PATCH: api/Admin/users/{id}/role
+    [HttpPatch("users/{id}/role")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> AssignRole(int id, [FromBody] AssignRoleDto dto)
+    {
+        try
+        {
+            var validRoles = new[] { "Administrator", "QAManager", "QACoordinator", "Staff" };
+            if (!validRoles.Contains(dto.Role))
+                return BadRequest(new { message = "Invalid role. Valid roles: Administrator, QAManager, QACoordinator, Staff" });
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            // Prevent changing your own role
+            var currentUserId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            if (user.Id == currentUserId)
+                return BadRequest(new { message = "Cannot change your own role" });
+
+            var oldRole = user.Role;
+            user.Role = dto.Role;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("User {UserId} role changed from {OldRole} to {NewRole} by admin {AdminId}",
+                id, oldRole, dto.Role, currentUserId);
+
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Role,
+                message = $"Role updated to {dto.Role}"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error assigning role to user {UserId}", id);
+            return StatusCode(500, "An error occurred while assigning role");
+        }
+    }
+
     // ==================== TOPIC MANAGEMENT ====================
 
     // GET: api/Admin/topics/{topicId}/ideas-with-documents

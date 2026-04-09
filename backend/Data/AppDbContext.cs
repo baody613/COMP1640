@@ -90,6 +90,11 @@ public class AppDbContext : DbContext
                 .WithMany(u => u.Ideas)
                 .HasForeignKey(e => e.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ReviewedBy)
+                .WithMany()
+                .HasForeignKey(e => e.ReviewedById)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Comment>(entity =>

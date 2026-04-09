@@ -1,4 +1,5 @@
 # Personal Backend Development Report
+
 ## COMP1640 – Student Idea Contribution System
 
 **Module:** COMP1640 – Enterprise Web Development  
@@ -29,15 +30,15 @@ My primary responsibility in this project was the full backend development of th
 
 Key areas I was responsible for:
 
-| Area | Description |
-|------|-------------|
-| Database Schema | Designed all 9 tables and their relationships |
-| REST API | Implemented 10 controllers with 50+ endpoints |
-| Authentication | JWT-based authentication with BCrypt password hashing |
-| Authorization | Role-based access control (RBAC) for 4 user roles |
-| Email Service | Automated email notifications via SMTP |
-| File Management | Secure file upload and ZIP download capability |
-| Statistics | Analytics endpoints for admin dashboard |
+| Area            | Description                                           |
+| --------------- | ----------------------------------------------------- |
+| Database Schema | Designed all 9 tables and their relationships         |
+| REST API        | Implemented 10 controllers with 50+ endpoints         |
+| Authentication  | JWT-based authentication with BCrypt password hashing |
+| Authorization   | Role-based access control (RBAC) for 4 user roles     |
+| Email Service   | Automated email notifications via SMTP                |
+| File Management | Secure file upload and ZIP download capability        |
+| Statistics      | Analytics endpoints for admin dashboard               |
 
 ---
 
@@ -93,17 +94,17 @@ I designed the full database schema consisting of **9 tables** and configured al
 
 ### Entity Relationship Summary
 
-| Entity | Key Relationships |
-|--------|------------------|
-| `Departments` | Has many `Users`, has many `Ideas`, has one `QACoordinator` (User) |
-| `Users` | Belongs to `Departments`, authors `Ideas` and `Comments` |
-| `Topics` | Has many `Ideas`, has many `Categories`, created by `User` |
-| `Categories` | Belongs to `Topic`, has many `Ideas` |
-| `Ideas` | Belongs to `User`, `Topic`, `Category`, `Department`; has many `Comments`, `Reactions`, `Documents` |
-| `Comments` | Belongs to `Idea` and `User` |
-| `Reactions` | Belongs to `Idea` and `User` (thumbs up / thumbs down) |
-| `Documents` | File attachments belonging to `Ideas` |
-| `SystemSettings` | Key-value configuration store |
+| Entity           | Key Relationships                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `Departments`    | Has many `Users`, has many `Ideas`, has one `QACoordinator` (User)                                  |
+| `Users`          | Belongs to `Departments`, authors `Ideas` and `Comments`                                            |
+| `Topics`         | Has many `Ideas`, has many `Categories`, created by `User`                                          |
+| `Categories`     | Belongs to `Topic`, has many `Ideas`                                                                |
+| `Ideas`          | Belongs to `User`, `Topic`, `Category`, `Department`; has many `Comments`, `Reactions`, `Documents` |
+| `Comments`       | Belongs to `Idea` and `User`                                                                        |
+| `Reactions`      | Belongs to `Idea` and `User` (thumbs up / thumbs down)                                              |
+| `Documents`      | File attachments belonging to `Ideas`                                                               |
+| `SystemSettings` | Key-value configuration store                                                                       |
 
 ### EF Core Configuration Highlights
 
@@ -145,12 +146,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 ### AuthController Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user (default role: Staff) |
-| POST | `/api/auth/login` | Login and receive JWT token |
-| GET | `/api/auth/me` | Get current authenticated user profile |
-| PUT | `/api/auth/profile` | Update profile (name, password) |
+| Method | Endpoint             | Description                             |
+| ------ | -------------------- | --------------------------------------- |
+| POST   | `/api/auth/register` | Register new user (default role: Staff) |
+| POST   | `/api/auth/login`    | Login and receive JWT token             |
+| GET    | `/api/auth/me`       | Get current authenticated user profile  |
+| PUT    | `/api/auth/profile`  | Update profile (name, password)         |
 
 ### Registration Flow
 
@@ -174,12 +175,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 The system supports 4 roles with controlled access:
 
-| Role | Access Level |
-|------|-------------|
-| `Administrator` | Full system access: user management, settings, all data |
-| `QAManager` | Manage all topics, categories, export data, view all departments |
-| `QACoordinator` | Manage their own department's ideas and topics |
-| `Staff` | Submit ideas, comment, react within open topics |
+| Role            | Access Level                                                     |
+| --------------- | ---------------------------------------------------------------- |
+| `Administrator` | Full system access: user management, settings, all data          |
+| `QAManager`     | Manage all topics, categories, export data, view all departments |
+| `QACoordinator` | Manage their own department's ideas and topics                   |
+| `Staff`         | Submit ideas, comment, react within open topics                  |
 
 Controllers use `[Authorize(Roles = "...")]` to enforce access:
 
@@ -196,15 +197,15 @@ public class AdminController : ControllerBase { ... }
 
 The core controller. Handles the full lifecycle of idea submissions.
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/idea/topic/{topicId}` | Public | Get paginated ideas for a topic |
-| GET | `/api/idea/{id}` | Public | Get single idea with comments & reactions |
-| POST | `/api/idea` | Staff | Submit new idea |
-| PUT | `/api/idea/{id}` | Author | Edit own idea |
-| DELETE | `/api/idea/{id}` | Author/Admin | Delete idea |
-| POST | `/api/idea/{id}/react` | Auth | Thumbs up / thumbs down |
-| GET | `/api/idea/my` | Auth | Get current user's submitted ideas |
+| Method | Endpoint                    | Auth         | Description                               |
+| ------ | --------------------------- | ------------ | ----------------------------------------- |
+| GET    | `/api/idea/topic/{topicId}` | Public       | Get paginated ideas for a topic           |
+| GET    | `/api/idea/{id}`            | Public       | Get single idea with comments & reactions |
+| POST   | `/api/idea`                 | Staff        | Submit new idea                           |
+| PUT    | `/api/idea/{id}`            | Author       | Edit own idea                             |
+| DELETE | `/api/idea/{id}`            | Author/Admin | Delete idea                               |
+| POST   | `/api/idea/{id}/react`      | Auth         | Thumbs up / thumbs down                   |
+| GET    | `/api/idea/my`              | Auth         | Get current user's submitted ideas        |
 
 **Privacy feature:** When an idea is submitted with `IsAnonymous = true`, the `AuthorId` and `AuthorName` are never exposed in API responses, protecting the submitter's identity.
 
@@ -212,13 +213,13 @@ The core controller. Handles the full lifecycle of idea submissions.
 
 ### CommentController
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/api/comment/idea/{ideaId}` | Public | Get all comments for an idea |
-| GET | `/api/comment/latest` | Auth | Get latest comments (optional topic filter) |
-| POST | `/api/comment` | Auth | Post a new comment |
-| PUT | `/api/comment/{id}` | Author | Edit own comment |
-| DELETE | `/api/comment/{id}` | Author/Admin | Delete comment |
+| Method | Endpoint                     | Auth         | Description                                 |
+| ------ | ---------------------------- | ------------ | ------------------------------------------- |
+| GET    | `/api/comment/idea/{ideaId}` | Public       | Get all comments for an idea                |
+| GET    | `/api/comment/latest`        | Auth         | Get latest comments (optional topic filter) |
+| POST   | `/api/comment`               | Auth         | Post a new comment                          |
+| PUT    | `/api/comment/{id}`          | Author       | Edit own comment                            |
+| DELETE | `/api/comment/{id}`          | Author/Admin | Delete comment                              |
 
 After a comment is posted, the system automatically sends an **email notification** to the idea's author (unless the idea is anonymous).
 
@@ -226,14 +227,14 @@ After a comment is posted, the system automatically sends an **email notificatio
 
 Restricted to `QAManager` and `Administrator` roles.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/users` | List all users |
-| POST | `/api/admin/users` | Create new user |
-| PUT | `/api/admin/users/{id}` | Update user (role, status) |
-| DELETE | `/api/admin/users/{id}` | Deactivate user |
-| GET | `/api/admin/export-csv` | Export all ideas as CSV |
-| GET | `/api/admin/export-zip` | Export all ideas + documents as ZIP |
+| Method | Endpoint                | Description                         |
+| ------ | ----------------------- | ----------------------------------- |
+| GET    | `/api/admin/users`      | List all users                      |
+| POST   | `/api/admin/users`      | Create new user                     |
+| PUT    | `/api/admin/users/{id}` | Update user (role, status)          |
+| DELETE | `/api/admin/users/{id}` | Deactivate user                     |
+| GET    | `/api/admin/export-csv` | Export all ideas as CSV             |
+| GET    | `/api/admin/export-zip` | Export all ideas + documents as ZIP |
 
 ### TopicController, CategoryController, DepartmentController
 
@@ -243,12 +244,12 @@ These controllers provide CRUD operations for their respective entities. Topic m
 
 Manages configurable system parameters stored in the `SystemSettings` table:
 
-| Key | Purpose |
-|-----|---------|
-| `MaxFileUploadSize` | Maximum allowed file size (bytes) |
-| `AllowedFileTypes` | Comma-separated list of permitted extensions |
-| `SystemEmail` | SMTP sender address |
-| `EnableEmailNotifications` | Toggle email service on/off |
+| Key                        | Purpose                                      |
+| -------------------------- | -------------------------------------------- |
+| `MaxFileUploadSize`        | Maximum allowed file size (bytes)            |
+| `AllowedFileTypes`         | Comma-separated list of permitted extensions |
+| `SystemEmail`              | SMTP sender address                          |
+| `EnableEmailNotifications` | Toggle email service on/off                  |
 
 ---
 
@@ -268,6 +269,7 @@ public interface IEmailService
 ```
 
 **Email triggers:**
+
 - When a new idea is submitted → notify the department's QA Coordinator
 - When a comment is added to an idea → notify the idea's author
 - Bulk email → used by admin to notify all department members
@@ -304,13 +306,13 @@ if (!allowedTypes.Contains(fileExtension))
 
 `StatisticsController` provides analytics data consumed by the admin dashboard frontend.
 
-| Endpoint | Data Returned |
-|----------|--------------|
-| `GET /api/statistics/overview` | Total ideas, comments, users, departments |
-| `GET /api/statistics/departments` | Per-department: staff count, idea count, comment count, total views |
-| `GET /api/statistics/ideas-by-category` | Per-category: idea count, comment count, reaction count |
-| `GET /api/statistics/top-ideas` | Top-viewed and most-reacted ideas |
-| `GET /api/statistics/timeline` | Ideas submitted per week/month |
+| Endpoint                                | Data Returned                                                       |
+| --------------------------------------- | ------------------------------------------------------------------- |
+| `GET /api/statistics/overview`          | Total ideas, comments, users, departments                           |
+| `GET /api/statistics/departments`       | Per-department: staff count, idea count, comment count, total views |
+| `GET /api/statistics/ideas-by-category` | Per-category: idea count, comment count, reaction count             |
+| `GET /api/statistics/top-ideas`         | Top-viewed and most-reacted ideas                                   |
+| `GET /api/statistics/timeline`          | Ideas submitted per week/month                                      |
 
 These endpoints use EF Core's `Include()` with `ThenInclude()` for efficient joined queries, and LINQ projection (`Select`) to return only the fields needed by the frontend, minimising data transfer.
 

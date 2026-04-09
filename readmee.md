@@ -36,6 +36,7 @@ Table of Contents
 
 - 5.1 Test Plan
 - 5.2 Test Log
+- 5.3 Sufficient Test Data to Fully Test
 
 6. Evaluation
 7. Agile Method
@@ -806,6 +807,34 @@ Staff staff@university.edu Staff@123
 | TC-S15 | Duplicate vote prevention | No duplicate | Vote toggled, no duplicate entry | Pass | |
 | TC-S16 | Paginated idea list | 5 per page | Pagination works correctly | Pass | |
 | TC-S17 | Staff blocked from /admin | Redirect to dashboard | Correctly redirected | Pass | |
+
+---
+
+5.3 Sufficient Test Data to fully test
+
+To ensure the system works robustly in a real-world scenario, the database must be seeded with sufficient test data before final evaluation. The test data should cover various edge cases, user roles, active/expired deadlines for topics, multiple ideas per topic, diverse file attachments, and an active comment thread.
+
+Below is a summary of the required test data scenarios:
+
+**1. Roles and Accounts Data**
+- **System Administrator:** 1 user account (`admin@university.edu`)
+- **Departments:** 4 defined (e.g., IT, Business, Design, Engineering)
+- **QA Managers:** At least 2 active QA Manager accounts.
+- **QA Coordinators:** 4 accounts (1 assigned to each department).
+- **Staff/Students (Standard Users):** 20 active users distributed across the 4 departments to simulate concurrent usage and role-based access control.
+
+**2. Topics and Categories**
+- **Active Topics:** 3 topics with upcoming Closure Dates and Final Closure Dates (e.g., "Library Improvements", "Green Campus", "E-learning Tools").
+- **Closed Topics:** 2 past topics (both `IdeaSubmissionDeadline` and `CommentDeadline` elapsed) to thoroughly test the CSV/ZIP export functions and ensure submission blocks function correctly.
+- **Categories:** Over 10 active categories distributed across topics to properly test sorting, filtering, and chart statistics.
+
+**3. Ideas and Engagements**
+- **Ideas Submitted:** Minimum of 50 ideas across all topics, varying lengths, to verify UI pagination and database efficiency.
+- **Anonymous Postings:** ~15 ideas posted anonymously. Admin interfaces should be verified against these to ensure traceability without breaking frontend anonymity.
+- **File Attachments:** At least 25 ideas containing valid file attachments (JPEG, PNG, PDF, and DOCX extensions) with varied file sizes (from small 10KB images to larger 5MB PDF documents), as well as attempts to upload invalid files (like `.exe` or `.sh`) to trigger validation blocks.
+- **Comments and Reactions:** ~100 comments (some named, some anonymous) to simulate engagement. Randomly generated Upvotes / Downvotes (Thumbs Up/Down) across ideas to ensure sorting functionality works seamlessly by "Most Popular" and verify the unique vote enforcement.
+
+This comprehensive test dataset guarantees that our testing cases (detailed in sections 5.1 and 5.2) undergo essential stress and boundary edge testing before deployment.
 
 ---
 

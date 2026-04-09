@@ -20,6 +20,11 @@ public class UpdateUserDto
     public bool IsActive { get; set; } = true;
 }
 
+public class AssignRoleDto
+{
+    public string Role { get; set; } = string.Empty;
+}
+
 // Topic Management DTOs
 public class CreateTopicDto
 {

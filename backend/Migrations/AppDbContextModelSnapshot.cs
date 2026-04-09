@@ -260,6 +260,9 @@ namespace backend.Migrations
                     b.Property<string>("Attachments")
                         .HasColumnType("longtext");
 
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
 
@@ -278,6 +281,15 @@ namespace backend.Migrations
 
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("ReviewedById")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -300,6 +312,8 @@ namespace backend.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("ReviewedById");
 
                     b.HasIndex("TopicId");
 
@@ -625,6 +639,11 @@ namespace backend.Migrations
                         .WithMany("Ideas")
                         .HasForeignKey("DepartmentId");
 
+                    b.HasOne("backend.Models.User", "ReviewedBy")
+                        .WithMany()
+                        .HasForeignKey("ReviewedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("backend.Models.Topic", "Topic")
                         .WithMany("Ideas")
                         .HasForeignKey("TopicId")
@@ -636,6 +655,8 @@ namespace backend.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Department");
+
+                    b.Navigation("ReviewedBy");
 
                     b.Navigation("Topic");
                 });
