@@ -29,6 +29,7 @@ CREATE TABLE Users (
     PasswordHash VARCHAR(255) NOT NULL,
     Role ENUM('Staff', 'QACoordinator', 'QAManager', 'Administrator') NOT NULL DEFAULT 'Staff',
     DepartmentId INT NULL,
+    StudentId VARCHAR(50) NULL,
     AgreedTerms BOOLEAN NOT NULL DEFAULT FALSE,
     AgreedTermsDate DATETIME NULL,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -101,6 +102,11 @@ CREATE TABLE Ideas (
     Title VARCHAR(200) NOT NULL,
     Content TEXT NOT NULL,
     IsAnonymous BOOLEAN NOT NULL DEFAULT FALSE,
+    ApprovalStatus INT NOT NULL DEFAULT 0 COMMENT '0=Pending, 1=Approved, 2=Rejected',
+    ReviewedById INT NULL,
+    ReviewedAt DATETIME NULL,
+    RejectionReason TEXT NULL,
+    Attachments TEXT NULL COMMENT 'Comma-separated list of attachment filenames',
     AuthorId INT NOT NULL,
     TopicId INT NOT NULL,
     CategoryId INT NOT NULL,
@@ -131,7 +137,11 @@ CREATE TABLE Ideas (
     CONSTRAINT FK_Ideas_Department 
         FOREIGN KEY (DepartmentId) 
         REFERENCES Departments(Id) 
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    CONSTRAINT FK_Ideas_ReviewedBy
+        FOREIGN KEY (ReviewedById)
+        REFERENCES Users(Id)
+        ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- ============================================
