@@ -81,10 +81,17 @@ export const ideaService = {
     return response.data;
   },
 
-  async getPendingIdeas(page: number = 1, pageSize: number = 10, topicId?: number): Promise<PendingIdeasResponse> {
+  async getPendingIdeas(
+    page: number = 1,
+    pageSize: number = 10,
+    topicId?: number,
+  ): Promise<PendingIdeasResponse> {
     const params: Record<string, unknown> = { page, pageSize };
     if (topicId) params.topicId = topicId;
-    const response = await apiClient.get<PendingIdeasResponse>("/Idea/pending", { params });
+    const response = await apiClient.get<PendingIdeasResponse>(
+      "/Idea/pending",
+      { params },
+    );
     return response.data;
   },
 
