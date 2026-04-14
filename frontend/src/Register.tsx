@@ -65,7 +65,7 @@ function Register() {
         password,
         departmentId,
         studentId: studentId.trim() || undefined,
-        agreedTerms: true, // đã xác nhận ở validation phía trên
+        agreedTerms: true, // Already confirmed in validation above
       });
       // Auto-login after successful registration
       navigate("/topics");

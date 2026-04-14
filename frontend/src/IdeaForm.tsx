@@ -3,10 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
 import "./IdeaForm.css";
 import {
-    categoryService,
-    documentService,
-    ideaService,
-    topicService,
+  categoryService,
+  documentService,
+  ideaService,
+  topicService,
 } from "./services";
 import type { Category, Topic } from "./types";
 

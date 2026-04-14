@@ -79,4 +79,37 @@ export const adminService = {
   async assignRole(userId: number, role: string): Promise<void> {
     await apiClient.patch(`/Admin/users/${userId}/role`, { role });
   },
+
+  // Create a new user
+  async createUser(data: {
+    fullName: string;
+    email: string;
+    password: string;
+    role: string;
+    departmentId?: number;
+  }): Promise<any> {
+    const response = await apiClient.post(`/Admin/users`, data);
+    return response.data;
+  },
+
+  // Update user
+  async updateUser(
+    userId: number,
+    data: {
+      fullName: string;
+      email: string;
+      password?: string;
+      role: string;
+      departmentId?: number;
+      isActive: boolean;
+    },
+  ): Promise<any> {
+    const response = await apiClient.put(`/Admin/users/${userId}`, data);
+    return response.data;
+  },
+
+  // Delete user (deactivate)
+  async deleteUser(userId: number): Promise<void> {
+    await apiClient.delete(`/Admin/users/${userId}`);
+  },
 };

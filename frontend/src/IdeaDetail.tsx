@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { authService } from "./authService";
 import "./IdeaDetail.css";
-import { commentService, ideaService } from "./services";
-import type { Comment, Idea } from "./types";
+import { commentService, ideaService, topicService } from "./services";
+import type { Comment, Idea, Topic } from "./types";
 
 function IdeaDetail() {
   const { id } = useParams<{ id: string }>();
   const [idea, setIdea] = useState<Idea | null>(null);
+  const [topic, setTopic] = useState<Topic | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -26,6 +27,13 @@ function IdeaDetail() {
         ]);
         setIdea(ideaData);
         setComments(commentsData);
+
+        // Load topic data for deadline checking
+        if (ideaData.topicId) {
+          const topicData = await topicService.getTopicById(ideaData.topicId);
+          setTopic(topicData);
+        }
+
         setLoading(false);
       } catch (error) {
         console.error("Failed to load idea:", error);
@@ -34,6 +42,22 @@ function IdeaDetail() {
     };
     loadIdeaData();
   }, [id]);
+
+  const isCommentDeadlineExpired = (): boolean => {
+    if (!topic || !topic.commentDeadline) return false;
+    return new Date() > new Date(topic.commentDeadline);
+  };
+
+  const getDeadlineMessage = (): string | null => {
+    if (!topic) return null;
+    const commentDeadline = new Date(topic.commentDeadline);
+    const now = new Date();
+
+    if (now > commentDeadline) {
+      return `Comment deadline passed on ${commentDeadline.toLocaleDateString()} at ${commentDeadline.toLocaleTimeString()}. Only reactions (thumbs up/down) are allowed now.`;
+    }
+    return null;
+  };
 
   const handleReaction = async (isThumbsUp: boolean) => {
     if (!idea) return;
@@ -231,13 +255,41 @@ function IdeaDetail() {
         <div className="comments-section">
           <h3>💬 Comments ({comments.length})</h3>
 
+          {getDeadlineMessage() && (
+            <div
+              className="deadline-notice"
+              style={{
+                backgroundColor: "#fff3cd",
+                border: "1px solid #ffc107",
+                borderRadius: "4px",
+                padding: "12px 16px",
+                marginBottom: "16px",
+                color: "#856404",
+                fontSize: "14px",
+              }}
+            >
+              ⏰ {getDeadlineMessage()}
+            </div>
+          )}
+
           <form onSubmit={handleAddComment} className="comment-form">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write your comment..."
+              placeholder={
+                isCommentDeadlineExpired()
+                  ? "Comments are closed after the deadline"
+                  : "Write your comment..."
+              }
               rows={4}
               required
+              disabled={isCommentDeadlineExpired()}
+              style={{
+                opacity: isCommentDeadlineExpired() ? 0.6 : 1,
+                cursor: isCommentDeadlineExpired()
+                  ? "not-allowed"
+                  : "text",
+              }}
             />
             <div className="comment-form-footer">
               <label className="anonymous-checkbox">
@@ -245,11 +297,24 @@ function IdeaDetail() {
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
+                  disabled={isCommentDeadlineExpired()}
                 />
                 Submit Anonymously
               </label>
-              <button type="submit" className="btn-submit">
-                Submit Comment
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={isCommentDeadlineExpired()}
+                style={{
+                  opacity: isCommentDeadlineExpired() ? 0.6 : 1,
+                  cursor: isCommentDeadlineExpired()
+                    ? "not-allowed"
+                    : "pointer",
+                }}
+              >
+                {isCommentDeadlineExpired()
+                  ? "Comments Closed"
+                  : "Submit Comment"}
               </button>
             </div>
           </form>

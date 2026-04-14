@@ -321,6 +321,11 @@ public class AdminController : ControllerBase
     {
         try
         {
+            // Only Administrator can update topics
+            var currentUser = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            if (currentUser != "Administrator")
+                return Forbid("Only administrators can update topics");
+
             var topic = await _context.Topics.FindAsync(id);
             if (topic == null)
                 return NotFound("Topic not found");
@@ -361,6 +366,11 @@ public class AdminController : ControllerBase
     {
         try
         {
+            // Only Administrator can create topics
+            var currentUser = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            if (currentUser != "Administrator")
+                return Forbid("Only administrators can create topics");
+
             // Validate deadlines
             if (dto.IdeaSubmissionDeadline >= dto.CommentDeadline)
                 return BadRequest("Idea submission deadline must be before comment deadline");
@@ -396,6 +406,11 @@ public class AdminController : ControllerBase
     {
         try
         {
+            // Only Administrator can delete topics
+            var currentUser = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            if (currentUser != "Administrator")
+                return Forbid("Only administrators can delete topics");
+
             var topic = await _context.Topics
                 .Include(t => t.Ideas)
                 .FirstOrDefaultAsync(t => t.Id == id);

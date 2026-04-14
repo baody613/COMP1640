@@ -1,21 +1,21 @@
 import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
+    BrowserRouter,
+    Navigate,
+    Outlet,
+    Route,
+    Routes,
 } from "react-router-dom";
-import Login from "./Login";
-import Register from "./Register";
+import AdminDashboard from "./AdminDashboard";
 import Dashboard from "./Dashboard";
-import Topics from "./Topics";
 import IdeaDetail from "./IdeaDetail";
 import IdeaForm from "./IdeaForm";
-import AdminDashboard from "./AdminDashboard";
+import Login from "./Login";
 import NavBar from "./NavBar";
+import Register from "./Register";
+import Topics from "./Topics";
 import { authService } from "./authService";
 
-// Layout cho tất cả trang authenticated – luôn hiển thị NavBar
+// Layout for all authenticated pages – always displays NavBar
 function PrivateLayout() {
   const token = authService.getToken();
   if (!token) return <Navigate to="/login" />;
@@ -27,7 +27,7 @@ function PrivateLayout() {
   );
 }
 
-// Chặn Admin khỏi các trang dành cho Staff
+// Block Admin from pages intended for Staff
 function StaffOnly() {
   const user = authService.getCurrentUser();
   if (user?.role === "Administrator") return <Navigate to="/admin" />;
@@ -42,7 +42,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Authenticated – NavBar luôn hiển thị */}
+        {/* Authenticated – NavBar always displayed */}
         <Route element={<PrivateLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />

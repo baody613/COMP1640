@@ -4,7 +4,7 @@ import type { LoginRequest, LoginResponse, RegisterRequest } from "./types";
 export const authService = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>(
-      "/Auth/login",
+      "/auth/login",
       credentials,
     );
     if (response.data.token) {
@@ -16,7 +16,7 @@ export const authService = {
 
   async register(userData: RegisterRequest): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>(
-      "/Auth/register",
+      "/auth/register",
       userData,
     );
     if (response.data.token) {
@@ -46,12 +46,12 @@ export const authService = {
   },
 
   async agreeToTerms() {
-    const response = await apiClient.post("/Auth/agree-terms");
+    const response = await apiClient.post("/auth/agree-terms");
     return response.data;
   },
 
   async getCurrentUserFromApi() {
-    const response = await apiClient.get("/Auth/me");
+    const response = await apiClient.get("/auth/me");
     return response.data;
   },
 };

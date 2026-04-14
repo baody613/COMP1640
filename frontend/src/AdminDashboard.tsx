@@ -12,9 +12,9 @@ import {
   type CategoryStatistics,
   type DepartmentStatistics,
   type OverviewStatistics,
+  type PendingIdeasResponse,
   type TopicFormData,
   type TopicStatistics,
-  type PendingIdeasResponse,
 } from "./services";
 import type { Category, Idea, Topic } from "./types";
 
@@ -244,12 +244,14 @@ function AdminDashboard() {
             👥 Manage Users
           </button>
         )}
-        <button
-          className={`tab ${activeTab === "topics" ? "active" : ""}`}
-          onClick={() => setActiveTab("topics")}
-        >
-          📚 Manage Topics
-        </button>
+        {user?.role === "Administrator" && (
+          <button
+            className={`tab ${activeTab === "topics" ? "active" : ""}`}
+            onClick={() => setActiveTab("topics")}
+          >
+            📚 Manage Topics
+          </button>
+        )}
         {user?.role === "Administrator" && (
           <button
             className={`tab ${activeTab === "categories" ? "active" : ""}`}
@@ -733,6 +735,20 @@ function UsersTab({
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [savingRole, setSavingRole] = useState(false);
 
+  // Create/Edit user form
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    role: "Staff",
+    departmentId: "",
+    isActive: true,
+  });
+  const [formError, setFormError] = useState("");
+  const [formProcessing, setFormProcessing] = useState(false);
+
   const ROLES = ["Administrator", "QAManager", "QACoordinator", "Staff"];
 
   const handleOpenAssign = (user: User) => {
@@ -754,16 +770,249 @@ function UsersTab({
     }
   };
 
+  // Handle Create/Edit form
+  const handleOpenCreate = () => {
+    setFormData({
+      fullName: "",
+      email: "",
+      password: "",
+      role: "Staff",
+      departmentId: "",
+      isActive: true,
+    });
+    setEditingUserId(null);
+    setFormError("");
+    setShowCreateForm(true);
+  };
+
+  const handleOpenEdit = (user: User) => {
+    setFormData({
+      fullName: user.fullName,
+      email: user.email,
+      password: "",
+      role: user.role,
+      departmentId: user.departmentId?.toString() || "",
+      isActive: user.isActive,
+    });
+    setEditingUserId(user.id);
+    setFormError("");
+    setShowCreateForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowCreateForm(false);
+    setEditingUserId(null);
+    setFormError("");
+    setFormData({
+      fullName: "",
+      email: "",
+      password: "",
+      role: "Staff",
+      departmentId: "",
+      isActive: true,
+    });
+  };
+
+  const handleSubmitForm = async () => {
+    setFormError("");
+
+    if (!formData.fullName.trim()) {
+      setFormError("Full Name is required");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setFormError("Email is required");
+      return;
+    }
+    if (editingUserId === null && !formData.password.trim()) {
+      setFormError("Password is required for new users");
+      return;
+    }
+
+    setFormProcessing(true);
+    try {
+      const userData: any = {
+        fullName: formData.fullName,
+        email: formData.email,
+        role: formData.role,
+        isActive: formData.isActive,
+      };
+
+      if (formData.departmentId) {
+        userData.departmentId = parseInt(formData.departmentId);
+      }
+
+      if (formData.password) {
+        userData.password = formData.password;
+      }
+
+      if (editingUserId) {
+        await adminService.updateUser(editingUserId, userData);
+        alert("User updated successfully!");
+      } else {
+        await adminService.createUser(userData);
+        alert("User created successfully!");
+      }
+
+      handleCloseForm();
+      onRefresh();
+    } catch (error: any) {
+      setFormError(
+        error.response?.data?.message || "Failed to save user. Please try again.",
+      );
+    } finally {
+      setFormProcessing(false);
+    }
+  };
+
+  const handleDelete = async (userId: number, userName: string) => {
+    if (userId === Number(currentUser?.id)) {
+      alert("You cannot delete your own account!");
+      return;
+    }
+
+    if (!window.confirm(`Delete user "${userName}"?`)) return;
+
+    try {
+      await adminService.deleteUser(userId);
+      alert("User deactivated successfully!");
+      onRefresh();
+    } catch (error) {
+      alert("Failed to delete user. Please try again.");
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="users-tab">
       <div className="tab-header">
         <h2>👥 Manage Users</h2>
-        <button className="btn-primary" onClick={onRefresh}>
-          🔄 Refresh
-        </button>
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <button className="btn-primary" onClick={handleOpenCreate}>
+            ➕ Add User
+          </button>
+          <button className="btn-secondary" onClick={onRefresh}>
+            🔄 Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Create/Edit Form */}
+      {showCreateForm && (
+        <div className="user-form-box">
+          <h3>{editingUserId ? "Edit User" : "Create New User"}</h3>
+          <div className="form-row">
+            <label>
+              Full Name <span className="req">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.fullName}
+              onChange={(e) =>
+                setFormData({ ...formData, fullName: e.target.value })
+              }
+              placeholder="Enter full name..."
+              disabled={formProcessing}
+            />
+          </div>
+          <div className="form-row">
+            <label>
+              Email <span className="req">*</span>
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              placeholder="Enter email..."
+              disabled={formProcessing}
+            />
+          </div>
+          <div className="form-row">
+            <label>
+              Password {editingUserId ? "(leave empty to keep current)" : <span className="req">*</span>}
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              placeholder="Enter password..."
+              disabled={formProcessing}
+            />
+          </div>
+          <div className="form-row-2col">
+            <div className="form-row">
+              <label>Role</label>
+              <select
+                value={formData.role}
+                onChange={(e) =>
+                  setFormData({ ...formData, role: e.target.value })
+                }
+                disabled={formProcessing}
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row">
+              <label>Department ID</label>
+              <input
+                type="number"
+                value={formData.departmentId}
+                onChange={(e) =>
+                  setFormData({ ...formData, departmentId: e.target.value })
+                }
+                placeholder="Optional..."
+                disabled={formProcessing}
+              />
+            </div>
+          </div>
+          {editingUserId && (
+            <div className="form-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
+                  disabled={formProcessing}
+                />
+                Active
+              </label>
+            </div>
+          )}
+          {formError && <p className="form-error">{formError}</p>}
+          <div className="form-actions">
+            <button
+              className="btn-primary"
+              onClick={handleSubmitForm}
+              disabled={formProcessing}
+            >
+              {formProcessing
+                ? "Processing..."
+                : editingUserId
+                  ? "✓ Update User"
+                  : "✓ Create User"}
+            </button>
+            <button
+              className="btn-ghost"
+              onClick={handleCloseForm}
+              disabled={formProcessing}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="data-table">
           <thead>
@@ -834,16 +1083,36 @@ function UsersTab({
                   {new Date(user.createdAt).toLocaleDateString("en-US")}
                 </td>
                 <td data-label="Actions">
-                  {user.id !== Number(currentUser?.id) &&
-                    assigningId !== user.id && (
-                      <button
-                        className="btn-assign-role"
-                        onClick={() => handleOpenAssign(user)}
-                        title="Assign Role"
-                      >
-                        🔑 Assign Role
-                      </button>
-                    )}
+                  <div style={{ display: "flex", gap: ".5rem" }}>
+                    {user.id !== Number(currentUser?.id) &&
+                      assigningId !== user.id && (
+                        <>
+                          <button
+                            className="btn-edit"
+                            onClick={() => handleOpenEdit(user)}
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn-assign-role"
+                            onClick={() => handleOpenAssign(user)}
+                            title="Assign Role"
+                          >
+                            🔑
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() =>
+                              handleDelete(user.id, user.fullName)
+                            }
+                            title="Deactivate"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -885,11 +1154,6 @@ function TopicsTab({
     ideaSubmissionDeadline: "",
     commentDeadline: "",
   };
-
-  const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState<TopicFormData>(emptyForm);
-  const [createErr, setCreateErr] = useState("");
-  const [creating, setCreating] = useState(false);
 
   // editingId: id of topic being edited, null = not editing any
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -935,46 +1199,6 @@ function TopicsTab({
         topic.commentDeadline || topic.finalClosureDate,
       ),
     });
-  };
-
-  const handleCreate = async () => {
-    if (!createForm.name.trim()) {
-      setCreateErr("Please enter topic name");
-      return;
-    }
-    if (!createForm.ideaSubmissionDeadline) {
-      setCreateErr("Please select idea submission deadline");
-      return;
-    }
-    if (!createForm.commentDeadline) {
-      setCreateErr("Please select comment deadline");
-      return;
-    }
-    if (
-      new Date(createForm.commentDeadline) <=
-      new Date(createForm.ideaSubmissionDeadline)
-    ) {
-      setCreateErr("Comment deadline must be after idea submission deadline");
-      return;
-    }
-    setCreating(true);
-    setCreateErr("");
-    try {
-      await topicService.createTopic({
-        ...createForm,
-        ideaSubmissionDeadline: new Date(
-          createForm.ideaSubmissionDeadline,
-        ).toISOString(),
-        commentDeadline: new Date(createForm.commentDeadline).toISOString(),
-      });
-      setShowCreate(false);
-      setCreateForm(emptyForm);
-      onRefresh();
-    } catch {
-      setCreateErr("Failed to create topic. Please try again.");
-    } finally {
-      setCreating(false);
-    }
   };
 
   const handleSave = async () => {
@@ -1111,81 +1335,6 @@ function TopicsTab({
                 <p className="empty-state">No data</p>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {showCreate && (
-        <div className="topic-form-box">
-          <h3>Create New Topic</h3>
-          <div className="form-row">
-            <label>
-              Topic Name <span className="req">*</span>
-            </label>
-            <input
-              type="text"
-              value={createForm.name}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, name: e.target.value }))
-              }
-              placeholder="Enter topic name..."
-            />
-          </div>
-          <div className="form-row">
-            <label>Description</label>
-            <textarea
-              value={createForm.description}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, description: e.target.value }))
-              }
-              placeholder="Brief description of topic..."
-              rows={2}
-            />
-          </div>
-          <div className="form-row-2col">
-            <div className="form-row">
-              <label>
-                📅 Idea Submission Deadline <span className="req">*</span>
-              </label>
-              <input
-                type="datetime-local"
-                value={createForm.ideaSubmissionDeadline}
-                onChange={(e) =>
-                  setCreateForm((f) => ({
-                    ...f,
-                    ideaSubmissionDeadline: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="form-row">
-              <label>
-                💬 Comment Deadline <span className="req">*</span>
-              </label>
-              <input
-                type="datetime-local"
-                value={createForm.commentDeadline}
-                onChange={(e) =>
-                  setCreateForm((f) => ({
-                    ...f,
-                    commentDeadline: e.target.value,
-                  }))
-                }
-              />
-            </div>
-          </div>
-          {createErr && <p className="form-error">{createErr}</p>}
-          <div className="form-actions">
-            <button
-              className="btn-primary"
-              onClick={handleCreate}
-              disabled={creating}
-            >
-              {creating ? "Creating..." : "✓ Create Topic"}
-            </button>
-            <button className="btn-ghost" onClick={() => setShowCreate(false)}>
-              Cancel
-            </button>
           </div>
         </div>
       )}
