@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using backend.Models;
 
@@ -152,11 +154,9 @@ public class EmailService : IEmailService
             return;
         }
 
-        // Example using System.Net.Mail (for production, consider using SendGrid, MailKit, etc.)
-        /*
         using var client = new SmtpClient(_configuration["EmailSettings:SmtpServer"])
         {
-            Port = int.Parse(_configuration["EmailSettings:SmtpPort"]),
+            Port = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587"),
             Credentials = new NetworkCredential(
                 _configuration["EmailSettings:Username"],
                 _configuration["EmailSettings:Password"]),
@@ -165,7 +165,7 @@ public class EmailService : IEmailService
 
         var mailMessage = new MailMessage
         {
-            From = new MailAddress(_configuration["EmailSettings:FromEmail"], _configuration["EmailSettings:FromName"]),
+            From = new MailAddress(_configuration["EmailSettings:FromEmail"]!, _configuration["EmailSettings:FromName"] ?? "COMP1640 Idea Hub"),
             Subject = subject,
             Body = htmlBody,
             IsBodyHtml = true,
@@ -173,10 +173,6 @@ public class EmailService : IEmailService
         mailMessage.To.Add(to);
 
         await client.SendMailAsync(mailMessage);
-        */
-
-        // For development/demo purposes
-        _logger.LogInformation($"[EMAIL] To: {to}, Subject: {subject}");
-        await Task.CompletedTask;
+        _logger.LogInformation("Email sent to {To}: {Subject}", to, subject);
     }
 }

@@ -272,7 +272,7 @@ function AdminDashboard() {
         >
           📎 Ideas & File Upload
         </button>
-        {(user?.role === "Administrator" || user?.role === "QAManager") && (
+        {(user?.role === "" || user?.role === "QAManager") && (
           <button
             className={`tab ${activeTab === "pendingIdeas" ? "active" : ""}`}
             onClick={() => setActiveTab("pendingIdeas")}
@@ -858,7 +858,8 @@ function UsersTab({
       onRefresh();
     } catch (error: any) {
       setFormError(
-        error.response?.data?.message || "Failed to save user. Please try again.",
+        error.response?.data?.message ||
+          "Failed to save user. Please try again.",
       );
     } finally {
       setFormProcessing(false);
@@ -932,7 +933,12 @@ function UsersTab({
           </div>
           <div className="form-row">
             <label>
-              Password {editingUserId ? "(leave empty to keep current)" : <span className="req">*</span>}
+              Password{" "}
+              {editingUserId ? (
+                "(leave empty to keep current)"
+              ) : (
+                <span className="req">*</span>
+              )}
             </label>
             <input
               type="password"
@@ -1103,9 +1109,7 @@ function UsersTab({
                           </button>
                           <button
                             className="btn-delete"
-                            onClick={() =>
-                              handleDelete(user.id, user.fullName)
-                            }
+                            onClick={() => handleDelete(user.id, user.fullName)}
                             title="Deactivate"
                           >
                             🗑️
